@@ -1,0 +1,22 @@
+{1-10$$},
+
+MICHAEL_B_JORDAN: 1boy, solo_male, (very_dark_skin:1.2), michael_b_jordan, dark-skinned_male, muscular_male, abs, large_pectorals, realistic, very_short_hair, {cornrows|buzz_cut|crew_cut|short_hair}, facial_hair, mustache, goatee, {topless|shirt_around_waist|completely_nude}, standing, closed_mouth, navel, fingernails, male_focus, uncensored
+
+IDRIS_ELBA: 1boy, solo_male, idris_elba, dark-skinned_male, bald, short_beard, intense_eyes, muscular_male, veiny_arms, realistic, completely_nude, standing, serious, male_focus, uncensored
+
+JASON: 1boy, solo_male, dark-skinned_male, bald, full_beard, mature_male, muscular_male, realistic, completely_nude, standing, {smile|grin|smirk}, abs, large_pectorals, navel, male_pubic_hair, {erection|flaccid}, testicles, uncensored, male_focus
+
+TRA: 1boy, solo_male, (very_dark_skin:1.3) very_dark-skinned_male, dreadlocks, full_beard, scar, scar_on_face,intense_eyes,muscular_male, realistic, completely_nude, standing, serious, male_focus, uncensored
+
+CARLOS_FAMILY: 1boy, 2girls, dark-skinned_male, very_dark-skinned_male, dreadlocks, full_beard, mustache, thick_lips, realistic, father_and_daughter, siblings, height_difference, family, casual, outdoors, day, blue_sky, clouds, tree, {completely_nude, oiled_skin, glossy_body|white_shirt|green_shirt|black_shirt}, open_jacket, jeans, {smile|smirk}, dark-skinned_female, long_hair, braid, hair_bun, hoop_earrings, necklace, medium_breasts, cleavage
+#Carlos: 1boy, 2girls, makeup, looking at viewer, hoop earrings, earrings, facial hair, shirt, jacket, {white shirt|green shirt|black shirt}, open jacket, denim, jeans, {shorts|pants|tight dress}, {nude|completely nude}, wide hips,  jewelry, necklace, casual, smile, dreadlocks, hair bun, brown lips, mustache, lips, braid, beard, nose, thick lips, eyeshadow, undercut, afro, breasts, cleavage, medium breasts, building, outdoors, day, sky, tree, multiple girls, family, height difference, siblings, father and daughter, realistic, side-by-side, dark skin, very dark skin, dark-skinned female, dark-skinned male, cloud, single hair bun, black hair, long hair, brown eyes, short hair, curly hair, blue sky, closed mouth
+
+KING: 1boy, (very_dark_skin:1.3), muscular_male, tall, full_beard, black_baseball_cap_backward, gold_cross_necklace, detailed_tattoos_on_arms, gold_bracelets, black_t-shirt_tight, black_pants_with_side_stripe, nike_sneakers, confident_smirk, gold_grillz_visible, street_king_vibe
+
+ROMAN: 1boy, (dark_skin:1.25), muscular, short_fade_haircut, trimmed_beard, black_leather_jacket, black_shirt, dark_jeans, black_boots, silver_watch, gold_chain, intense_stare, bad_boy_energy
+
+PRINCE: 1boy, (very_dark_skin:1.3), muscular_build, backward_cap, thick_full_beard, heavy_gold_chains, double_gold_cross, arm_tattoos, black_tee_and_pants, nike_blazers, gold_bracelets_stack, dominant_pose, alpha_male
+
+DRO: male focus, 1boy, (jewelry, :1.2) facial hair, watch, shirt, solo, (dark skin:1.3), white shirt, sunglasses, wristwatch, black pants, pants, earrings, black hair, belt, necklace, tattoo, beard, (dark-skinned male:2.3), hands in pockets, dreadlocks, standing, bracelet, long hair, chain, red coat, looking at viewer, black belt, gold chain, open clothes
+
+ERIC: 1boy, jewelry, male focus, tattoo, solo, necklace, earrings, facial hair, chest tattoo, dark-skinned male, dark skin, black hair, thick eyebrows, scar, denim jacket, beard, open clothes, pectorals, brown eyes, scar on face, piercing, denim, shirt, looking to the side, gold necklace, ear piercing

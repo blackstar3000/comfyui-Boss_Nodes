@@ -1,0 +1,59 @@
+{
+  "Bo": {
+    "random": {
+      "anything": [
+        "{__Bo/audio/random__|__Bo/books/random__|__Bo/chars/random__|__Bo/clothings/random-*body__|__Bo/constructions/random-*__|__Bo/cosmic/random__|__Bo/creative/random*__|__Bo/creatures/*__|__Bo/random/events__|__Bo/habitats/random__|__Bo/jewelry/random__|__Bo/machines/random__|__Bo/plants/random*__|__Bo/psycho/random__|__Bo/scenes/random*__|__Bo/school/random*__|__Bo/scifi/random__|__Bo/styles/random-anything__|__Bo/vehicles/random*__}"
+      ],
+      "beings": [
+        "{__Bo/chars/random__|__Bo/creatures/*__}"
+      ],
+      "scenes": [
+        "{__Bo/cosmic/random__|__Bo/creative/random*__|__Bo/habitats/random__|__Bo/psycho/random__|__Bo/scenes/random*__|__Bo/school/random*__|__Bo/scifi/random__}"
+      ]
+    },
+    "chars": {
+      "char-cyberpunk": {
+        "female": {
+          "classic": "female cyberpunk hacker wearing neon jacket and augmented visor, rainy neon city night, dramatic lighting"
+        },
+        "male": {
+          "classic": "male cyberpunk mercenary in trench coat, holding katana, futuristic alley"
+        }
+      },
+      "char-magical": {
+        "female": {
+          "classic": "female sorceress casting spell, glowing runes, flowing robe, ancient tower"
+        }
+      },
+      "char-regular": {
+        "female": {
+          "modern": "casual woman in jeans and hoodie walking in park"
+        }
+      }
+    },
+    "castles": {
+      "peaceful": [
+        "serene medieval castle on hill surrounded by misty forest at dawn",
+        "majestic fairy tale castle with glowing windows, gardens full of flowers"
+      ],
+      "battle": [
+        "fortified castle under siege, arrows flying, dramatic storm clouds",
+        "dark fortress with burning towers, army at gates"
+      ]
+    },
+    "adjectives": {
+      "cons": [
+        "blampfchoddering", "blongspivelled", "bogscrubbled", "boondiversed",
+        "cinderblurted", "crunkle", "drezzle", "flarbify", "glorb", "grunkle"
+      ]
+    },
+    "nouns": [
+      "plumbus", "snarg", "fizzlequark", "doodleplunk", "gobblefunk",
+      "shmaggle", "quizzleflarp", "zorbgaffle"
+    ],
+    "planets": [
+      "Blunderbunny Beta", "Gullible Prime", "Slurmsphere Delta",
+      "You're Not Welcome Go Away", "Zofflebob"
+    ]
+  }
+}

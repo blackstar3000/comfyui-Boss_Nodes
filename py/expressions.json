@@ -1,0 +1,27 @@
+{
+  "expressions": {
+    "Neutral": "neutral expression, calm face",
+    "Smiling": "smiling, happy expression, bright smile",
+    "Blushing": "blushing, embarrassed, flushed cheeks",
+    "Ahegao": "ahegao, rolled eyes, tongue out, pleasure face, heart-shaped pupils",
+    "Angry": "angry expression, furrowed brows, glaring",
+    "Surprised": "surprised, wide eyes, open mouth",
+    "Seductive": "seductive expression, half-lidded eyes, slight smile, looking at viewer",
+    "Crying": "crying, tears, sad expression",
+    "Laughing": "laughing, open mouth, joyful",
+    "Pouting": "pouting, sulking, pursed lips",
+    "Winking": "winking, one eye closed, playful",
+    "Sleepy": "sleepy expression, half-closed eyes, tired",
+    "Confident": "confident smirk, smug expression",
+    "Shy": "shy expression, looking away, slight blush",
+    "Ecstatic": "ecstatic, eyes closed, big smile, pleasure"
+  },
+  "categories": {
+    "All": [],
+    "Positive": ["Smiling", "Laughing", "Winking", "Confident"],
+    "Seductive/NSFW": ["Seductive", "Ahegao", "Blushing", "Ecstatic"],
+    "Negative": ["Angry", "Crying", "Pouting"],
+    "Neutral": ["Neutral", "Sleepy", "Shy"],
+    "Surprised": ["Surprised"]
+  }
+}

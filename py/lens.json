@@ -1,0 +1,94 @@
+[
+  {
+    "brand": "Canon",
+    "popular_camera_models": [
+      "EOS R5",
+      "EOS R6 Mark II",
+      "EOS R3",
+      "EOS R8",
+      "EOS RP",
+      "EOS 5D Mark IV (DSLR)",
+      "EOS 90D (DSLR)"
+    ],
+    "popular_lenses": [
+      "RF 24-70mm f/2.8L IS USM",
+      "RF 70-200mm f/2.8L IS USM",
+      "RF 50mm f/1.2L USM",
+      "RF 85mm f/1.2L USM",
+      "RF 15-35mm f/2.8L IS USM",
+      "RF 100-500mm f/4.5-7.1L IS USM",
+      "EF 24-70mm f/2.8L II USM (with adapter)"
+    ]
+  },
+  {
+    "brand": "Nikon",
+    "popular_camera_models": [
+      "Z9",
+      "Z8",
+      "Z7 II",
+      "Z6 II",
+      "Zf",
+      "Z5",
+      "D850 (DSLR)"
+    ],
+    "popular_lenses": [
+      "NIKKOR Z 24-70mm f/2.8 S",
+      "NIKKOR Z 70-200mm f/2.8 VR S",
+      "NIKKOR Z 50mm f/1.8 S",
+      "NIKKOR Z 85mm f/1.8 S",
+      "NIKKOR Z 14-24mm f/2.8 S",
+      "NIKKOR Z 100-400mm f/4.5-5.6 VR S"
+    ]
+  },
+  {
+    "brand": "Sony",
+    "popular_camera_models": [
+      "Alpha 1 (A1)",
+      "Alpha 7R V (A7R V)",
+      "Alpha 7 IV (A7 IV)",
+      "Alpha 7S III (A7S III)",
+      "Alpha 6700 (APS-C)",
+      "Alpha 6600 (APS-C)"
+    ],
+    "popular_lenses": [
+      "FE 24-70mm f/2.8 GM II",
+      "FE 70-200mm f/2.8 GM OSS II",
+      "FE 50mm f/1.2 GM",
+      "FE 85mm f/1.4 GM",
+      "FE 16-35mm f/2.8 GM",
+      "FE 200-600mm f/5.6-6.3 G OSS"
+    ]
+  },
+  {
+    "brand": "Fujifilm",
+    "popular_camera_models": [
+      "X-T5",
+      "X-H2",
+      "X-H2S",
+      "X-T50",
+      "X-S20"
+    ],
+    "popular_lenses": [
+      "XF 16-55mm f/2.8 R LM WR",
+      "XF 50-140mm f/2.8 R LM OIS WR",
+      "XF 56mm f/1.2 R WR",
+      "XF 33mm f/1.4 R LM WR",
+      "XF 18mm f/1.4 R LM WR"
+    ]
+  },
+  {
+    "brand": "Panasonic (Lumix)",
+    "popular_camera_models": [
+      "Lumix S5 II",
+      "Lumix S1R",
+      "Lumix GH6 (MFT)",
+      "Lumix G9 II (MFT)"
+    ],
+    "popular_lenses": [
+      "Lumix S 24-70mm f/2.8 Pro",
+      "Lumix S 70-200mm f/2.8 Pro",
+      "Lumix S 50mm f/1.4 Pro",
+      "Leica DG Vario-Elmarit 12-60mm f/2.8-4.0 (MFT)"
+    ]
+  }
+]

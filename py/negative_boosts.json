@@ -1,0 +1,16 @@
+{
+  "default": {
+    "Illustrious XL 2.0 GoddessMix": "worst_quality, lowres, blurry, bad_anatomy, extra_fingers, malformed_hands",
+    "illustrij_v18": "lowres, bad anatomy, blurry, fuzzy, distorted, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck",
+    "iLustMix": "masterpiece, best quality, amazing quality, very aesthetic, detailed eyes, perfect eyes, realistic eyes",
+    "Realistic Vision/Juggernaut": "lowres, bad anatomy, blurry, fuzzy, distorted, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck",
+    "masterpiece": "lowres, bad anatomy, blurry, fuzzy, distorted, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck",
+    "god tier": "lowres, bad anatomy, blurry, fuzzy, distorted, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck",
+    "Nova Orange XL": "modern, recent, old, oldest, cartoon, graphic, text, painting, crayon, graphite, abstract, glitch, deformed, mutated, ugly, disfigured, long body, lowres, bad anatomy, bad hands, missing fingers, extra digits, fewer digits, cropped, very displeasing, (worst quality, bad quality:1.2), sketch, jpeg artifacts, signature, watermark, username, simple background, conjoined, bad ai-generated, low quality, worst quality, bad quality, worst quality, bad quality, worst quality, bad quality, worst quality, bad quality, worst quality, bad quality, worst quality",
+    "epic": "lowres, bad anatomy, blurry, fuzzy, distorted, extra limbs, cloned face, disfigured, gross proportions, malformed limbs, missing arms, missing legs, extra arms, extra legs, fused fingers, too many fingers, long neck",
+    "WAN": "score_6_down, score_5_down, score_4_down, worst quality, low quality, bad quality, lowres, bad anatomy, bad hands, extra digits, fewer digits, sketch, jpeg artifacts, signature, watermark, artist name, old, censored, 3d, realistic, photorealistic, nsfw",
+    "WAI-Nsfw-Illustrious-12": "bad quality, worst quality, worst detail, sketch, lowres, bad anatomy, bad hands, extra digits, fewer digits, jpeg artifacts, signature, watermark, artist name, old, censor",
+    "DARK SKIN": "censored,worst quality,bad quality,(blurry ,lowres,:1.2) key ,watermark ,signature ,artist name",
+    "Plant Milk": "bad quality, worst quality, lowres, jpeg artifacts, bad anatomy, bad hands, multiple views, signature, watermark, censored, ugly, black skin, tan skin, flesh color skin"
+  }
+}

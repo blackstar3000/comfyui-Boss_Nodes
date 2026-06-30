@@ -1,0 +1,85 @@
+{
+  "camera_angles": {
+    "Extreme Low Angle": "extreme low angle, worm's eye view, heroic dramatic pose, looking up",
+    "Low Angle": "low angle, powerful perspective, looking up, cinematic hero shot",
+    "High Angle": "high angle, bird's eye perspective, looking down, subject appears small or vulnerable",
+    "Extreme High Angle": "extreme high angle, top-down overhead, god's eye view, dramatic scale",
+    "Dutch Tilt": "dutch angle, tilted camera, dynamic tension, unsettling or energetic",
+    "Straight On": "perfectly straight-on, symmetrical front view, fashion portrait style",
+    "Eye Level": "eye level shot, natural perspective, intimate and relatable",
+    "¾ View": "three-quarter view, classic portrait angle, most flattering",
+    "Profile View": "side profile, sharp silhouette, elegant and dramatic",
+    "Back View": "from behind, over shoulder, mysterious, cinematic reveal",
+    "Over the Shoulder": "over the shoulder shot, intimate POV, narrative tension",
+    "Cowboy Shot": "cowboy shot, mid-thigh up, western film classic, perfect for action",
+    "American Shot": "american shot, knees up, classic cinema framing",
+    "Medium Shot": "medium shot, waist up, emotional connection",
+    "Close-Up": "tight close-up, intense emotion, detailed face",
+    "Extreme Close-Up": "extreme close-up, eyes and lips only, maximum intensity",
+    "Full Body": "full body shot, entire figure visible, fashion or character showcase",
+    "Wide Establishing": "wide establishing shot, epic environment, cinematic scale",
+    "Fisheye Extreme": "fisheye lens, heavy distortion, surreal exaggerated perspective",
+    "Selfie POV": "selfie style, first person POV, phone camera aesthetic"
+  },
+
+  "camera_lenses": {
+    "85mm Portrait": "shot on 85mm lens, creamy bokeh, perfect subject isolation",
+    "50mm Natural": "shot on 50mm prime, natural human eye perspective, filmic",
+    "35mm Cinematic": "shot on 35mm lens, immersive storytelling, environmental portrait",
+    "24mm Wide Drama": "shot on 24mm wide angle, dramatic perspective, slight distortion",
+    "135mm Compression": "shot on 135mm telephoto, background compression, dreamy stacked look",
+    "Macro Detail": "macro lens, extreme detail, shallow depth of field",
+    "Anamorphic": "anamorphic lens, cinematic oval bokeh, horizontal flares, hollywood",
+    "Tilt-Shift": "tilt-shift lens, miniature effect, selective focus, toy-like world"
+  },
+
+  "art_styles": {
+    "Greg Rutkowski": "greg rutkowski, epic fantasy, ultra detailed, dramatic lighting, trending on artstation",
+    "Alphonse Mucha": "alphonse mucha, art nouveau, flowing lines, elegant feminine beauty",
+    "Makoto Shinkai": "makoto shinkai, breathtaking sky, glowing particles, emotional atmosphere",
+    "Studio Ghibli": "studio ghibli, whimsical, soft colors, hand-drawn warmth, magical realism",
+    "Hayao Miyazaki": "hayao miyazaki style, lush nature, flying machines, gentle wonder",
+    "Artgerm": "artgerm, ultra smooth digital art, vibrant colors, perfect face",
+    "Sakimichan": "sakimichan, glossy fantasy illustration, beautiful lighting, seductive",
+    "WLOP": "wlop, emotional fantasy, soft rim lighting, ghostly beautiful",
+    "Loish": "loish, loose expressive brushwork, vibrant colors, joyful energy",
+    "Ross Tran": "ross tran, cinematic fantasy, rich colors, magical atmosphere",
+    "Ilya Kuvshinov": "ilya kuvshinov, clean anime aesthetic, expressive eyes, soft shading",
+    "Guweiz": "guweiz, dynamic urban fantasy, moody lighting, strong silhouettes",
+    "Kyoto Animation": "kyoto animation style, fluid movement, detailed backgrounds, emotional",
+    "Shigenori Soejima": "persona 5 style, bold colors, stylish character design",
+    "Tetsuya Nomura": "final fantasy style, dramatic poses, intricate details",
+    "Akihiko Yoshida": "akihiko yoshida, final fantasy tactics, painterly medieval fantasy",
+    "Oil Painting Master": "masterpiece oil painting, rich texture, dramatic brush strokes",
+    "Hyperrealistic": "hyperrealistic, photorealistic, 8k, ultra detailed, lifelike",
+    "CGSociety Masterpiece": "trending on cgsociety, breathtaking detail, cinematic composition",
+    "Surreal Dream": "surrealism, salvador dali inspired, dreamlike, impossible geometry",
+    "Cyberpunk 2077": "cyberpunk 2077 style, neon drenched, futuristic, blade runner aesthetic",
+    "Dark Souls": "dark souls atmosphere, desolate beauty, dramatic fog, haunting",
+    "Elden Ring": "elden ring, fromsoftware, epic scale, golden order, mystical ruins"
+  },
+
+  "quality_boosters": {
+    "Ultra Quality": "masterpiece, best quality, ultra-detailed, absurdres, intricate details",
+    "8K Perfection": "8k, extremely detailed, sharp focus, perfect anatomy, flawless",
+    "Cinematic Masterpiece": "cinematic masterpiece, award-winning, national geographic, breathtaking",
+    "Trending Boost": "trending on artstation, trending on pixiv, featured artwork",
+    "Depth & Volume": "volumetric lighting, ray tracing, global illumination, unreal engine 5",
+    "Professional Photo": "professional photography, canon eos r5, 85mm f1.2, studio lighting",
+    "Fashion Editorial": "vogue editorial, high fashion, perfect skin, dramatic pose",
+    "Negative Prompt Safe": "(worst quality, low quality:1.4), (deformed, bad anatomy:1.3), text, watermark"
+  },
+
+  "categories": {
+    "All Angles": [],
+    "All Styles": [],
+    "Most Dramatic": ["Extreme Low Angle", "Low Angle", "Dutch Tilt", "Back View"],
+    "Most Flattering": ["¾ View", "Eye Level", "High Angle"],
+    "Sexiest": ["Over the Shoulder", "Close-Up", "Extreme Close-Up"],
+    "Epic Cinematic": ["Wide Establishing", "Drone Shot", "Cowboy Shot"],
+    "Best Artists": ["Greg Rutkowski", "Alphonse Mucha", "Makoto Shinkai", "Artgerm", "WLOP", "Sakimichan"],
+    "Anime Gods": ["Ilya Kuvshinov", "Kyoto Animation", "Shigenori Soejima"],
+    "Fantasy Legends": ["Ross Tran", "Guweiz", "Akihiko Yoshida", "Elden Ring"],
+    "Instant Masterpiece": ["Ultra Quality", "8K Perfection", "Cinematic Masterpiece", "Trending Boost"]
+  }
+}

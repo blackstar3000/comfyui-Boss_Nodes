@@ -1,0 +1,117 @@
+{1$$__scene__}, {1$$__outfit__}, {1$$__pose_expression__}, {1$$__lighting__}
+
+# ── SCENE ─────────────────────────────────────
+SCENE EXTRA: 
+luxury_penthouse_bedroom,night, floor-to-ceiling_windows, city_lights, skyline
+steamy_gym_shower, hot_water, fog, wet_hair, tiled_wall
+private_jet_bedroom, dim_lighting, leather_seats, altitude
+moonlit_private_balcony, city_skyline_below, breeze
+rooftop_infinity_pool, golden_hour, sunset, champagne_glass
+tropical_beach_at_sunset, turquoise_water, palm_trees, wet_sand
+abandoned_mansion, broken_chandelier, dust_particles, dramatic_sunbeams
+strip_club_private_room, red_velvet_couch, pole, neon_glow
+luxury_yacht_master_cabin, ocean_view, silk_sheets
+rainy_neon_city_alley, wet_pavement, neon_reflections, steam_rising
+high-rise_hotel_suite_bathtub, marble, city_view, candles
+sunlit_malibu_beach_house, open_glass_doors, ocean_breeze
+dark_moroccan_riad, lanterns, mosaic_tiles, cushions
+snowy_swiss_chalet_fireplace, fur_rug, warm_glow
+tokyo_penthouse_at_night, rain, neon_signs_reflecting_on_glass
+private_sauna, wooden_benches, steam, low_light
+desert_oasis_at_dusk, palm_trees, infinity_pool, stars_emerging
+glass_walled_shower_overlooking_ocean, sunrise
+vip_club_booth, bottle_service, colored_lights, leather_seats
+abandoned_cathedral, stained_glass, sun_rays, echo
+luxury_limousine_backseat, privacy_partition, city_night_lights
+underwater_hotel_suite, glass_walls, tropical_fish
+helipad_at_night, city_lights_below, wind
+jungle_villa_open_air_bed, mosquito_net, torch_light
+miami_rooftop_jacuzzi, night, skyline, champagne
+frozen_lake_cabin, aurora_borealis_visible_through_window
+dubai_burj_al_arab_suite, gold_accents, arabian_night
+private_cinema_room, red_seats, projector_glow
+rooftop_helicopter_landing_pad, sunset, wind_in_hair
+beach_villa_overwater_bungalow, turquoise_lagoon, sunrise
+cyberpunk_hotel_room, neon_pink_and_blue_lighting, rain_on_window
+mountain_lodge_hot_tub, snow_falling, steam_rising
+monaco_casino_balcony, night, monte_carlo_lights
+private_island_gazebo, ocean_breeze, sunset
+luxury_train_compartment, passing_landscape, golden_lighting
+art_deco_mansion_library, leather_chair, fireplace
+venice_balcony_over_canal, night, gondola_lights
+iceland_aurora_glass_igloo, northern_lights
+bora_bora_overwater_villa, glass_floor, turquoise_water
+private_spa_massage_table, candles, oil, low_light
+rooftop_bar_at_blue_hour, city_glow, cocktail_glass
+abandoned_theater_stage, velvet_curtains, spotlight
+private_submarine_bedroom, underwater_view, blue_glow
+marble_greek_villa_pool, sunset, columns
+london_penthouse_thames_view, big_ben_visible, night
+safari_tent_at_dusk, savanna, lantern_light
+glass_elevator_overlooking_city, night, rising
+maldives_swing_over_water, sunset, silhouette
+private_karaoke_room, colorful_lights, microphone
+urban_vibe, graffiti_wall_background, colorful_graffiti
+
+# ── OUTFIT ────────────────────────────────────
+OUTFITS EXTRS:
+completely_nude, uncensored
+red_lace_lingerie, high_heels, garter_belt
+black_lace_lingerie, crotchless_panties, thighhighs
+gold_micro_bikini, body_chain
+wet_see-through_white_shirt, no_bra, hard_nipples
+silk_robe_slipping_off, half-dressed
+fishnet_bodysuit, crotchless, nipple_cutouts
+diamond_body_chain_only, high_heels
+tiny_g-string, pasties, platform_heels
+oiled_skin, glossy_body, completely_nude
+sheer_black_bodysuit, no_panties
+backless_red_evening_gown, side_slit, no_panties
+white_fur_coat_only, open_front, nude_underneath
+leather_harness_lingerie, metal_rings
+rose_petal_covered_nude, strategic_covering
+wet_sheer_black_dress, clinging_to_skin
+golden_bikini, egyptian_jewelry
+latex_catsuit, shiny, back_zip_open
+transparent_raincoat, nude_underneath
+cowboy_hat_and_boots_only, nude
+velvet_choker, body_oil, completely_nude
+emerald_green_silk_dress, deep_plunge, thigh_slit
+black_sheer_stockings, garter_belt, no_panties
+nude_except_long_silk_gloves_and_pearl_necklace
+white_lace_bridal_lingerie, veil, garter
+red_bottom_heels_only, ankle_strap
+black_leather_mini_dress, zipper_front_half_down
+body_paint_gold_metallic, nude
+micro_skirt, crop_top, no_bra, underboob
+wet_white_bikini, see-through_when_wet
+rose_gold_body_chain, nipple_piercing_jewelry
+open_cup_bra, crotchless_panties, thighhighs
+fur_trimmed_lingerie, white_fox_fur
+black_satin_corset, overbust, stockings
+nothing_but_sunglasses_and_high_heels
+champagne_bubbles_covering_nude_body
+sheer_kimono, open_front, nude_underneath
+metallic_silver_bikini, reflective
+red_velvet_lingerie_set, choker_included
+nude_with_only_wedding_veil_and_heels
+black_lace_mask, gloves, thighhigh_boots
+golden_egyptian_collar_and_cuffs, nude
+wet_t-shirt_contest_style, soaked, braless
+transparent_plastic_dress, nude_underneath
+white_silk_sheet_wrapped_loosely, about_to_fall
+
+# ── POSE & EXPRESSION ───────────────────────────
+POSE EXTRA:
+seductive_bedroom_eyes, biting_lip
+playful_smile, hands_on_hips
+arching_back, looking_over_shoulder
+legs_spread, hand_between_legs, touching_herself
+sensual_dancing, hip_sway
+confident_pose, arms_up, hands_behind_head
+shy_but_aroused, covering_breasts, embarrassed_face
+laughing, teasing, tongue_out
+intense_eye_contact, direct_stare
+
+# ── LIGHTING & MOOD ───────────────────────────
+#

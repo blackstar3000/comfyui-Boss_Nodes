@@ -1,0 +1,176 @@
+sao:
+  - asuna \(sao\)
+  - kirigaya suguha
+  - sinon
+  - lisbeth \(sao\)
+  - yuuki \(sao\)
+  - asada shino
+  - leafa
+  - alice zuberg
+  - sachi \(sao\)
+  - philia \(sao\)
+  - ronye arabel
+  - tiese schtrinen
+  - mito \(sao\)
+  - strea \(sao\)
+  - quinella
+
+disney:
+  - elsa \(frozen\)
+  - anna \(frozen\)
+  - rapunzel \(disney\)
+  - belle \(disney\)
+  # Added "dark skin" for Jasmine because otherwise there's like a 25% chance it just whitewashes her
+  - jasmine \(disney\), dark skin
+  - ariel \(disney\)
+  - fa mulan \(disney\)
+  # Has a tendency to affect environment as well. It sees "snow" and puts her in a snowy setting
+  - snow white
+  - alice \(alice in wonderland\)
+  - moana waialiki
+
+games:
+  - shadowheart \(baldur's gate\), {black|white} hair
+  - mercy \(overwatch\)
+  - d.va \(overwatch\)
+  - tracer \(overwatch\)
+  - mei \(overwatch\)
+  - widowmaker \(overwatch\)
+  - pharah \(overwatch\)
+  - lara croft
+  - amy rose
+
+league_of_legends:
+  - ahri \(league of legends\)
+  - akali
+  - ashe \(league of legends\)
+  - briar \(league of legends\)
+  - caitlyn \(league of legends\)
+  - evelynn \(league of legends\)
+  - gwen \(league of legends\)
+  - irelia
+  - janna \(league of legends\)
+  - jinx \(league of legends\)
+  - katarina \(league of legends\)
+  - lulu \(league of legends\)
+  - lux \(league of legends\)
+  - miss fortune \(league of legends\)
+  - morgana \(league of legends\)
+  - neeko \(league of legends\)
+  - nidalee
+  - riven \(league of legends\)
+  - sona \(league of legends\)
+  - soraka \(league of legends\)
+  - syndra
+  - vi \(league of legends\)
+  - xayah
+  - zyra
+
+nintendo:
+  - princess peach
+  - princess daisy
+  - rosalina
+  - pauline \(mario\)
+  # To get different appearances for Zelda you can specify which game, like adding "the legend of zelda: tears of the kingdom", or by specifying features like "short hair"
+  - princess zelda
+  - wii fit trainer
+  - midna
+  - midna \(true\)
+  - purah
+
+avatar:
+  - korra
+  - katara
+  - toph bei fong
+  # Ty Lee is very hard to get reliably and it's very much dependent on the checkpoint being used. But these additional tags help to nudge most checkpoints in the right direction
+  - ty lee, brown hair, very long hair, single braid, braided ponytail
+  - azula
+
+arknights:
+  - bagpipe \(arknights\)
+  - shu \(arknights\)
+  - amiya \(arknights\)
+  - texas \(arknights\)
+  - skadi \(arknights\)
+  - lappland \(arknights\)
+  - ch'en \(arknights\)
+  - exusiai \(arknights\)
+  - surtr \(arknights\)
+
+azur_lane:
+  - taihou \(azur lane\)
+  - bremerton \(azur lane\)
+  - atago \(azur lane\)
+  - prinz eugen \(azur lane\)
+  - formidable \(azur lane\)
+  - belfast \(azur lane\)
+  - sirius \(azur lane\)
+
+shingeki_no_kyojin:
+  - mikasa ackerman
+  # Added both tags in here. They will each work by themselves, but I just personally prefer having both versions together
+  - christa renz, krista lenz
+  - annie leonhart
+  - hange zoe
+  # Sasha sometimes isn't understood. But about 80% of the time it's fine
+  - sasha braus, brown hair
+  - petra ral
+  - pieck finger
+
+sousou_no_frieren:
+  - frieren
+  - fern \(sousou no frieren\)
+  - aura \(sousou no frieren\)
+  - ubel \(sousou no frieren\)
+
+re:zero:
+  - rem \(re:zero\)
+  - emilia \(re:zero\)
+  - echidna \(re:zero\)
+
+# These Tokyo Ghoul tags are really poorly understood by a lot of checkpoints, so personally I wouldn't recommend relying on them
+tokyo_ghoul:
+  - kirishima touka
+  - kamishiro rize
+
+naruto:
+  - hyuuga hinata
+  - yamanaka ino
+  - haruno sakura
+  # Both of these work well individually. Added both just to give it some extra strength
+  - sarada uchiha, uchiha sarada
+  - tsunade \(naruto\)
+
+pokemon:
+  - akari \(pokemon\)
+  - bea \(pokemon\)
+  - bianca \(pokemon\)
+  - cynthia \(pokemon\)
+  - dawn \(pokemon\)
+  - gloria \(pokemon\)
+  - hex maniac \(pokemon\)
+  - hilda \(pokemon\)
+  - jessie \(pokemon\)
+  - lillie \(pokemon\)
+  - marnie \(pokemon\)
+  - may \(pokemon\)
+  - misty \(pokemon\)
+  - nessa \(pokemon\)
+  - rosa \(pokemon\)
+  - skyla \(pokemon\)
+
+xenoblade:
+  - pyra \(xenoblade\)
+  - mythra \(xenoblade\)
+  - nia \(xenoblade\)
+  - mio \(xenoblade\)
+  - pneuma \(xenoblade\)
+
+misc:
+  - hatsune miku
+  - rebecca \(cyberpunk\)
+  - lucy \(cyberpunk\)
+  - chel \(the road to el dorado\)
+  - harley quinn
+  - daphne blake
+  - velma dinkley

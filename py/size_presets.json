@@ -1,0 +1,29 @@
+{
+  "WAI-illustrious-SDXL v16": {
+    "width": 1024,
+    "height": 1360,
+    "batch_size": 1
+  },
+
+  "Juggernaut XL": {
+    "width": 2048,
+    "height": 1024,
+    "batch_size": 1
+  },
+
+  "Juggernaut XL small": {
+    "width": 832,
+    "height": 1216,
+    "batch_size": 1
+  },
+  "Plant Milk": {
+    "width": 896,
+    "height": 1260,
+    "batch_size": 1
+  },
+  "Current King": {
+    "width": 832,
+    "height": 1216,
+    "batch_size": 1
+  }
+}

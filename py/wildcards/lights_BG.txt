@@ -1,0 +1,74 @@
+backlighting
+ceiling light
+light rays (sunbeam)
+spotlight
+wall light
+Backlighting
+Dim Lighting
+Soft Lighting
+Warm Lighting
+Cool Lighting
+Ambient Lighting
+Natural Lighting
+Artificial Lighting
+Directional Lighting
+Diffuse Lighting
+Accent Lighting
+Task Lighting
+Mood Lighting
+Cinematic Lighting
+Studio Lighting
+Cove Lighting
+Soft Lighting	
+Hard Lighting
+Accent Lighting
+Volumetric
+Volumetric Lighting	
+Contre-Jour
+Rembrandt Lighting	
+Split Lighting
+Beautiful Lighting
+Low-Key Lighting	
+High-Key Lighting
+Downlighting
+Uplighting
+Under-Illumination
+Over-Illumination
+Sunbeams
+Glow
+Illumination
+Radiance
+Luminous
+Brightness
+Gleam
+Shine
+Twinkle
+Glitter
+Sparkle
+Epic Light
+Dramatic Light
+Mystical Light
+Enchanted Light
+Magical Light
+Fairy Light
+Ethereal Light
+Divine Light
+Heavenly Light
+Celestial Light
+Transcendent Light
+Otherworldly Light
+Radiant Light
+Lustrous Light
+Resplendent Light
+Brilliant Light
+Dazzling Light
+Blazing Light
+Fiery Light
+Glowing Light
+Incandescent Light
+Luminous Light
+Phosphorescent Light
+Global Illumination
+Lumen Global Illumination
+Screen Space Global Illumination
+Ray Tracing Global Illumination

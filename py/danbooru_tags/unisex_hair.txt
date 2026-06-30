@@ -1,0 +1,1 @@
+long_hair|medium_hair|short_hair|ponytail|high_ponytail|low_ponytail|side_ponytail|twin_tails|messy_hair|wavy_hair|curly_hair|straight_hair|asymmetrical_hair|side_swept_bangs|hair_over_one_eye

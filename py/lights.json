@@ -1,0 +1,79 @@
+{
+  "Basic & Beautiful": {
+    "Golden Hour": "golden hour, warm glow, soft shadows, rich amber light, magical atmosphere",
+    "Blue Hour": "blue hour, twilight, deep blue sky, cool soft lighting, city lights glowing",
+    "Soft Window Light": "soft natural window light, gentle side lighting, dreamy atmosphere",
+    "Candlelight Intimate": "warm flickering candlelight, cozy shadows, romantic mood",
+    "Dappled Sunlight": "dappled sunlight through trees, mottled light patterns, forest glow",
+    "Sunrise Glow": "soft sunrise, pink and peach tones, gentle warm light, fresh morning vibe"
+  },
+
+  "Dramatic & Cinematic": {
+    "Rim Lighting": "strong rim lighting, glowing edge light, perfect subject separation, dramatic silhouette",
+    "Backlight Silhouette": "powerful backlight silhouette, glowing outline, dark subject, high contrast",
+    "Low Key": "low key lighting, deep shadows, minimal fill, moody mysterious atmosphere",
+    "Chiaroscuro": "chiaroscuro, extreme light/dark contrast, rembrandt lighting, dramatic volume",
+    "Side Lighting": "harsh side lighting, half face in shadow, sculptural, high drama",
+    "Volumetric God Rays": "volumetric god rays, crepuscular rays, light shafts through dust or fog, ethereal"
+  },
+
+  "High-End Rendering": {
+    "Global Illumination": "global illumination, realistic bounced light, natural ambient fill",
+    "Ray Traced GI + Reflections": "ray traced global illumination, perfect reflections, photorealistic lighting",
+    "Subsurface Scattering": "subsurface scattering, translucent skin, realistic ears and nose glow",
+    "Lumen RT": "lumen real-time global illumination, nanite, unreal engine 5 quality",
+    "Path Traced": "full path tracing, reference quality lighting, maximum realism"
+  },
+
+  "Atmospheric Masters": {
+    "Volumetric Fog + God Rays": "thick volumetric fog, dramatic god rays cutting through, cinematic masterpiece",
+    "Dust Motes in Sunbeams": "visible dust particles floating in strong sunbeams, atmospheric depth",
+    "Lens Flare Anamorphic": "beautiful anamorphic lens flare, horizontal streaks, hollywood blockbuster look",
+    "Bokeh Lights": "creamy bokeh background lights, sparkling out-of-focus highlights, dreamy depth of field",
+    "Underwater Caustics": "shimmering underwater caustics, rippling light patterns, blue filtered glow"
+  },
+
+  "Neon & Cyberpunk": {
+    "Cyberpunk Neon": "vibrant cyberpunk neon, wet street reflections, colorful signs, blade runner aesthetic",
+    "Neon Glow": "intense neon glow, purple and pink lighting, reflective surfaces, night city vibe",
+    "LED Strip Lighting": "modern RGB LED strips, colored edge glow, futuristic interior"
+  },
+
+  "Magical & Fantasy": {
+    "Bioluminescence": "glowing bioluminescence, blue-green natural light, magical creatures",
+    "Ethereal Light": "ethereal glowing light, otherworldly atmosphere, soft radiance",
+    "Divine Rays": "divine heavenly light beams, celestial glow, angelic atmosphere",
+    "Floating Orbs": "mystical floating light orbs, soft magical glow, fantasy energy",
+    "Crystal Inner Glow": "crystals emitting soft inner light, refractive sparkles, magical"
+  },
+
+  "Professional Studio": {
+    "Beauty Dish": "beauty dish lighting, soft yet crisp, perfect skin texture, fashion portrait",
+    "Rembrandt Lighting": "classic rembrandt lighting, triangle of light on cheek, dramatic portrait",
+    "Butterfly Lighting": "butterfly lighting, glamour style, shadow under nose, high fashion",
+    "Three Point Lighting": "professional three-point lighting, key fill and rim, perfect balance"
+  },
+
+  "Mood & Color Washes": {
+    "Amber Warm": "rich amber lighting, cozy nostalgic glow, vintage film look",
+    "Cyan Cool": "cool cyan lighting, futuristic tech atmosphere, blade runner 2049 vibe",
+    "Purple Haze": "dramatic purple lighting wash, concert mood, mysterious",
+    "Red Dramatic": "intense red lighting, danger, passion, cinematic tension",
+    "Green Eerie": "eerie green glow, toxic horror atmosphere, sci-fi lab"
+  },
+
+  "Natural & Outdoor": {
+    "Overcast Soft": "soft overcast daylight, even diffused lighting, no harsh shadows, clean",
+    "Harsh Midday Sun": "harsh overhead sunlight, deep shadows, high contrast, dramatic",
+    "Moonlight Silver": "cool silver moonlight, nocturnal mystery, soft gentle glow",
+    "Firelight Warm": "warm firelight, flickering orange glow, cozy intimate shadows"
+  },
+
+  "Camera & Lens (Real Ones That Work)": {
+    "85mm Portrait": "shot on 85mm lens, shallow depth of field, beautiful bokeh, cinematic",
+    "50mm Natural": "shot on 50mm prime lens, natural perspective, filmic look",
+    "35mm Storytelling": "shot on 35mm lens, environmental portrait, immersive wide feel",
+    "Arri Alexa Look": "Arri Alexa 65, cinematic color science, filmic tones, hollywood quality",
+    "8K Film Scan": "shot on 70mm IMAX, scanned at 8K, ultra detailed, reference quality"
+  }
+}

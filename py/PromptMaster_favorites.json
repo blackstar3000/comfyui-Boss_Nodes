@@ -1,0 +1,32 @@
+[
+  {
+    "name": "My Favorite Combo",
+    "light_choice": "Glow & Sparkle → Glitter (random)",
+    "theme_choice": "Anime & Manga → Anime",
+    "style_choice": "Classic & Modern Anime Artists → Akairiot",
+    "light_strength": 1.0,
+    "theme_strength": 1.0,
+    "style_strength": 1.0,
+    "saved_at": 1766028733.4609861
+  },
+  {
+    "name": "Comics & Superheroes",
+    "light_choice": "High-End Rendering → Path Traced",
+    "theme_choice": "Emotional & Conceptual → Nostalgic Childhood",
+    "style_choice": "Comics & Superheroes → Butcher Billy",
+    "light_strength": 1.3,
+    "theme_strength": 0.9,
+    "style_strength": 1.1,
+    "saved_at": 1767152015.8397381
+  },
+  {
+    "name": "Horror Chris Cold",
+    "light_choice": "__RANDOM_LIGHT__",
+    "theme_choice": "Anime Style Themes → Horror Anime",
+    "style_choice": "Surreal/Dark/Horror (15) → Chris Cold",
+    "light_strength": 1.3,
+    "theme_strength": 0.9,
+    "style_strength": 1.1,
+    "saved_at": "2026-06-29T02:52:41.080982"
+  }
+]

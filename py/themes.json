@@ -1,0 +1,161 @@
+{
+  "Atmosphere & Mood": {
+    "Dark Aesthetic": "dark moody aesthetic, deep shadows, gothic tones, mysterious atmosphere, dramatic contrast",
+    "Gothic Style": "gothic atmosphere, ancient ornate architecture, foggy nights, dramatic stone details, eerie mood",
+    "Dark Atmosphere": "dark brooding atmosphere, heavy shadows, somber colors, tense mood",
+    "Light Atmosphere": "bright luminous atmosphere, soft glowing light, cheerful uplifting mood",
+    "Reflective Atmosphere": "reflective contemplative mood, mirror-like surfaces, introspective calm",
+    "Hazy Atmosphere": "hazy dreamy atmosphere, soft diffused focus, muted colors, ethereal quality",
+    "Misty Atmosphere": "misty foggy atmosphere, soft mysterious light, obscured details, tranquil mood",
+    "Enchanting Atmosphere": "enchanting magical atmosphere, glowing particles, whimsical elements, fairy-tale wonder",
+    "Serene Atmosphere": "serene peaceful atmosphere, calm natural light, tranquil setting, soothing mood",
+    "Dreamlike Surreal": "surreal dreamlike scene, floating impossible elements, bizarre physics, ethereal bizarre mood",
+    "Noir Mystery": "film noir mystery scene, rain-slicked streets, dramatic shadows, cigarette smoke, tense atmosphere",
+    "Utopian Paradise": "utopian paradise, perfect harmonious society, lush gardens, advanced clean beauty, golden peaceful light",
+    "Horror Gothic": "gothic horror atmosphere, abandoned haunted mansion, lightning storms, creeping dread, victorian decay",
+    "Dreamy Atmosphere": "dreamy atmosphere, soft focus",
+    "Ethereal Atmosphere": "ethereal atmosphere, glowing mist",
+    "Mysterious Atmosphere": "mysterious atmosphere, shadows and fog",
+    "Moody Atmosphere": "moody atmosphere, dramatic lighting",
+    "Calm Atmosphere": "calm atmosphere, peaceful serenity",
+    "Tranquil Atmosphere": "tranquil atmosphere, zen garden",
+    "Romantic Atmosphere": "romantic atmosphere, warm candlelight",
+    "Gothic Atmosphere": "gothic atmosphere, victorian horror"
+  },
+
+  "Lighting & Cinematic": {
+    "Golden Hour": "golden hour lighting, warm sunset glow, long shadows, magical warm light, cinematic",
+    "Blue Hour": "blue hour twilight, deep blues, moody ethereal atmosphere, soft cool light",
+    "Cinematic Lighting": "cinematic lighting, dramatic contrast, volumetric god rays, film still",
+    "Low Key Lighting": "low key lighting, deep shadows, high contrast, moody dramatic",
+    "High Key Lighting": "high key lighting, bright even light, clean minimal shadows, uplifting",
+    "Volumetric God Rays": "volumetric god rays, crepuscular rays, dramatic shafts of light, mystic atmosphere",
+    "Rim Lighting": "rim lighting, backlit silhouette, glowing edge light, dramatic outline",
+    "Neon Glow": "neon glow lighting, vibrant neon colors, cyberpunk reflections, night scene",
+    "Soft Diffused": "soft diffused lighting, gentle glow, dreamy haze, overcast natural light",
+    "Harsh Dramatic": "harsh dramatic lighting, strong side light, deep shadows, intense mood"
+  },
+
+  "Retro Aesthetics": {
+    "Vaporwave": "vaporwave aesthetic, pastel colors, greek statues, grid sunset, retro 90s computer, glitch art",
+    "Synthwave": "synthwave outrun aesthetic, neon grid, palm trees, sunset, retro car, 80s vibes",
+    "Retrowave": "retrowave 80s aesthetic, chrome text, vhs glitches, miami sunset, neon signs",
+    "Mallsoft": "empty shopping mall, soft muzak atmosphere, fluorescent lights, 90s nostalgia",
+    "Cyberpunk Neon": "cyberpunk neon nights, rainy streets, holographic ads, blade runner atmosphere",
+    "Darksynth": "darksynth horror aesthetic, dark neon, occult symbols, 80s horror vibe",
+    "Fashwave": "fashwave aesthetic, roman statues, neon fascism symbols, vaporwave twist"
+  },
+
+  "Fantasy Themes": {
+    "Cyberpunk": "cyberpunk cityscape, neon lights, rainy streets, high tech low life, dystopian future, blade runner vibes, vibrant neon signs, futuristic",
+    "Steampunk": "steampunk machinery, victorian era technology, brass gears and cogs, steam-powered engines, intricate mechanical details, vintage industrial",
+    "High Fantasy": "epic fantasy landscape, medieval castles, dragons soaring, magical forests, ancient ruins, heroic atmosphere, tolkien inspired",
+    "Dark Fantasy": "dark fantasy realm, gothic architecture, ominous fog, undead creatures, eerie moonlight, brooding atmosphere, grim and mysterious",
+    "Fairy Tale": "enchanting fairy tale scene, whimsical forest, magical creatures, storybook illustration, soft glowing lights, dreamy and nostalgic",
+    "Solarpunk": "solarpunk utopia, green sustainable cities, lush vegetation on buildings, bright hopeful future, eco harmony",
+    "Grimdark": "grimdark warhammer fantasy, brutal violence, decaying empire, hopeless atmosphere, dark medieval"
+  },
+
+  "Anime Style Themes": {
+    "Classic 90s Anime": "classic 90s anime style, detailed backgrounds, cel shading, vibrant colors, expressive eyes, evangelion influence",
+    "Modern Anime": "modern anime style, clean lines, sharp details, dynamic shading, high production quality, studio trigger vibe",
+    "Cute Chibi": "chibi anime style, big head small body, exaggerated expressions, super deformed, kawaii and adorable",
+    "Shonen Action": "shonen anime style, dynamic action pose, speed lines, dramatic foreshortening, intense energy, dragon ball influence",
+    "Shojo Romance": "shojo anime style, sparkles and flowers, soft pastel colors, bishounen, romantic atmosphere, sailor moon vibes",
+    "Isekai Fantasy": "isekai anime style, fantasy world transfer, medieval clothing with modern twist, glowing magic effects",
+    "Mecha Anime": "mecha anime style, giant robots, detailed mechanical parts, dramatic cockpit view, gundam influence",
+    "Slice of Life": "slice of life anime, cozy everyday scene, soft warm lighting, relaxed expressions, k-on atmosphere",
+    "Dark Anime": "dark psychological anime, muted colors, heavy shadows, unsettling mood, serial experiments lain influence",
+    "Moe Kawaii": "extreme moe kawaii style, big sparkling eyes, blush stickers, pastel overload, super cute and wholesome",
+    "Cyber Anime": "cyber anime style, holographic interfaces, neon hair, futuristic clothing, ghost in the shell vibes",
+    "Ghibli Inspired": "studio ghibli style, lush hand-drawn backgrounds, soft natural lighting, whimsical fantasy elements",
+    "Sakuga Animation": "high quality sakuga animation, fluid motion blur, detailed impact frames, intense action scene",
+    "Retro Anime 80s": "1980s anime aesthetic, thick outlines, limited color palette, vhs grain, akira influence",
+    "Visual Novel Style": "visual novel anime style, beautiful character portrait, soft bokeh background, emotional expression",
+    "Makoto Shinkai": "makoto shinkai style, breathtaking sky, detailed clouds, dramatic lighting, your name atmosphere",
+    "Kyoto Animation": "kyoto animation style, beautiful fluid animation, soft colors, emotional character focus",
+    "Ufotable Quality": "ufotable anime style, stunning particle effects, dynamic camera angles, fate series influence",
+    "CLAMP Style": "clamp anime style, elegant long limbs, flowing hair, intricate clothing details, cardcaptor sakura vibe",
+    "Sports Anime": "sports anime style, intense athletic pose, sweat droplets, dramatic tension, haikyuu influence",
+    "Horror Anime": "anime horror style, distorted faces, dark shadows, psychological terror, junji ito influence",
+    "Idol Anime": "idol anime style, sparkling stage lights, colorful costumes, energetic performance, love live vibes",
+    "Post-Apocalyptic Anime": "post-apocalyptic anime world, ruined cities, survival gear, dramatic sky, attack on titan atmosphere",
+    "Magical Girl": "magical girl transformation, sparkling effects, frilly dress, colorful magic, precure style",
+    "Samurai Anime": "samurai anime style, traditional japanese clothing, dramatic sword draw, cherry blossoms falling"
+  },
+
+  "Sci-Fi Themes": {
+    "Space Opera": "grand space opera, massive starships, alien planets, cosmic battles, epic scale, dramatic nebula background, science fiction adventure",
+    "Retro Futurism": "retro futuristic design, 1950s vision of future, atomic age aesthetics, ray guns, flying cars, optimistic sci-fi",
+    "Post Apocalyptic": "post-apocalyptic wasteland, ruined cities, overgrown nature reclaiming buildings, survival gear, desolate atmosphere",
+    "Alien World": "exotic alien planet, bizarre flora and fauna, multiple moons, strange atmospheric colors, otherworldly landscape",
+    "Biopunk": "biopunk dystopia, genetic modification, organic technology, fleshy cybernetics, grotesque biology",
+    "Dieselpunk": "dieselpunk 1940s future, art deco machines, ww2 tech extended, gritty industrial"
+  },
+
+  "Horror Themes": {
+    "Cosmic Horror": "cosmic horror lovecraftian, eldritch abomination, impossible geometry, insignificance terror",
+    "Psychological Horror": "psychological horror, unsettling subtle dread, distorted reality, mental breakdown atmosphere",
+    "Slasher": "80s slasher horror, masked killer, foggy woods, chase tension, bloody violence",
+    "Zombie Apocalypse": "zombie apocalypse street, barricaded buildings, foggy night, survival tension, post-apocalyptic decay",
+    "Haunted Forest": "haunted deep forest at night, twisted trees, ghostly mist, full moon glow, chilling whispers",
+    "Serial Killer Lair": "dark serial killer basement, dim red light, disturbing tools, tense psychological horror mood",
+    "Body Horror": "body horror cronnenberg, grotesque mutations, fleshy distortion, visceral nightmare"
+  },
+
+  "Historical & Cultural": {
+    "Ancient Egypt": "ancient egyptian theme, pyramids at sunset, hieroglyphs, pharaoh treasures, golden sands, mystical nile river",
+    "Medieval Europe": "medieval european village, stone castles, knights in armor, bustling marketplace, thatched roofs, historical",
+    "Victorian London": "victorian london fog, gas lamps, cobblestone streets, mysterious jack the ripper vibe",
+    "Wild West": "wild west frontier town, dusty saloon, cowboys, desert sunset, frontier justice"
+  },
+
+  "Adventure & Exploration": {
+    "Pirate Cove": "hidden pirate cove at sunset, wooden ship anchored, treasure chest on beach, tropical island paradise",
+    "Lost Temple": "ancient lost jungle temple, overgrown vines, golden artifacts, shafts of sunlight, indiana jones adventure",
+    "Mountain Expedition": "epic mountain climbing expedition, snow-capped peaks, dramatic clouds, sense of achievement and danger",
+    "Deep Space Exploration": "deep space exploration vessel interior, stars through window, futuristic controls, vast cosmos beyond"
+  },
+
+  "Food & Lifestyle": {
+    "Cozy Coffee Shop": "warm cozy coffee shop interior, steaming latte art, wooden tables, soft jazz playing, rainy window view",
+    "Luxury Yacht Party": "luxury yacht party at night, champagne glasses, city skyline backdrop, elegant guests, celebratory mood",
+    "Street Food Market": "bustling asian night street food market, colorful stalls, steaming dishes, lively crowd energy",
+    "Farmers Market Morning": "fresh farmers market morning, colorful produce stands, friendly vendors, sunny wholesome atmosphere"
+  },
+
+  "Emotional & Conceptual": {
+    "Nostalgic Childhood": "nostalgic childhood memory, old playground at golden hour, vintage toys, warm sentimental feeling",
+    "Lonely Solitude": "peaceful lonely solitude, empty vast landscape, single figure in distance, introspective calm",
+    "Joyful Celebration": "joyful celebration scene, confetti falling, smiling faces, bright festive lights, pure happiness",
+    "Melancholic Reflection": "melancholic reflective mood, rainy window view, soft piano notes, thoughtful quiet moment",
+    "Euphoric Bliss": "euphoric blissful moment, radiant joy, vibrant colors, transcendent happiness",
+    "Angry Fury": "intense angry fury, red tones, explosive energy, dramatic tension"
+  },
+
+  "Alternative Worlds": {
+    "Underwater City": "futuristic underwater city, massive glass domes, schools of fish, bioluminescent lights, atlantis inspired",
+    "Sky Kingdom": "majestic kingdom in the clouds, floating palaces, winged creatures, golden heavenly light",
+    "Mirror Dimension": "surreal mirror dimension, infinite reflections, distorted reality, dreamlike symmetry",
+    "Time Travel Portal": "mysterious time travel portal glowing, swirling energy, clocks floating, multiple era glimpses"
+  },
+
+  "Cultural & Festival": {
+    "Carnival in Rio": "vibrant rio carnival night, colorful costumes, samba dancers, festive energy, bright feathers and lights",
+    "Japanese Hanami": "traditional japanese hanami picnic, cherry blossoms in full bloom, friends gathered, serene celebration",
+    "Diwali Festival": "beautiful diwali festival of lights, glowing oil lamps, colorful rangoli patterns, warm family celebration",
+    "Christmas Market": "charming european christmas market, wooden stalls with gifts, snow falling, warm gluhwein aroma"
+  },
+
+  "Nature & Weather": {
+    "Stormy Drama": "dramatic storm scene, dark thunderclouds, lightning strikes, heavy rain, intense atmosphere",
+    "Aurora Borealis": "northern lights aurora borealis, vibrant green purple sky, snowy landscape, magical night",
+    "Sunrise Serenity": "peaceful sunrise over mountains, golden light, soft mist, hopeful new day",
+    "Autumn Forest": "autumn forest path, colorful falling leaves, warm earthy tones, peaceful walk"
+  },
+
+  "Danbroou": {
+    "Danbroou's Theme": "danbroou's theme, mysterious atmosphere, dark fantasy elements, cinematic lighting",
+    "Danbroou's Style": "original, rei \\(lappy mofumofu\\), abandoned, absurdly detailed composition, apartment, bird, blue sky, boom barrier, building, car, city, cloud, complex exterior, day, english text, falling leaves, leaf, motor vehicle, no humans, outdoors, power lines, railroad crossing, road, road sign, ruins, scenery, sign, sky, sunlight, traffic mirror, utility pole, vanishing point, water"
+  }
+}
