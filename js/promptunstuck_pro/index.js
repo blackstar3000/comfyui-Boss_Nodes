@@ -24,7 +24,12 @@ const HIDDEN_INPUT_NAME = "PunstuckState";
 const NONE_MODE = "None";
 const CHAOS_MODE = "Chaos";
 const EXPLICIT_CATEGORIES = new Set([
-  "fsolo", "ff", "mf", "ffm", "mfm", "bdsmx",
+  "fsolo",
+  "ff",
+  "mf",
+  "ffm",
+  "mfm",
+  "bdsmx",
 ]);
 
 const INTENSITY_MIN = 0.0;
@@ -32,19 +37,19 @@ const INTENSITY_MAX = 2.0;
 const INTENSITY_DEFAULT = 1.0;
 const INTENSITY_STEP = 0.05;
 
-const SEED_MAX = 0xFFFFFFFFFFFFFFFF;
+const SEED_MAX = 0xffffffffffffffff;
 
 // Fragment flag registry. Mirrors DEFAULT_FLAGS in py/promptunstuck_pro.py.
 const FRAGMENTS = [
-  { key: "useEyes",           label: "Eyes" },
-  { key: "useBreast",         label: "Breast" },
-  { key: "useBody",           label: "Body" },
-  { key: "useHair",           label: "Hair" },
-  { key: "useClothing",       label: "Clothing" },
-  { key: "useLocation",       label: "Location" },
-  { key: "usePose",           label: "Pose" },
-  { key: "useView",           label: "View" },
-  { key: "useWeather",        label: "Weather" },
+  { key: "useEyes", label: "Eyes" },
+  { key: "useBreast", label: "Breast" },
+  { key: "useBody", label: "Body" },
+  { key: "useHair", label: "Hair" },
+  { key: "useClothing", label: "Clothing" },
+  { key: "useLocation", label: "Location" },
+  { key: "usePose", label: "Pose" },
+  { key: "useView", label: "View" },
+  { key: "useWeather", label: "Weather" },
   { key: "useExplicitSubjects", label: "Explicit Subject" },
 ];
 
@@ -338,6 +343,7 @@ function injectCSS() {
       color: #fff;
       max-width: 760px;
       width: 100%;
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
     }
     .boss-pun-card-title {
       font-size: 1.4em;
@@ -463,7 +469,9 @@ function readState(node) {
         }
       }
       return merged;
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
   }
   return defaultState();
 }
@@ -555,7 +563,11 @@ function syncNativeWidgets(node, state) {
     if (w.value !== value) {
       w.value = value;
       if (typeof w.callback === "function") {
-        try { w.callback(value); } catch { /* */ }
+        try {
+          w.callback(value);
+        } catch {
+          /* */
+        }
       }
     }
   };
@@ -626,7 +638,8 @@ function setupPunstuckNode(node) {
 function mulberry32(seed) {
   let a = seed >>> 0;
   return function () {
-    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
     let t = a;
     t = Math.imul(t ^ (t >>> 15), t | 1);
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
@@ -651,8 +664,9 @@ function assemblePreview(library, mode, flags, intensity, seed) {
   let categoryUsed = mode;
   let rng;
   if (mode === CHAOS_MODE) {
-    const catKeys = Object.keys(library.categories || {})
-      .filter((k) => k !== "universal");
+    const catKeys = Object.keys(library.categories || {}).filter(
+      (k) => k !== "universal",
+    );
     if (!catKeys.length) return { raw: "", final: "", categoryUsed: "CHAOS" };
     // Deterministic Chaos pick: hash the seed through the same RNG so the
     // preview is reproducible when the user picks a Fixed seed.
@@ -697,8 +711,22 @@ function assemblePreview(library, mode, flags, intensity, seed) {
   const ambiance = flags.useWeather ? rng.pick(univ.weather || []) : "";
 
   const colorClothing = `${color} ${clothing}`.trim();
-  const elements = [subject, eye, breast, body, hair, colorClothing, pose, location, view, ambiance];
-  const raw = elements.map((x) => (x || "").trim()).filter(Boolean).join(", ");
+  const elements = [
+    subject,
+    eye,
+    breast,
+    body,
+    hair,
+    colorClothing,
+    pose,
+    location,
+    view,
+    ambiance,
+  ];
+  const raw = elements
+    .map((x) => (x || "").trim())
+    .filter(Boolean)
+    .join(", ");
 
   let final = raw;
   if (raw && Math.abs(intensity - 1.0) >= 1e-4) {
@@ -719,28 +747,39 @@ function buildPreviewHTML(state, library, lastSeed) {
 
   if (state.mode === NONE_MODE) {
     subtitle = "None → SILENCE";
-    outputBlock = "<em style=\"color:#666\">(absolute void)</em>";
+    outputBlock = '<em style="color:#666">(absolute void)</em>';
     outputCls = "empty";
   } else if (isRandom) {
     // Can't resolve actual picks — show the mode + placeholder.
-    const catLabel = state.mode === CHAOS_MODE ? "CHAOS → CHAOS" : `${state.mode.toUpperCase()} → ${state.mode.toUpperCase()}`;
+    const catLabel =
+      state.mode === CHAOS_MODE
+        ? "CHAOS → CHAOS"
+        : `${state.mode.toUpperCase()} → ${state.mode.toUpperCase()}`;
     subtitle = `${state.mode} → ${state.mode === CHAOS_MODE ? "TOTAL RANDOM" : state.mode.toUpperCase()}`;
-    outputBlock = "<em style=\"color:#888\">(random picks on Run — switch to Fixed to preview)</em>";
+    outputBlock =
+      '<em style="color:#888">(random picks on Run — switch to Fixed to preview)</em>';
     outputCls = "empty";
   } else {
     // Fixed mode → resolve a preview from the editor's own RNG.
     const result = assemblePreview(
-      library, state.mode, state.flags, intensity, clampSeed(state.seed),
+      library,
+      state.mode,
+      state.flags,
+      intensity,
+      clampSeed(state.seed),
     );
-    const realCat = result.categoryUsed === "CHAOS"
-      ? result.categoryUsed
-      : (state.mode === CHAOS_MODE ? "TOTAL RANDOM" : state.mode.toUpperCase());
+    const realCat =
+      result.categoryUsed === "CHAOS"
+        ? result.categoryUsed
+        : state.mode === CHAOS_MODE
+          ? "TOTAL RANDOM"
+          : state.mode.toUpperCase();
     subtitle = `${state.mode} → ${realCat}`;
     if (result.final) {
       outputBlock = `<span class="arrow">→</span> ${escapeHtml(result.final)}`;
       outputCls = "";
     } else {
-      outputBlock = "<em style=\"color:#666\">(empty)</em>";
+      outputBlock = '<em style="color:#666">(empty)</em>';
       outputCls = "empty";
     }
     if (result.raw) rawLine = result.raw;
@@ -748,7 +787,9 @@ function buildPreviewHTML(state, library, lastSeed) {
 
   const seedLabel = isFixed
     ? `seed ${state.seed}`
-    : (lastSeed != null ? `random (last: ${lastSeed})` : "random");
+    : lastSeed != null
+      ? `random (last: ${lastSeed})`
+      : "random";
   const meta = `intensity: ${intensity.toFixed(2)} · ${seedLabel}`;
 
   // Use category-specific colors (matches v3.0).
@@ -774,7 +815,12 @@ class PunstuckEditor {
       universal: {},
       categories: {},
       explicitSubjects: {},
-      intensityRange: { min: INTENSITY_MIN, max: INTENSITY_MAX, step: INTENSITY_STEP, default: INTENSITY_DEFAULT },
+      intensityRange: {
+        min: INTENSITY_MIN,
+        max: INTENSITY_MAX,
+        step: INTENSITY_STEP,
+        default: INTENSITY_DEFAULT,
+      },
       modeOptions: [NONE_MODE, CHAOS_MODE],
       explicitCategories: [],
     };
@@ -802,7 +848,10 @@ class PunstuckEditor {
   }
 
   buildModal() {
-    if (this.modal) { this.modal.remove(); this.modal = null; }
+    if (this.modal) {
+      this.modal.remove();
+      this.modal = null;
+    }
     const modal = document.createElement("div");
     modal.className = "boss-pun-modal";
 
@@ -882,7 +931,8 @@ class PunstuckEditor {
       if (seen.has(name)) return;
       seen.add(name);
       const chip = document.createElement("div");
-      chip.className = "boss-pun-chip" +
+      chip.className =
+        "boss-pun-chip" +
         (isSpecial ? " special" : "") +
         (this.state.mode === name ? " selected" : "");
       chip.textContent = name;
@@ -1027,7 +1077,10 @@ class PunstuckEditor {
     };
     num.addEventListener("keydown", (e) => {
       e.stopPropagation();
-      if (e.key === "Enter") { e.preventDefault(); num.blur(); }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        num.blur();
+      }
     });
     num.addEventListener("blur", commit);
     wrap.appendChild(num);
@@ -1039,10 +1092,14 @@ class PunstuckEditor {
         s.classList.toggle("active", s.dataset.mode === this.state.seedMode);
       });
     };
-    for (const [m, label] of [["random", "Random"], ["fixed", "Fixed"]]) {
+    for (const [m, label] of [
+      ["random", "Random"],
+      ["fixed", "Fixed"],
+    ]) {
       const seg = document.createElement("button");
       seg.type = "button";
-      seg.className = "boss-pun-seg" + (this.state.seedMode === m ? " active" : "");
+      seg.className =
+        "boss-pun-seg" + (this.state.seedMode === m ? " active" : "");
       seg.textContent = label;
       seg.dataset.mode = m;
       seg.addEventListener("click", () => {
@@ -1107,13 +1164,22 @@ class PunstuckEditor {
         ta.value = text;
         ta.style.cssText = "position:fixed;opacity:0;";
         let ok = false;
-        try { document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); }
-        catch { ok = false; }
-        finally { ta.remove(); }
+        try {
+          document.body.appendChild(ta);
+          ta.select();
+          ok = document.execCommand("copy");
+        } catch {
+          ok = false;
+        } finally {
+          ta.remove();
+        }
         flash(ok);
       };
       if (navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(text).then(() => flash(true)).catch(legacy);
+        navigator.clipboard
+          .writeText(text)
+          .then(() => flash(true))
+          .catch(legacy);
       } else {
         legacy();
       }
@@ -1144,7 +1210,11 @@ class PunstuckEditor {
 
   refreshPreview() {
     if (!this.cardEl) return;
-    this.cardEl.innerHTML = buildPreviewHTML(this.state, this.library, this.lastSeed);
+    this.cardEl.innerHTML = buildPreviewHTML(
+      this.state,
+      this.library,
+      this.lastSeed,
+    );
   }
 
   // ── Commit / cancel ────────────────────────────────────────────────────
@@ -1156,15 +1226,25 @@ class PunstuckEditor {
     this.close();
   }
 
-  cancel() { this.close(); }
-  close() { if (this.modal) { this.modal.remove(); this.modal = null; } }
+  cancel() {
+    this.close();
+  }
+  close() {
+    if (this.modal) {
+      this.modal.remove();
+      this.modal = null;
+    }
+  }
 }
 
 function stateIsExplicitCategory(state, library) {
   if (state.mode === CHAOS_MODE || state.mode === NONE_MODE) return false;
   if (EXPLICIT_CATEGORIES.has(state.mode)) return true;
   // Server-side explicitCategories list is authoritative if it disagrees.
-  if (Array.isArray(library.explicitCategories) && library.explicitCategories.length) {
+  if (
+    Array.isArray(library.explicitCategories) &&
+    library.explicitCategories.length
+  ) {
     return library.explicitCategories.includes(state.mode);
   }
   return false;
@@ -1178,9 +1258,14 @@ if (app && app.loadGraphData && !app._bossPunLoadWrapped) {
   app.loadGraphData = function (...args) {
     _bossPunLoadingGraph = true;
     let r;
-    try { r = _origLoad(...args); }
-    finally {
-      Promise.resolve(r).finally(() => setTimeout(() => { _bossPunLoadingGraph = false; }, 300));
+    try {
+      r = _origLoad(...args);
+    } finally {
+      Promise.resolve(r).finally(() =>
+        setTimeout(() => {
+          _bossPunLoadingGraph = false;
+        }, 300),
+      );
     }
     return r;
   };
@@ -1218,7 +1303,10 @@ function buildPunstuckNodeIndex() {
     const nodes = graph._nodes || graph.nodes || [];
     for (const n of nodes) {
       if (!n) continue;
-      if (n.comfyClass === "PromptUnstuckPro" || n.type === "PromptUnstuckPro") {
+      if (
+        n.comfyClass === "PromptUnstuckPro" ||
+        n.type === "PromptUnstuckPro"
+      ) {
         index.set(String(n.id), n);
       }
       const inner = n.subgraph || n.graph || n._graph;
@@ -1258,7 +1346,10 @@ app.graphToPrompt = async function (...args) {
         runSeed = clampSeed(state.seed);
       }
       entry.inputs = entry.inputs || {};
-      entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify({ ...state, seed: runSeed });
+      entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify({
+        ...state,
+        seed: runSeed,
+      });
     }
   } catch (e) {
     console.warn("[BossPromptUnstuckPro] graphToPrompt inject failed", e);

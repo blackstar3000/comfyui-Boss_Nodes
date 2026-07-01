@@ -37,8 +37,8 @@ const DELIMITER_DEFAULT = ", ";
 
 // Per-collection accent colors for the preview cards (pink / cyan / green).
 const COLLECTION_ACCENTS = {
-  girl:  { color: "#ff0066", bg: "#330011", bgLight: "#1a060d" },
-  male:  { color: "#00ffff", bg: "#001133", bgLight: "#020b1a" },
+  girl: { color: "#ff0066", bg: "#330011", bgLight: "#1a060d" },
+  male: { color: "#00ffff", bg: "#001133", bgLight: "#020b1a" },
   scene: { color: "#00ff88", bg: "#003311", bgLight: "#021a0c" },
 };
 const COLLECTION_LABELS = { girl: "GIRL", male: "MALE", scene: "SCENE" };
@@ -293,6 +293,7 @@ function injectCSS() {
       color: #fff;
       max-width: 760px;
       width: 100%;
+      box-shadow: 0 0 40px rgba(82, 78, 184, 0.3);
     }
     .boss-scn-card-title {
       font-size: 1.4em;
@@ -429,11 +430,14 @@ function readState(node) {
       if (merged.seedMode !== "random" && merged.seedMode !== "fixed") {
         merged.seedMode = "random";
       }
-      if (typeof merged.delimiter !== "string") merged.delimiter = DELIMITER_DEFAULT;
+      if (typeof merged.delimiter !== "string")
+        merged.delimiter = DELIMITER_DEFAULT;
       // Keep choice strings intact — unknown keys are gracefully handled
       // in Python (`_resolve` returns "" when key is missing).
       return merged;
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
   }
   return defaultState();
 }
@@ -470,10 +474,18 @@ function hideCanvasWidget(widgets, name) {
 }
 
 const VISIBLE_NATIVE_WIDGETS = [
-  "girl", "girl_cat", "girl_w",
-  "male", "male_cat", "male_w",
-  "scene", "scene_cat", "scene_w",
-  "seed", "force_refresh", "delimiter",
+  "girl",
+  "girl_cat",
+  "girl_w",
+  "male",
+  "male_cat",
+  "male_w",
+  "scene",
+  "scene_cat",
+  "scene_w",
+  "seed",
+  "force_refresh",
+  "delimiter",
 ];
 
 function escapeHtml(s) {
@@ -528,7 +540,11 @@ function syncNativeWidgets(node, state) {
     if (w.value !== value) {
       w.value = value;
       if (typeof w.callback === "function") {
-        try { w.callback(value); } catch { /* */ }
+        try {
+          w.callback(value);
+        } catch {
+          /* */
+        }
       }
     }
   };
@@ -591,7 +607,11 @@ function setupSceneNode(node) {
       setStatus(node, "");
     } catch (err) {
       console.error("[BossSceneMakerPro] open editor failed", err);
-      setStatus(node, "Failed to load libraries. Is the backend running?", true);
+      setStatus(
+        node,
+        "Failed to load libraries. Is the backend running?",
+        true,
+      );
     }
   });
 
@@ -603,7 +623,8 @@ function setupSceneNode(node) {
 function mulberry32(seed) {
   let a = seed >>> 0;
   return function () {
-    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
     let t = a;
     t = Math.imul(t ^ (t >>> 15), t | 1);
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
@@ -661,9 +682,27 @@ function substituteJS(sceneText, gWeighted, mWeighted) {
 function previewComposeJS(state, libs, seed) {
   const rng = rngFromSeed(seed);
 
-  const g = resolveJS(rng, state.girl, libs.girls, libs.girlCategories, state.girlCat);
-  const m = resolveJS(rng, state.male, libs.males, libs.maleCategories, state.maleCat);
-  const s = resolveJS(rng, state.scene, libs.scenes, libs.sceneCategories, state.sceneCat);
+  const g = resolveJS(
+    rng,
+    state.girl,
+    libs.girls,
+    libs.girlCategories,
+    state.girlCat,
+  );
+  const m = resolveJS(
+    rng,
+    state.male,
+    libs.males,
+    libs.maleCategories,
+    state.maleCat,
+  );
+  const s = resolveJS(
+    rng,
+    state.scene,
+    libs.scenes,
+    libs.sceneCategories,
+    state.sceneCat,
+  );
 
   const gW = applyWeightJS(g.text, state.girlW);
   const mW = applyWeightJS(m.text, state.maleW);
@@ -682,9 +721,7 @@ function buildCard(which, res, weight, isRandomChoice) {
   const accent = COLLECTION_ACCENTS[which];
   const label = COLLECTION_LABELS[which];
   const isNone = res.key === "" && res.text === "";
-  const displayKey = isNone
-    ? "(none)"
-    : (isRandomChoice ? "(random)" : res.key);
+  const displayKey = isNone ? "(none)" : isRandomChoice ? "(random)" : res.key;
   return `<div class="boss-scn-mini ${isNone ? "none" : ""}" style="--accent:${accent.color};--bg:${accent.bg};">
     <div class="h">${label}</div>
     <div class="v">${escapeHtml(displayKey)}</div>
@@ -706,26 +743,25 @@ function buildPreviewHTML(state, libs) {
   if (isFixed) {
     // Detect placeholder substitution (only in Fixed — Random rolls a
     // new pick each Run so the user can't rely on a specific value).
-    const gW = res.gW, mW = res.mW;
+    const gW = res.gW,
+      mW = res.mW;
     const hadPlaceholder =
-      (res.s.text && (/\{girl\}|\{girls\}/.test(res.s.text)) && !!gW) ||
-      (res.s.text && (/\{male\}|\{males\}/.test(res.s.text)) && !!mW);
+      (res.s.text && /\{girl\}|\{girls\}/.test(res.s.text) && !!gW) ||
+      (res.s.text && /\{male\}|\{males\}/.test(res.s.text) && !!mW);
     if (hadPlaceholder) placeholderNote = " · placeholders substituted";
   } else {
     const anyRandom =
-      state.girl  === RANDOM_SENTINEL ||
-      state.male  === RANDOM_SENTINEL ||
+      state.girl === RANDOM_SENTINEL ||
+      state.male === RANDOM_SENTINEL ||
       state.scene === RANDOM_SENTINEL;
     if (anyRandom) placeholderNote = " · (random picks on Run)";
   }
 
-  const seedLabel = isFixed
-    ? `seed ${state.seed}`
-    : "random";
+  const seedLabel = isFixed ? `seed ${state.seed}` : "random";
 
   const cards = [
-    buildCard("girl",  res.g, state.girlW,  state.girl  === RANDOM_SENTINEL),
-    buildCard("male",  res.m, state.maleW,  state.male  === RANDOM_SENTINEL),
+    buildCard("girl", res.g, state.girlW, state.girl === RANDOM_SENTINEL),
+    buildCard("male", res.m, state.maleW, state.male === RANDOM_SENTINEL),
     buildCard("scene", res.s, state.sceneW, state.scene === RANDOM_SENTINEL),
   ].join("");
 
@@ -749,8 +785,12 @@ class SceneEditor {
   constructor(node) {
     this.node = node;
     this.libs = {
-      girls: {}, males: {}, scenes: {},
-      girlCategories: {}, maleCategories: {}, sceneCategories: {},
+      girls: {},
+      males: {},
+      scenes: {},
+      girlCategories: {},
+      maleCategories: {},
+      sceneCategories: {},
     };
     this.state = readState(node);
     this.lastSeed = node._pixBossLastSeed ?? null;
@@ -776,7 +816,10 @@ class SceneEditor {
   }
 
   buildModal() {
-    if (this.modal) { this.modal.remove(); this.modal = null; }
+    if (this.modal) {
+      this.modal.remove();
+      this.modal = null;
+    }
     const modal = document.createElement("div");
     modal.className = "boss-scn-modal";
 
@@ -800,71 +843,89 @@ class SceneEditor {
     const side = document.createElement("div");
     side.className = "boss-scn-side";
 
-    side.appendChild(this.buildListSection({
-      title: "Girl",
-      which: "girl",
-      stateKey: "girl",
-      categoryKey: "girlCat",
-      strengthKey: "girlW",
-      data: this.libs.girls,
-      cats: this.libs.girlCategories,
-      searchVar: "_girlSearch",
-      listVar: "_girlListEl",
-    }));
-    side.appendChild(this.buildCategorySection({
-      title: "Girl Category",
-      stateKey: "girlCat",
-      cats: this.libs.girlCategories,
-      which: "girl",
-    }));
-    side.appendChild(this.buildStrengthSection({
-      title: "Girl Strength",
-      stateKey: "girlW",
-    }));
+    side.appendChild(
+      this.buildListSection({
+        title: "Girl",
+        which: "girl",
+        stateKey: "girl",
+        categoryKey: "girlCat",
+        strengthKey: "girlW",
+        data: this.libs.girls,
+        cats: this.libs.girlCategories,
+        searchVar: "_girlSearch",
+        listVar: "_girlListEl",
+      }),
+    );
+    side.appendChild(
+      this.buildCategorySection({
+        title: "Girl Category",
+        stateKey: "girlCat",
+        cats: this.libs.girlCategories,
+        which: "girl",
+      }),
+    );
+    side.appendChild(
+      this.buildStrengthSection({
+        title: "Girl Strength",
+        stateKey: "girlW",
+      }),
+    );
 
-    side.appendChild(this.buildListSection({
-      title: "Male",
-      which: "male",
-      stateKey: "male",
-      categoryKey: "maleCat",
-      strengthKey: "maleW",
-      data: this.libs.males,
-      cats: this.libs.maleCategories,
-      searchVar: "_maleSearch",
-      listVar: "_maleListEl",
-    }));
-    side.appendChild(this.buildCategorySection({
-      title: "Male Category",
-      stateKey: "maleCat",
-      cats: this.libs.maleCategories,
-      which: "male",
-    }));
-    side.appendChild(this.buildStrengthSection({
-      title: "Male Strength",
-      stateKey: "maleW",
-    }));
+    side.appendChild(
+      this.buildListSection({
+        title: "Male",
+        which: "male",
+        stateKey: "male",
+        categoryKey: "maleCat",
+        strengthKey: "maleW",
+        data: this.libs.males,
+        cats: this.libs.maleCategories,
+        searchVar: "_maleSearch",
+        listVar: "_maleListEl",
+      }),
+    );
+    side.appendChild(
+      this.buildCategorySection({
+        title: "Male Category",
+        stateKey: "maleCat",
+        cats: this.libs.maleCategories,
+        which: "male",
+      }),
+    );
+    side.appendChild(
+      this.buildStrengthSection({
+        title: "Male Strength",
+        stateKey: "maleW",
+      }),
+    );
 
-    side.appendChild(this.buildListSection({
-      title: "Scene",
-      which: "scene",
-      stateKey: "scene",
-      categoryKey: "sceneCat",
-      strengthKey: "sceneW",
-      data: this.libs.scenes,
-      cats: this.libs.sceneCategories,
-      searchVar: "_sceneSearch",
-      listVar: "_sceneListEl",
-    }));
-    side.appendChild(this.buildCategorySection({
-      title: "Scene Category",
-      stateKey: "sceneCat",
-      cats: this.libs.sceneCategories,
-      which: "scene",
-    }));
-    side.appendChild(this.buildStrengthSection({
-      title: "Scene Strength",
-      stateKey: "sceneW",
-    }));
+    side.appendChild(
+      this.buildListSection({
+        title: "Scene",
+        which: "scene",
+        stateKey: "scene",
+        categoryKey: "sceneCat",
+        strengthKey: "sceneW",
+        data: this.libs.scenes,
+        cats: this.libs.sceneCategories,
+        searchVar: "_sceneSearch",
+        listVar: "_sceneListEl",
+      }),
+    );
+    side.appendChild(
+      this.buildCategorySection({
+        title: "Scene Category",
+        stateKey: "sceneCat",
+        cats: this.libs.sceneCategories,
+        which: "scene",
+      }),
+    );
+    side.appendChild(
+      this.buildStrengthSection({
+        title: "Scene Strength",
+        stateKey: "sceneW",
+      }),
+    );
 
     side.appendChild(this.buildDelimiterSection());
     side.appendChild(this.buildSeedSection());
@@ -908,7 +969,16 @@ class SceneEditor {
   }
 
   // ── List section ──────────────────────────────────────────────────────
-  buildListSection({ title, which, stateKey, categoryKey, data, cats, searchVar, listVar }) {
+  buildListSection({
+    title,
+    which,
+    stateKey,
+    categoryKey,
+    data,
+    cats,
+    searchVar,
+    listVar,
+  }) {
     const wrap = document.createElement("div");
     wrap.className = "boss-scn-list-wrap";
 
@@ -969,7 +1039,8 @@ class SceneEditor {
 
     for (const it of items) {
       const row = document.createElement("div");
-      row.className = "boss-scn-list-item" +
+      row.className =
+        "boss-scn-list-item" +
         (this.state[stateKey] === it.name ? " selected" : "");
       const name = document.createElement("span");
       name.className = "name";
@@ -1113,7 +1184,10 @@ class SceneEditor {
     };
     num.addEventListener("keydown", (e) => {
       e.stopPropagation();
-      if (e.key === "Enter") { e.preventDefault(); num.blur(); }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        num.blur();
+      }
     });
     num.addEventListener("blur", commit);
     wrap.appendChild(num);
@@ -1125,10 +1199,14 @@ class SceneEditor {
         s.classList.toggle("active", s.dataset.mode === this.state.seedMode);
       });
     };
-    for (const [m, label] of [["random", "Random"], ["fixed", "Fixed"]]) {
+    for (const [m, label] of [
+      ["random", "Random"],
+      ["fixed", "Fixed"],
+    ]) {
       const seg = document.createElement("button");
       seg.type = "button";
-      seg.className = "boss-scn-seg" + (this.state.seedMode === m ? " active" : "");
+      seg.className =
+        "boss-scn-seg" + (this.state.seedMode === m ? " active" : "");
       seg.textContent = label;
       seg.dataset.mode = m;
       seg.addEventListener("click", () => {
@@ -1193,13 +1271,22 @@ class SceneEditor {
         ta.value = text;
         ta.style.cssText = "position:fixed;opacity:0;";
         let ok = false;
-        try { document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); }
-        catch { ok = false; }
-        finally { ta.remove(); }
+        try {
+          document.body.appendChild(ta);
+          ta.select();
+          ok = document.execCommand("copy");
+        } catch {
+          ok = false;
+        } finally {
+          ta.remove();
+        }
         flash(ok);
       };
       if (navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(text).then(() => flash(true)).catch(legacy);
+        navigator.clipboard
+          .writeText(text)
+          .then(() => flash(true))
+          .catch(legacy);
       } else {
         legacy();
       }
@@ -1242,8 +1329,15 @@ class SceneEditor {
     this.close();
   }
 
-  cancel() { this.close(); }
-  close() { if (this.modal) { this.modal.remove(); this.modal = null; } }
+  cancel() {
+    this.close();
+  }
+  close() {
+    if (this.modal) {
+      this.modal.remove();
+      this.modal = null;
+    }
+  }
 }
 
 // ── loadGraphData 300 ms guard (same trick as the three siblings) ─────────
@@ -1254,9 +1348,14 @@ if (app && app.loadGraphData && !app._bossScnLoadWrapped) {
   app.loadGraphData = function (...args) {
     _bossScnLoadingGraph = true;
     let r;
-    try { r = _origLoad(...args); }
-    finally {
-      Promise.resolve(r).finally(() => setTimeout(() => { _bossScnLoadingGraph = false; }, 300));
+    try {
+      r = _origLoad(...args);
+    } finally {
+      Promise.resolve(r).finally(() =>
+        setTimeout(() => {
+          _bossScnLoadingGraph = false;
+        }, 300),
+      );
     }
     return r;
   };
@@ -1332,7 +1431,10 @@ app.graphToPrompt = async function (...args) {
         runSeed = clampSeed(state.seed);
       }
       entry.inputs = entry.inputs || {};
-      entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify({ ...state, seed: runSeed });
+      entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify({
+        ...state,
+        seed: runSeed,
+      });
     }
   } catch (e) {
     console.warn("[BossSceneMakerPro] graphToPrompt inject failed", e);

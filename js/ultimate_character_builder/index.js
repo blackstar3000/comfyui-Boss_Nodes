@@ -26,8 +26,8 @@ import { app } from "/scripts/app.js";
 // are visually distinct (scene=green, master=gold gradient, character=
 // pink/violet). Title colour keeps #ff66cc continuity with the v3.2
 // pink brand this node has used since the original.
-const BRAND = "#a855f7";               // violet-500 — distinct from green/gold siblings
-const BRAND_LIGHT = "#c084fc";         // violet-400 for gradients
+const BRAND = "#a855f7"; // violet-500 — distinct from green/gold siblings
+const BRAND_LIGHT = "#c084fc"; // violet-400 for gradients
 const BRAND_GLOW = "rgba(168, 85, 247, 0.3)";
 
 const STATE_PROP = "characterState";
@@ -36,23 +36,23 @@ const HIDDEN_INPUT_NAME = "CharacterState";
 // Per-collection RANDOM_* sentinels (one per combo) match the Python
 // constants. Each combo has its own random sentinel so the wire values
 // stay unambiguous.
-const RANDOM_CHARACTER  = "__RANDOM_CHARACTER__";
+const RANDOM_CHARACTER = "__RANDOM_CHARACTER__";
 const RANDOM_EXPRESSION = "__RANDOM_EXPRESSION__";
-const RANDOM_POSE       = "__RANDOM_POSE__";
-const NONE_SENTINEL     = "__NONE__";
-const ALL_CATEGORIES    = "All";
+const RANDOM_POSE = "__RANDOM_POSE__";
+const NONE_SENTINEL = "__NONE__";
+const ALL_CATEGORIES = "All";
 
 // Strength bounds — character can go bolder (matches v3.2 ceiling of
 // 2.5), expression + pose cap at 2.0 (matches v3.2 defaults).
 const CHAR_STRENGTH_MIN = 0.0;
 const CHAR_STRENGTH_MAX = 2.5;
-const SUB_STRENGTH_MIN  = 0.0;
-const SUB_STRENGTH_MAX  = 2.0;
-const STRENGTH_STEP     = 0.05;
+const SUB_STRENGTH_MIN = 0.0;
+const SUB_STRENGTH_MAX = 2.0;
+const STRENGTH_STEP = 0.05;
 
-const CHAR_STRENGTH_DEFAULT  = 1.3;
-const EXP_STRENGTH_DEFAULT   = 1.1;
-const POSE_STRENGTH_DEFAULT  = 1.2;
+const CHAR_STRENGTH_DEFAULT = 1.3;
+const EXP_STRENGTH_DEFAULT = 1.1;
+const POSE_STRENGTH_DEFAULT = 1.2;
 
 const DELIMITER_DEFAULT = ", ";
 
@@ -60,14 +60,14 @@ const DELIMITER_DEFAULT = ", ";
 // pink/cyan/green identity so muscle memory carries over for any
 // existing UltimateCharacterBuilder users.
 const COLLECTION_ACCENTS = {
-  character:  { color: "#ff66cc", bg: "#330022", bgLight: "#1a0611" },
+  character: { color: "#ff66cc", bg: "#330022", bgLight: "#1a0611" },
   expression: { color: "#00ffff", bg: "#001133", bgLight: "#020b1a" },
-  pose:       { color: "#00ff88", bg: "#003311", bgLight: "#021a0c" },
+  pose: { color: "#00ff88", bg: "#003311", bgLight: "#021a0c" },
 };
 const COLLECTION_LABELS = {
-  character:  "CHARACTER",
+  character: "CHARACTER",
   expression: "EXPRESSION",
-  pose:       "POSE",
+  pose: "POSE",
 };
 
 // ── CSS (injected once, idempotent) ────────────────────────────────────────
@@ -327,6 +327,7 @@ function injectCSS() {
       color: #fff;
       max-width: 760px;
       width: 100%;
+      box-shadow: 0 0 40px rgba(255, 102, 204, 0.3);
     }
     .boss-char-card-title {
       font-size: 1.4em;
@@ -444,9 +445,18 @@ function randomSentinelFor(which) {
 
 function strengthBoundsFor(which) {
   if (which === "character") {
-    return { min: CHAR_STRENGTH_MIN, max: CHAR_STRENGTH_MAX, default: CHAR_STRENGTH_DEFAULT };
+    return {
+      min: CHAR_STRENGTH_MIN,
+      max: CHAR_STRENGTH_MAX,
+      default: CHAR_STRENGTH_DEFAULT,
+    };
   }
-  return { min: SUB_STRENGTH_MIN, max: SUB_STRENGTH_MAX, default: which === "expression" ? EXP_STRENGTH_DEFAULT : POSE_STRENGTH_DEFAULT };
+  return {
+    min: SUB_STRENGTH_MIN,
+    max: SUB_STRENGTH_MAX,
+    default:
+      which === "expression" ? EXP_STRENGTH_DEFAULT : POSE_STRENGTH_DEFAULT,
+  };
 }
 
 function defaultState() {
@@ -472,16 +482,31 @@ function readState(node) {
     try {
       const obj = JSON.parse(v);
       const merged = { ...defaultState(), ...obj };
-      merged.characterStrength  = clampStrength(merged.characterStrength,  CHAR_STRENGTH_DEFAULT,  "character");
-      merged.expressionStrength = clampStrength(merged.expressionStrength, EXP_STRENGTH_DEFAULT,   "expression");
-      merged.poseStrength       = clampStrength(merged.poseStrength,       POSE_STRENGTH_DEFAULT,  "pose");
+      merged.characterStrength = clampStrength(
+        merged.characterStrength,
+        CHAR_STRENGTH_DEFAULT,
+        "character",
+      );
+      merged.expressionStrength = clampStrength(
+        merged.expressionStrength,
+        EXP_STRENGTH_DEFAULT,
+        "expression",
+      );
+      merged.poseStrength = clampStrength(
+        merged.poseStrength,
+        POSE_STRENGTH_DEFAULT,
+        "pose",
+      );
       merged.seed = clampSeed(merged.seed);
       if (merged.seedMode !== "random" && merged.seedMode !== "fixed") {
         merged.seedMode = "random";
       }
-      if (typeof merged.delimiter !== "string") merged.delimiter = DELIMITER_DEFAULT;
+      if (typeof merged.delimiter !== "string")
+        merged.delimiter = DELIMITER_DEFAULT;
       return merged;
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
   }
   return defaultState();
 }
@@ -519,10 +544,17 @@ function hideCanvasWidget(widgets, name) {
 }
 
 const VISIBLE_NATIVE_WIDGETS = [
-  "character", "character_cat", "character_strength",
-  "expression", "expression_cat", "expression_strength",
-  "pose", "pose_cat", "pose_strength",
-  "seed", "force_refresh",
+  "character",
+  "character_cat",
+  "character_strength",
+  "expression",
+  "expression_cat",
+  "expression_strength",
+  "pose",
+  "pose_cat",
+  "pose_strength",
+  "seed",
+  "force_refresh",
   "delimiter",
 ];
 
@@ -579,19 +611,32 @@ function syncNativeWidgets(node, state) {
     if (w.value !== value) {
       w.value = value;
       if (typeof w.callback === "function") {
-        try { w.callback(value); } catch { /* */ }
+        try {
+          w.callback(value);
+        } catch {
+          /* */
+        }
       }
     }
   };
   setWidget("character", state.character);
   setWidget("character_cat", state.characterCat);
-  setWidget("character_strength", clampStrength(state.characterStrength, CHAR_STRENGTH_DEFAULT, "character"));
+  setWidget(
+    "character_strength",
+    clampStrength(state.characterStrength, CHAR_STRENGTH_DEFAULT, "character"),
+  );
   setWidget("expression", state.expression);
   setWidget("expression_cat", state.expressionCat);
-  setWidget("expression_strength", clampStrength(state.expressionStrength, EXP_STRENGTH_DEFAULT, "expression"));
+  setWidget(
+    "expression_strength",
+    clampStrength(state.expressionStrength, EXP_STRENGTH_DEFAULT, "expression"),
+  );
   setWidget("pose", state.pose);
   setWidget("pose_cat", state.poseCat);
-  setWidget("pose_strength", clampStrength(state.poseStrength, POSE_STRENGTH_DEFAULT, "pose"));
+  setWidget(
+    "pose_strength",
+    clampStrength(state.poseStrength, POSE_STRENGTH_DEFAULT, "pose"),
+  );
   setWidget("seed", clampSeed(state.seed));
   setWidget("delimiter", state.delimiter);
 }
@@ -657,7 +702,8 @@ function setupCharNode(node) {
 function mulberry32(seed) {
   let a = seed >>> 0;
   return function () {
-    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
     let t = a;
     t = Math.imul(t ^ (t >>> 15), t | 1);
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
@@ -702,9 +748,27 @@ function applyWeightJS(text, strength) {
 function previewComposeJS(state, libs, seed) {
   const rng = rngFromSeed(seed);
 
-  const c = resolveJS(rng, state.character,  libs.characters,  libs.characterCategories,  state.characterCat);
-  const e = resolveJS(rng, state.expression, libs.expressions, libs.expressionCategories, state.expressionCat);
-  const p = resolveJS(rng, state.pose,       libs.poses,       libs.poseCategories,       state.poseCat);
+  const c = resolveJS(
+    rng,
+    state.character,
+    libs.characters,
+    libs.characterCategories,
+    state.characterCat,
+  );
+  const e = resolveJS(
+    rng,
+    state.expression,
+    libs.expressions,
+    libs.expressionCategories,
+    state.expressionCat,
+  );
+  const p = resolveJS(
+    rng,
+    state.pose,
+    libs.poses,
+    libs.poseCategories,
+    state.poseCat,
+  );
 
   const cW = applyWeightJS(c.text, state.characterStrength);
   const eW = applyWeightJS(e.text, state.expressionStrength);
@@ -725,9 +789,7 @@ function buildCard(which, res, weight, isRandomChoice) {
   // Show "(random)" when the user has the RANDOM_* sentinel selected, even
   // if the rolled pick came back as a real name — on Run the pick will
   // differ. Explicit picks show their chosen name.
-  const displayKey = isNone
-    ? "(none)"
-    : (isRandomChoice ? "(random)" : res.key);
+  const displayKey = isNone ? "(none)" : isRandomChoice ? "(random)" : res.key;
   return `<div class="boss-char-mini ${isNone ? "none" : ""}" style="--accent:${accent.color};--bg:${accent.bg};">
     <div class="h">${label}</div>
     <div class="v">${escapeHtml(displayKey)}</div>
@@ -751,20 +813,28 @@ function buildPreviewHTML(state, libs) {
   let placeholderNote = "";
   if (isRandom) {
     const anyRandom =
-      state.character  === RANDOM_CHARACTER  ||
+      state.character === RANDOM_CHARACTER ||
       state.expression === RANDOM_EXPRESSION ||
-      state.pose       === RANDOM_POSE;
+      state.pose === RANDOM_POSE;
     if (anyRandom) placeholderNote = " · (random picks on Run)";
   }
 
-  const seedLabel = isFixed
-    ? `seed ${state.seed}`
-    : "random";
+  const seedLabel = isFixed ? `seed ${state.seed}` : "random";
 
   const cards = [
-    buildCard("character",  res.c, state.characterStrength,  state.character  === RANDOM_CHARACTER),
-    buildCard("expression", res.e, state.expressionStrength, state.expression === RANDOM_EXPRESSION),
-    buildCard("pose",       res.p, state.poseStrength,       state.pose       === RANDOM_POSE),
+    buildCard(
+      "character",
+      res.c,
+      state.characterStrength,
+      state.character === RANDOM_CHARACTER,
+    ),
+    buildCard(
+      "expression",
+      res.e,
+      state.expressionStrength,
+      state.expression === RANDOM_EXPRESSION,
+    ),
+    buildCard("pose", res.p, state.poseStrength, state.pose === RANDOM_POSE),
   ].join("");
 
   const outputBlock = res.final
@@ -787,8 +857,12 @@ class CharEditor {
   constructor(node) {
     this.node = node;
     this.libs = {
-      characters: {}, poses: {}, expressions: {},
-      characterCategories: {}, poseCategories: {}, expressionCategories: {},
+      characters: {},
+      poses: {},
+      expressions: {},
+      characterCategories: {},
+      poseCategories: {},
+      expressionCategories: {},
     };
     this.state = readState(node);
     this.lastSeed = node._pixBossLastSeed ?? null;
@@ -799,18 +873,20 @@ class CharEditor {
     const r = await fetch("/char_boss/data");
     if (!r.ok) {
       const body = await r.text().catch(() => "");
-      throw new Error(`HTTP ${r.status} from /char_boss/data: ${body.slice(0, 200)}`);
+      throw new Error(
+        `HTTP ${r.status} from /char_boss/data: ${body.slice(0, 200)}`,
+      );
     }
     const data = await r.json();
     if (!data || !data.characters) {
       throw new Error("/char_boss/data returned an unexpected shape");
     }
     this.libs = {
-      characters:  data.characters  || {},
-      poses:       data.poses       || {},
+      characters: data.characters || {},
+      poses: data.poses || {},
       expressions: data.expressions || {},
-      characterCategories:  data.characterCategories  || {},
-      poseCategories:       data.poseCategories       || {},
+      characterCategories: data.characterCategories || {},
+      poseCategories: data.poseCategories || {},
       expressionCategories: data.expressionCategories || {},
     };
   }
@@ -820,7 +896,10 @@ class CharEditor {
   }
 
   buildModal() {
-    if (this.modal) { this.modal.remove(); this.modal = null; }
+    if (this.modal) {
+      this.modal.remove();
+      this.modal = null;
+    }
     const modal = document.createElement("div");
     modal.className = "boss-char-modal";
 
@@ -844,74 +923,92 @@ class CharEditor {
     const side = document.createElement("div");
     side.className = "boss-char-side";
 
-    side.appendChild(this.buildListSection({
-      title: "Character",
-      which: "character",
-      choiceKey: "character",
-      categoryKey: "characterCat",
-      strengthKey: "characterStrength",
-      data: this.libs.characters,
-      cats: this.libs.characterCategories,
-      searchVar: "_characterSearch",
-      listVar: "_characterListEl",
-    }));
-    side.appendChild(this.buildCategorySection({
-      title: "Character Category",
-      stateKey: "characterCat",
-      cats: this.libs.characterCategories,
-      which: "character",
-    }));
-    side.appendChild(this.buildStrengthSection({
-      title: "Character Strength",
-      stateKey: "characterStrength",
-      which: "character",
-    }));
+    side.appendChild(
+      this.buildListSection({
+        title: "Character",
+        which: "character",
+        choiceKey: "character",
+        categoryKey: "characterCat",
+        strengthKey: "characterStrength",
+        data: this.libs.characters,
+        cats: this.libs.characterCategories,
+        searchVar: "_characterSearch",
+        listVar: "_characterListEl",
+      }),
+    );
+    side.appendChild(
+      this.buildCategorySection({
+        title: "Character Category",
+        stateKey: "characterCat",
+        cats: this.libs.characterCategories,
+        which: "character",
+      }),
+    );
+    side.appendChild(
+      this.buildStrengthSection({
+        title: "Character Strength",
+        stateKey: "characterStrength",
+        which: "character",
+      }),
+    );
 
-    side.appendChild(this.buildListSection({
-      title: "Expression",
-      which: "expression",
-      choiceKey: "expression",
-      categoryKey: "expressionCat",
-      strengthKey: "expressionStrength",
-      data: this.libs.expressions,
-      cats: this.libs.expressionCategories,
-      searchVar: "_expressionSearch",
-      listVar: "_expressionListEl",
-    }));
-    side.appendChild(this.buildCategorySection({
-      title: "Expression Category",
-      stateKey: "expressionCat",
-      cats: this.libs.expressionCategories,
-      which: "expression",
-    }));
-    side.appendChild(this.buildStrengthSection({
-      title: "Expression Strength",
-      stateKey: "expressionStrength",
-      which: "expression",
-    }));
+    side.appendChild(
+      this.buildListSection({
+        title: "Expression",
+        which: "expression",
+        choiceKey: "expression",
+        categoryKey: "expressionCat",
+        strengthKey: "expressionStrength",
+        data: this.libs.expressions,
+        cats: this.libs.expressionCategories,
+        searchVar: "_expressionSearch",
+        listVar: "_expressionListEl",
+      }),
+    );
+    side.appendChild(
+      this.buildCategorySection({
+        title: "Expression Category",
+        stateKey: "expressionCat",
+        cats: this.libs.expressionCategories,
+        which: "expression",
+      }),
+    );
+    side.appendChild(
+      this.buildStrengthSection({
+        title: "Expression Strength",
+        stateKey: "expressionStrength",
+        which: "expression",
+      }),
+    );
 
-    side.appendChild(this.buildListSection({
-      title: "Pose",
-      which: "pose",
-      choiceKey: "pose",
-      categoryKey: "poseCat",
-      strengthKey: "poseStrength",
-      data: this.libs.poses,
-      cats: this.libs.poseCategories,
-      searchVar: "_poseSearch",
-      listVar: "_poseListEl",
-    }));
-    side.appendChild(this.buildCategorySection({
-      title: "Pose Category",
-      stateKey: "poseCat",
-      cats: this.libs.poseCategories,
-      which: "pose",
-    }));
-    side.appendChild(this.buildStrengthSection({
-      title: "Pose Strength",
-      stateKey: "poseStrength",
-      which: "pose",
-    }));
+    side.appendChild(
+      this.buildListSection({
+        title: "Pose",
+        which: "pose",
+        choiceKey: "pose",
+        categoryKey: "poseCat",
+        strengthKey: "poseStrength",
+        data: this.libs.poses,
+        cats: this.libs.poseCategories,
+        searchVar: "_poseSearch",
+        listVar: "_poseListEl",
+      }),
+    );
+    side.appendChild(
+      this.buildCategorySection({
+        title: "Pose Category",
+        stateKey: "poseCat",
+        cats: this.libs.poseCategories,
+        which: "pose",
+      }),
+    );
+    side.appendChild(
+      this.buildStrengthSection({
+        title: "Pose Strength",
+        stateKey: "poseStrength",
+        which: "pose",
+      }),
+    );
 
     side.appendChild(this.buildDelimiterSection());
     side.appendChild(this.buildSeedSection());
@@ -955,7 +1052,15 @@ class CharEditor {
   }
 
   // ── List section ──────────────────────────────────────────────────────
-  buildListSection({ title, which, choiceKey, data, cats, searchVar, listVar }) {
+  buildListSection({
+    title,
+    which,
+    choiceKey,
+    data,
+    cats,
+    searchVar,
+    listVar,
+  }) {
     const wrap = document.createElement("div");
     wrap.className = "boss-char-list-wrap";
 
@@ -987,15 +1092,24 @@ class CharEditor {
 
   refreshList(which) {
     // map: which → (data key, cats key, choice key in state, category key in state)
-    const libKey = which === "character" ? "characters"
-                 : which === "expression" ? "expressions"
-                 : "poses";
-    const catsKey = which === "character" ? "characterCategories"
-                  : which === "expression" ? "expressionCategories"
-                  : "poseCategories";
-    const categoryKey = which === "character" ? "characterCat"
-                      : which === "expression" ? "expressionCat"
-                      : "poseCat";
+    const libKey =
+      which === "character"
+        ? "characters"
+        : which === "expression"
+          ? "expressions"
+          : "poses";
+    const catsKey =
+      which === "character"
+        ? "characterCategories"
+        : which === "expression"
+          ? "expressionCategories"
+          : "poseCategories";
+    const categoryKey =
+      which === "character"
+        ? "characterCat"
+        : which === "expression"
+          ? "expressionCat"
+          : "poseCat";
     const choiceKey = which;
     const listVar = "_" + which + "ListEl";
     const searchVar = "_" + which + "Search";
@@ -1010,7 +1124,7 @@ class CharEditor {
 
     const items = [
       { name: randomSentinel, badge: "Random" },
-      { name: NONE_SENTINEL,   badge: "None"   },
+      { name: NONE_SENTINEL, badge: "None" },
     ];
 
     let names;
@@ -1027,7 +1141,8 @@ class CharEditor {
 
     for (const it of items) {
       const row = document.createElement("div");
-      row.className = "boss-char-list-item" +
+      row.className =
+        "boss-char-list-item" +
         (this.state[choiceKey] === it.name ? " selected" : "");
       const name = document.createElement("span");
       name.className = "name";
@@ -1173,7 +1288,10 @@ class CharEditor {
     };
     num.addEventListener("keydown", (e) => {
       e.stopPropagation();
-      if (e.key === "Enter") { e.preventDefault(); num.blur(); }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        num.blur();
+      }
     });
     num.addEventListener("blur", commit);
     wrap.appendChild(num);
@@ -1185,10 +1303,14 @@ class CharEditor {
         s.classList.toggle("active", s.dataset.mode === this.state.seedMode);
       });
     };
-    for (const [m, label] of [["random", "Random"], ["fixed", "Fixed"]]) {
+    for (const [m, label] of [
+      ["random", "Random"],
+      ["fixed", "Fixed"],
+    ]) {
       const seg = document.createElement("button");
       seg.type = "button";
-      seg.className = "boss-char-seg" + (this.state.seedMode === m ? " active" : "");
+      seg.className =
+        "boss-char-seg" + (this.state.seedMode === m ? " active" : "");
       seg.textContent = label;
       seg.dataset.mode = m;
       seg.addEventListener("click", () => {
@@ -1253,13 +1375,22 @@ class CharEditor {
         ta.value = text;
         ta.style.cssText = "position:fixed;opacity:0;";
         let ok = false;
-        try { document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); }
-        catch { ok = false; }
-        finally { ta.remove(); }
+        try {
+          document.body.appendChild(ta);
+          ta.select();
+          ok = document.execCommand("copy");
+        } catch {
+          ok = false;
+        } finally {
+          ta.remove();
+        }
         flash(ok);
       };
       if (navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(text).then(() => flash(true)).catch(legacy);
+        navigator.clipboard
+          .writeText(text)
+          .then(() => flash(true))
+          .catch(legacy);
       } else {
         legacy();
       }
@@ -1302,8 +1433,15 @@ class CharEditor {
     this.close();
   }
 
-  cancel() { this.close(); }
-  close() { if (this.modal) { this.modal.remove(); this.modal = null; } }
+  cancel() {
+    this.close();
+  }
+  close() {
+    if (this.modal) {
+      this.modal.remove();
+      this.modal = null;
+    }
+  }
 }
 
 // ── loadGraphData 300 ms guard (same trick as the three siblings) ─────────
@@ -1314,9 +1452,14 @@ if (app && app.loadGraphData && !app._bossCharLoadWrapped) {
   app.loadGraphData = function (...args) {
     _bossCharLoadingGraph = true;
     let r;
-    try { r = _origLoad(...args); }
-    finally {
-      Promise.resolve(r).finally(() => setTimeout(() => { _bossCharLoadingGraph = false; }, 300));
+    try {
+      r = _origLoad(...args);
+    } finally {
+      Promise.resolve(r).finally(() =>
+        setTimeout(() => {
+          _bossCharLoadingGraph = false;
+        }, 300),
+      );
     }
     return r;
   };
@@ -1352,7 +1495,10 @@ function buildCharNodeIndex() {
     const nodes = graph._nodes || graph.nodes || [];
     for (const n of nodes) {
       if (!n) continue;
-      if (n.comfyClass === "UltimateCharacterBuilderPRO" || n.type === "UltimateCharacterBuilderPRO") {
+      if (
+        n.comfyClass === "UltimateCharacterBuilderPRO" ||
+        n.type === "UltimateCharacterBuilderPRO"
+      ) {
         index.set(String(n.id), n);
       }
       const inner = n.subgraph || n.graph || n._graph;
@@ -1380,7 +1526,8 @@ app.graphToPrompt = async function (...args) {
     let index = null;
     for (const id in out) {
       const entry = out[id];
-      if (!entry || entry.class_type !== "UltimateCharacterBuilderPRO") continue;
+      if (!entry || entry.class_type !== "UltimateCharacterBuilderPRO")
+        continue;
       if (!index) index = buildCharNodeIndex();
       const node = findCharNode(index, id);
       const state = node ? readState(node) : defaultState();
@@ -1392,7 +1539,10 @@ app.graphToPrompt = async function (...args) {
         runSeed = clampSeed(state.seed);
       }
       entry.inputs = entry.inputs || {};
-      entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify({ ...state, seed: runSeed });
+      entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify({
+        ...state,
+        seed: runSeed,
+      });
     }
   } catch (e) {
     console.warn("[BossUltimateCharBuilder] graphToPrompt inject failed", e);

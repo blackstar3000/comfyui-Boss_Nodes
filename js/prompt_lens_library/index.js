@@ -259,6 +259,7 @@ function injectCSS() {
       color: #fff;
       max-width: 760px;
       width: 100%;
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
     }
     .boss-lens-card-title {
       font-size: 1.2em;
@@ -376,7 +377,9 @@ function readState(node, libDefaults) {
       }
       if (!MODE_KEYS.includes(merged.mode)) merged.mode = MODE_DEFAULT;
       return merged;
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
   }
   return defaultState(libDefaults);
 }
@@ -407,8 +410,13 @@ function hideCanvasWidget(widgets, name) {
 }
 
 const VISIBLE_NATIVE_WIDGETS = [
-  "mode", "brand", "camera_model", "lens",
-  "add_focal_aperture", "seed", "force_refresh",
+  "mode",
+  "brand",
+  "camera_model",
+  "lens",
+  "add_focal_aperture",
+  "seed",
+  "force_refresh",
 ];
 
 function escapeHtml(s) {
@@ -470,7 +478,13 @@ function focalApertureTag(lens, addFocalAperture) {
   return "";
 }
 
-function buildPrompt(outputStyleKey, brand, cameraModel, lens, addFocalAperture) {
+function buildPrompt(
+  outputStyleKey,
+  brand,
+  cameraModel,
+  lens,
+  addFocalAperture,
+) {
   const tag = focalApertureTag(lens, addFocalAperture);
   if (outputStyleKey === "full phrase") {
     return (
@@ -519,10 +533,18 @@ function buildPreviewHTML(state, lib) {
   const sel = resolvePreviewSelections(state, lib);
   const prompt = sel.isRandom
     ? "(random pick on Run — preview unavailable until queue)"
-    : buildPrompt(style, sel.brand, sel.cameraModel, sel.lens, state.addFocalAperture);
+    : buildPrompt(
+        style,
+        sel.brand,
+        sel.cameraModel,
+        sel.lens,
+        state.addFocalAperture,
+      );
 
   const seedLabel = state.seedMode === "random" ? "random" : String(state.seed);
-  const tagPreview = sel.isRandom ? "" : focalApertureTag(sel.lens, state.addFocalAperture).trim();
+  const tagPreview = sel.isRandom
+    ? ""
+    : focalApertureTag(sel.lens, state.addFocalAperture).trim();
 
   const gearVal = (v, isRandom) =>
     isRandom
@@ -591,7 +613,11 @@ function syncNativeWidgets(node, state) {
     if (w.value !== value) {
       w.value = value;
       if (typeof w.callback === "function") {
-        try { w.callback(value); } catch { /* */ }
+        try {
+          w.callback(value);
+        } catch {
+          /* */
+        }
       }
     }
   };
@@ -711,7 +737,10 @@ class LensEditor {
   }
 
   buildModal() {
-    if (this.modal) { this.modal.remove(); this.modal = null; }
+    if (this.modal) {
+      this.modal.remove();
+      this.modal = null;
+    }
 
     const modal = document.createElement("div");
     modal.className = "boss-lens-modal";
@@ -734,11 +763,26 @@ class LensEditor {
     side.className = "boss-lens-side";
 
     side.appendChild(this.buildModeSection());
-    this._brandWrap = this.buildListSection("Brand", "brand", "_brandListEl", "_brandSearch");
+    this._brandWrap = this.buildListSection(
+      "Brand",
+      "brand",
+      "_brandListEl",
+      "_brandSearch",
+    );
     side.appendChild(this._brandWrap);
-    this._cameraWrap = this.buildListSection("Camera Model", "cameraModel", "_cameraListEl", "_cameraSearch");
+    this._cameraWrap = this.buildListSection(
+      "Camera Model",
+      "cameraModel",
+      "_cameraListEl",
+      "_cameraSearch",
+    );
     side.appendChild(this._cameraWrap);
-    this._lensWrap = this.buildListSection("Lens", "lens", "_lensListEl", "_lensSearch");
+    this._lensWrap = this.buildListSection(
+      "Lens",
+      "lens",
+      "_lensListEl",
+      "_lensSearch",
+    );
     side.appendChild(this._lensWrap);
     side.appendChild(this.buildFocalToggle());
     side.appendChild(this.buildSeedSection());
@@ -853,7 +897,8 @@ class LensEditor {
     for (const b of brands) {
       if (search && !b.toLowerCase().includes(search)) continue;
       const row = document.createElement("div");
-      row.className = "boss-lens-list-item" + (this.state.brand === b ? " selected" : "");
+      row.className =
+        "boss-lens-list-item" + (this.state.brand === b ? " selected" : "");
       row.textContent = b;
       row.addEventListener("click", () => {
         this.state.brand = b;
@@ -884,7 +929,9 @@ class LensEditor {
     for (const m of models) {
       if (search && !m.toLowerCase().includes(search)) continue;
       const row = document.createElement("div");
-      row.className = "boss-lens-list-item" + (this.state.cameraModel === m ? " selected" : "");
+      row.className =
+        "boss-lens-list-item" +
+        (this.state.cameraModel === m ? " selected" : "");
       row.textContent = m;
       row.addEventListener("click", () => {
         this.state.cameraModel = m;
@@ -898,7 +945,9 @@ class LensEditor {
       empty.className = "boss-lens-list-item";
       empty.style.color = "#999";
       empty.style.cursor = "default";
-      empty.textContent = models.length ? "No matches." : "No models for this brand.";
+      empty.textContent = models.length
+        ? "No matches."
+        : "No models for this brand.";
       el.appendChild(empty);
     }
   }
@@ -912,7 +961,8 @@ class LensEditor {
     for (const l of lenses) {
       if (search && !l.toLowerCase().includes(search)) continue;
       const row = document.createElement("div");
-      row.className = "boss-lens-list-item" + (this.state.lens === l ? " selected" : "");
+      row.className =
+        "boss-lens-list-item" + (this.state.lens === l ? " selected" : "");
       row.textContent = l;
       row.addEventListener("click", () => {
         this.state.lens = l;
@@ -926,7 +976,9 @@ class LensEditor {
       empty.className = "boss-lens-list-item";
       empty.style.color = "#999";
       empty.style.cursor = "default";
-      empty.textContent = lenses.length ? "No matches." : "No lenses for this brand.";
+      empty.textContent = lenses.length
+        ? "No matches."
+        : "No lenses for this brand.";
       el.appendChild(empty);
     }
   }
@@ -975,7 +1027,10 @@ class LensEditor {
     };
     num.addEventListener("keydown", (e) => {
       e.stopPropagation();
-      if (e.key === "Enter") { e.preventDefault(); num.blur(); }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        num.blur();
+      }
     });
     num.addEventListener("blur", commit);
     wrap.appendChild(num);
@@ -987,10 +1042,14 @@ class LensEditor {
         s.classList.toggle("active", s.dataset.mode === this.state.seedMode);
       });
     };
-    for (const [m, label] of [["random", "Random"], ["fixed", "Fixed"]]) {
+    for (const [m, label] of [
+      ["random", "Random"],
+      ["fixed", "Fixed"],
+    ]) {
       const seg = document.createElement("button");
       seg.type = "button";
-      seg.className = "boss-lens-seg" + (this.state.seedMode === m ? " active" : "");
+      seg.className =
+        "boss-lens-seg" + (this.state.seedMode === m ? " active" : "");
       seg.textContent = label;
       seg.dataset.mode = m;
       seg.addEventListener("click", () => {
@@ -1086,8 +1145,15 @@ class LensEditor {
     this.close();
   }
 
-  cancel() { this.close(); }
-  close() { if (this.modal) { this.modal.remove(); this.modal = null; } }
+  cancel() {
+    this.close();
+  }
+  close() {
+    if (this.modal) {
+      this.modal.remove();
+      this.modal = null;
+    }
+  }
 }
 
 // ── loadGraphData guard ────────────────────────────────────────────────────
@@ -1096,8 +1162,9 @@ if (app && app.loadGraphData && !app._bossLensLoadWrapped) {
   const _origLoad = app.loadGraphData.bind(app);
   app.loadGraphData = function (...args) {
     let r;
-    try { r = _origLoad(...args); }
-    finally {
+    try {
+      r = _origLoad(...args);
+    } finally {
       Promise.resolve(r).finally(() => setTimeout(() => {}, 300));
     }
     return r;
@@ -1134,7 +1201,10 @@ function buildLensNodeIndex() {
     const nodes = graph._nodes || graph.nodes || [];
     for (const n of nodes) {
       if (!n) continue;
-      if (n.comfyClass === "PromptLensLibraryPro" || n.type === "PromptLensLibraryPro") {
+      if (
+        n.comfyClass === "PromptLensLibraryPro" ||
+        n.type === "PromptLensLibraryPro"
+      ) {
         index.set(String(n.id), n);
       }
       const inner = n.subgraph || n.graph || n._graph;
@@ -1165,7 +1235,9 @@ app.graphToPrompt = async function (...args) {
       if (!entry || entry.class_type !== "PromptLensLibraryPro") continue;
       if (!index) index = buildLensNodeIndex();
       const node = findLensNode(index, id);
-      const state = node ? readState(node, node._bossLensDefaults) : defaultState();
+      const state = node
+        ? readState(node, node._bossLensDefaults)
+        : defaultState();
       let runSeed;
       if (state.seedMode === "random") {
         runSeed = rollSeed();
@@ -1174,7 +1246,10 @@ app.graphToPrompt = async function (...args) {
         runSeed = clampSeed(state.seed);
       }
       entry.inputs = entry.inputs || {};
-      entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify({ ...state, seed: runSeed });
+      entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify({
+        ...state,
+        seed: runSeed,
+      });
       entry.inputs.seed = runSeed;
     }
   } catch (e) {

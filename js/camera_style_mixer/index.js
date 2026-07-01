@@ -275,6 +275,7 @@ function injectCSS() {
       color: #fff;
       max-width: 760px;
       width: 100%;
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
     }
     .boss-cam-card-title {
       font-size: 1.2em;
@@ -402,9 +403,12 @@ function readState(node) {
       if (merged.seedMode !== "random" && merged.seedMode !== "fixed") {
         merged.seedMode = "random";
       }
-      if (typeof merged.delimiter !== "string") merged.delimiter = DELIMITER_DEFAULT;
+      if (typeof merged.delimiter !== "string")
+        merged.delimiter = DELIMITER_DEFAULT;
       return merged;
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
   }
   return defaultState();
 }
@@ -441,9 +445,16 @@ function hideCanvasWidget(widgets, name) {
 }
 
 const VISIBLE_NATIVE_WIDGETS = [
-  "camera_angle", "angle_category", "angle_strength",
-  "art_style", "style_category", "style_strength",
-  "weight_format", "delimiter", "seed", "force_refresh",
+  "camera_angle",
+  "angle_category",
+  "angle_strength",
+  "art_style",
+  "style_category",
+  "style_strength",
+  "weight_format",
+  "delimiter",
+  "seed",
+  "force_refresh",
 ];
 
 function escapeHtml(s) {
@@ -495,7 +506,11 @@ function syncNativeWidgets(node, state) {
     if (w.value !== value) {
       w.value = value;
       if (typeof w.callback === "function") {
-        try { w.callback(value); } catch { /* */ }
+        try {
+          w.callback(value);
+        } catch {
+          /* */
+        }
       }
     }
   };
@@ -574,7 +589,10 @@ function applyWeight(text, strength, fmt) {
   }
   if (fmt === "parentheses") {
     if (Math.abs(s - 1.0) < 1e-4) return text;
-    const layers = Math.max(1, Math.min(5, Math.round(Math.abs(s - 1.0) / 0.1)));
+    const layers = Math.max(
+      1,
+      Math.min(5, Math.round(Math.abs(s - 1.0) / 0.1)),
+    );
     if (s > 1.0) return "(".repeat(layers) + text + ")".repeat(layers);
     return "[".repeat(layers) + text + "]".repeat(layers);
   }
@@ -611,28 +629,32 @@ function buildPreviewHTML(state, lib) {
   const parts = [angWeighted, styWeighted].filter(Boolean);
   const combined = parts.join(state.delimiter);
 
-  const fmtLabel = (lib.weightFormats.find((f) => f.key === fmt) || { label: fmt }).label;
+  const fmtLabel = (
+    lib.weightFormats.find((f) => f.key === fmt) || { label: fmt }
+  ).label;
   const seedLabel = state.seedMode === "random" ? "random" : String(state.seed);
 
-  const angleCard = angKey === NONE_SENTINEL
-    ? `<div class="boss-cam-mini none" style="--accent:#88ccff">
+  const angleCard =
+    angKey === NONE_SENTINEL
+      ? `<div class="boss-cam-mini none" style="--accent:#88ccff">
          <div class="h">📐 ANGLE</div>
          <div class="v">(none)</div>
          <div class="w">weight: ${angStr.toFixed(2)}</div>
        </div>`
-    : `<div class="boss-cam-mini" style="--accent:#88ccff">
+      : `<div class="boss-cam-mini" style="--accent:#88ccff">
          <div class="h">📐 ANGLE</div>
          <div class="v">${escapeHtml(angKey === RANDOM_ANGLE ? "(random)" : angKey)}</div>
          <div class="w">weight: ${angStr.toFixed(2)}</div>
        </div>`;
 
-  const styleCard = styKey === NONE_SENTINEL
-    ? `<div class="boss-cam-mini none" style="--accent:#ff88cc">
+  const styleCard =
+    styKey === NONE_SENTINEL
+      ? `<div class="boss-cam-mini none" style="--accent:#ff88cc">
          <div class="h">🎨 STYLE</div>
          <div class="v">(none)</div>
          <div class="w">weight: ${styStr.toFixed(2)}</div>
        </div>`
-    : `<div class="boss-cam-mini" style="--accent:#ff88cc">
+      : `<div class="boss-cam-mini" style="--accent:#ff88cc">
          <div class="h">🎨 STYLE</div>
          <div class="v">${escapeHtml(styKey === RANDOM_STYLE ? "(random)" : styKey)}</div>
          <div class="w">weight: ${styStr.toFixed(2)}</div>
@@ -662,7 +684,13 @@ function buildPreviewHTML(state, lib) {
 class CameraEditor {
   constructor(node) {
     this.node = node;
-    this.library = { angles: {}, styles: {}, angleCategories: {}, styleCategories: {}, weightFormats: [] };
+    this.library = {
+      angles: {},
+      styles: {},
+      angleCategories: {},
+      styleCategories: {},
+      weightFormats: [],
+    };
     this.state = readState(node);
     this.lastSeed = node._pixBossLastSeed ?? null;
     this.modal = null;
@@ -686,7 +714,10 @@ class CameraEditor {
   }
 
   buildModal() {
-    if (this.modal) { this.modal.remove(); this.modal = null; }
+    if (this.modal) {
+      this.modal.remove();
+      this.modal = null;
+    }
     const modal = document.createElement("div");
     modal.className = "boss-cam-modal";
 
@@ -710,45 +741,57 @@ class CameraEditor {
     const side = document.createElement("div");
     side.className = "boss-cam-side";
 
-    side.appendChild(this.buildListSection({
-      title: "Angle",
-      sentinel: RANDOM_ANGLE,
-      stateKey: "cameraAngle",
-      categoryKey: "angleCategory",
-      data: this.library.angles,
-      categories: this.library.angleCategories,
-      searchVar: "_angleSearch",
-      listVar: "_angleListEl",
-    }));
-    side.appendChild(this.buildCategorySection({
-      title: "Angle Category",
-      stateKey: "angleCategory",
-      categories: this.library.angleCategories,
-    }));
-    side.appendChild(this.buildStrengthSection({
-      title: "Angle Strength",
-      stateKey: "angleStrength",
-    }));
+    side.appendChild(
+      this.buildListSection({
+        title: "Angle",
+        sentinel: RANDOM_ANGLE,
+        stateKey: "cameraAngle",
+        categoryKey: "angleCategory",
+        data: this.library.angles,
+        categories: this.library.angleCategories,
+        searchVar: "_angleSearch",
+        listVar: "_angleListEl",
+      }),
+    );
+    side.appendChild(
+      this.buildCategorySection({
+        title: "Angle Category",
+        stateKey: "angleCategory",
+        categories: this.library.angleCategories,
+      }),
+    );
+    side.appendChild(
+      this.buildStrengthSection({
+        title: "Angle Strength",
+        stateKey: "angleStrength",
+      }),
+    );
 
-    side.appendChild(this.buildListSection({
-      title: "Style",
-      sentinel: RANDOM_STYLE,
-      stateKey: "artStyle",
-      categoryKey: "styleCategory",
-      data: this.library.styles,
-      categories: this.library.styleCategories,
-      searchVar: "_styleSearch",
-      listVar: "_styleListEl",
-    }));
-    side.appendChild(this.buildCategorySection({
-      title: "Style Category",
-      stateKey: "styleCategory",
-      categories: this.library.styleCategories,
-    }));
-    side.appendChild(this.buildStrengthSection({
-      title: "Style Strength",
-      stateKey: "styleStrength",
-    }));
+    side.appendChild(
+      this.buildListSection({
+        title: "Style",
+        sentinel: RANDOM_STYLE,
+        stateKey: "artStyle",
+        categoryKey: "styleCategory",
+        data: this.library.styles,
+        categories: this.library.styleCategories,
+        searchVar: "_styleSearch",
+        listVar: "_styleListEl",
+      }),
+    );
+    side.appendChild(
+      this.buildCategorySection({
+        title: "Style Category",
+        stateKey: "styleCategory",
+        categories: this.library.styleCategories,
+      }),
+    );
+    side.appendChild(
+      this.buildStrengthSection({
+        title: "Style Strength",
+        stateKey: "styleStrength",
+      }),
+    );
 
     side.appendChild(this.buildFormatSection());
     side.appendChild(this.buildDelimiterSection());
@@ -792,7 +835,16 @@ class CameraEditor {
   }
 
   // ── Angle / Style list section ─────────────────────────────────────────
-  buildListSection({ title, sentinel, stateKey, categoryKey, data, categories, searchVar, listVar }) {
+  buildListSection({
+    title,
+    sentinel,
+    stateKey,
+    categoryKey,
+    data,
+    categories,
+    searchVar,
+    listVar,
+  }) {
     const wrap = document.createElement("div");
     wrap.className = "boss-cam-list-wrap";
 
@@ -826,7 +878,9 @@ class CameraEditor {
   refreshList(which) {
     const isAngle = which === "angle";
     const data = isAngle ? this.library.angles : this.library.styles;
-    const cats = isAngle ? this.library.angleCategories : this.library.styleCategories;
+    const cats = isAngle
+      ? this.library.angleCategories
+      : this.library.styleCategories;
     const sentinel = isAngle ? RANDOM_ANGLE : RANDOM_STYLE;
     const stateKey = isAngle ? "cameraAngle" : "artStyle";
     const categoryKey = isAngle ? "angleCategory" : "styleCategory";
@@ -856,7 +910,8 @@ class CameraEditor {
 
     for (const it of items) {
       const row = document.createElement("div");
-      row.className = "boss-cam-list-item" +
+      row.className =
+        "boss-cam-list-item" +
         (this.state[stateKey] === it.name ? " selected" : "");
       const name = document.createElement("span");
       name.className = "name";
@@ -1023,7 +1078,10 @@ class CameraEditor {
     };
     num.addEventListener("keydown", (e) => {
       e.stopPropagation();
-      if (e.key === "Enter") { e.preventDefault(); num.blur(); }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        num.blur();
+      }
     });
     num.addEventListener("blur", commit);
     wrap.appendChild(num);
@@ -1035,10 +1093,14 @@ class CameraEditor {
         s.classList.toggle("active", s.dataset.mode === this.state.seedMode);
       });
     };
-    for (const [m, label] of [["random", "Random"], ["fixed", "Fixed"]]) {
+    for (const [m, label] of [
+      ["random", "Random"],
+      ["fixed", "Fixed"],
+    ]) {
       const seg = document.createElement("button");
       seg.type = "button";
-      seg.className = "boss-cam-seg" + (this.state.seedMode === m ? " active" : "");
+      seg.className =
+        "boss-cam-seg" + (this.state.seedMode === m ? " active" : "");
       seg.textContent = label;
       seg.dataset.mode = m;
       seg.addEventListener("click", () => {
@@ -1100,13 +1162,22 @@ class CameraEditor {
         ta.value = text;
         ta.style.cssText = "position:fixed;opacity:0;";
         let ok = false;
-        try { document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); }
-        catch { ok = false; }
-        finally { ta.remove(); }
+        try {
+          document.body.appendChild(ta);
+          ta.select();
+          ok = document.execCommand("copy");
+        } catch {
+          ok = false;
+        } finally {
+          ta.remove();
+        }
         flash(ok);
       };
       if (navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(text).then(() => flash(true)).catch(legacy);
+        navigator.clipboard
+          .writeText(text)
+          .then(() => flash(true))
+          .catch(legacy);
       } else {
         legacy();
       }
@@ -1149,8 +1220,15 @@ class CameraEditor {
     this.close();
   }
 
-  cancel() { this.close(); }
-  close() { if (this.modal) { this.modal.remove(); this.modal = null; } }
+  cancel() {
+    this.close();
+  }
+  close() {
+    if (this.modal) {
+      this.modal.remove();
+      this.modal = null;
+    }
+  }
 }
 
 // ── loadGraphData 300 ms guard (same trick as the two siblings) ───────────
@@ -1161,9 +1239,14 @@ if (app && app.loadGraphData && !app._bossCamLoadWrapped) {
   app.loadGraphData = function (...args) {
     _bossCamLoadingGraph = true;
     let r;
-    try { r = _origLoad(...args); }
-    finally {
-      Promise.resolve(r).finally(() => setTimeout(() => { _bossCamLoadingGraph = false; }, 300));
+    try {
+      r = _origLoad(...args);
+    } finally {
+      Promise.resolve(r).finally(() =>
+        setTimeout(() => {
+          _bossCamLoadingGraph = false;
+        }, 300),
+      );
     }
     return r;
   };
@@ -1201,7 +1284,10 @@ function buildCameraNodeIndex() {
     const nodes = graph._nodes || graph.nodes || [];
     for (const n of nodes) {
       if (!n) continue;
-      if (n.comfyClass === "CameraStyleMixer" || n.type === "CameraStyleMixer") {
+      if (
+        n.comfyClass === "CameraStyleMixer" ||
+        n.type === "CameraStyleMixer"
+      ) {
         index.set(String(n.id), n);
       }
       const inner = n.subgraph || n.graph || n._graph;
@@ -1241,7 +1327,10 @@ app.graphToPrompt = async function (...args) {
         runSeed = clampSeed(state.seed);
       }
       entry.inputs = entry.inputs || {};
-      entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify({ ...state, seed: runSeed });
+      entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify({
+        ...state,
+        seed: runSeed,
+      });
     }
   } catch (e) {
     console.warn("[BossCameraStyleMixer] graphToPrompt inject failed", e);

@@ -382,6 +382,7 @@ function injectCSS() {
       color: #fff;
       max-width: 800px;
       width: 100%;
+      box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
     }
     .boss-ms-card-title {
       font-size: 1.4em;

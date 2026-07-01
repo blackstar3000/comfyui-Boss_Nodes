@@ -1,3 +1,6 @@
+# ComfyUI/custom_nodes/ultimate_loader.py
+# Ultimate Loader v3 - Hybrid Edition (Boss style)
+
 import os
 import json
 import re
@@ -7,35 +10,148 @@ import comfy.sd
 import comfy.sample
 import comfy.model_management
 
+# ── Constants ───────────────────────────────────────────────────────────────
+
+BASE_DIR = os.path.dirname(__file__)
+MODEL_FAV_FILE = os.path.join(BASE_DIR, "checkpoint_favorites.json")
+SIZE_PRESET_FILE = os.path.join(BASE_DIR, "size_presets.json")
+
+# ── Helpers for JSON I/O ──────────────────────────────────────────────────
+
+def _load_json(path, default=None):
+    if not os.path.exists(path):
+        return default if default is not None else {}
+    try:
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return default if default is not None else {}
+
+def _save_json(path, data):
+    try:
+        if os.path.exists(path):
+            with open(path, "r", encoding="utf-8") as f:
+                old = f.read()
+            with open(path + ".bak", "w", encoding="utf-8") as f:
+                f.write(old)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=4, ensure_ascii=False)
+        return True
+    except Exception:
+        return False
+
+# ── API routes ──────────────────────────────────────────────────────────────
+
+def register_api_routes():
+    try:
+        from server import PromptServer
+        from aiohttp import web
+    except ImportError:
+        return
+
+    routes = PromptServer.instance.routes
+
+    @routes.get("/ultimate_loader/data")
+    async def get_data(request):
+        try:
+            checkpoints = folder_paths.get_filename_list("checkpoints")
+            vaes = folder_paths.get_filename_list("vae")
+            model_favs = _load_json(MODEL_FAV_FILE, {})
+            size_presets = _load_json(SIZE_PRESET_FILE, {})
+            return web.json_response({
+                "checkpoints": checkpoints,
+                "vaes": vaes,
+                "model_favorites": model_favs,
+                "size_presets": size_presets,
+            })
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    @routes.post("/ultimate_loader/favorites/model")
+    async def save_model_fav(request):
+        try:
+            data = await request.json()
+            name = (data.get("name") or "").strip()
+            ckpt = (data.get("ckpt") or "").strip()
+            if not name or not ckpt:
+                return web.json_response({"error": "Name and checkpoint required"}, status=400)
+            favs = _load_json(MODEL_FAV_FILE, {})
+            favs[name] = ckpt
+            _save_json(MODEL_FAV_FILE, favs)
+            return web.json_response({"success": True, "favorites": favs})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    @routes.post("/ultimate_loader/favorites/model/delete")
+    async def delete_model_fav(request):
+        try:
+            data = await request.json()
+            name = (data.get("name") or "").strip()
+            if not name:
+                return web.json_response({"error": "Name required"}, status=400)
+            favs = _load_json(MODEL_FAV_FILE, {})
+            if name in favs:
+                del favs[name]
+                _save_json(MODEL_FAV_FILE, favs)
+                return web.json_response({"success": True, "favorites": favs})
+            return web.json_response({"error": "Not found"}, status=404)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    @routes.post("/ultimate_loader/favorites/size")
+    async def save_size_preset(request):
+        try:
+            data = await request.json()
+            name = (data.get("name") or "").strip()
+            width = data.get("width")
+            height = data.get("height")
+            batch_size = data.get("batch_size", 1)
+            if not name or width is None or height is None:
+                return web.json_response({"error": "Name, width, height required"}, status=400)
+            width = int(width); height = int(height); batch_size = int(batch_size)
+            presets = _load_json(SIZE_PRESET_FILE, {})
+            presets[name] = {"width": width, "height": height, "batch_size": batch_size}
+            _save_json(SIZE_PRESET_FILE, presets)
+            return web.json_response({"success": True, "presets": presets})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    @routes.post("/ultimate_loader/favorites/size/delete")
+    async def delete_size_preset(request):
+        try:
+            data = await request.json()
+            name = (data.get("name") or "").strip()
+            if not name:
+                return web.json_response({"error": "Name required"}, status=400)
+            presets = _load_json(SIZE_PRESET_FILE, {})
+            if name in presets:
+                del presets[name]
+                _save_json(SIZE_PRESET_FILE, presets)
+                return web.json_response({"success": True, "presets": presets})
+            return web.json_response({"error": "Not found"}, status=404)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+register_api_routes()
+
+# ── Node class ─────────────────────────────────────────────────────────────
+
 class UltimateLoader:
-    """
-    Ultimate Loader v3 - Hybrid Edition (Fixed Latent).
-    Combines TTN Aspect Ratios, VAE Selection, Clip Skip, with JSON Favorites.
-    """
-    
     @classmethod
     def INPUT_TYPES(cls):
-        # 1. Checkpoints
+        # Dynamic lists (re‑evaluated each time)
         try:
-            checkpoint_files = folder_paths.get_filename_list("checkpoints")
+            checkpoints = folder_paths.get_filename_list("checkpoints") or []
         except:
-            checkpoint_files = []
+            checkpoints = []
+        try:
+            vaes = folder_paths.get_filename_list("vae") or []
+        except:
+            vaes = []
 
-        # 2. Model Favorites (JSON)
-        json_path_models = os.path.join(os.path.dirname(__file__), "checkpoint_favorites.json")
-        model_favs = []
-        if os.path.exists(json_path_models):
-            try:
-                with open(json_path_models, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    if isinstance(data, dict):
-                        model_favs = list(data.keys())
-            except:
-                pass
+        model_favs = list(_load_json(MODEL_FAV_FILE, {}).keys())
 
-        # 3. Size Presets (JSON + TTN Hardcoded)
-        json_path_sizes = os.path.join(os.path.dirname(__file__), "size_presets.json")
-        
+        # Build aspect ratio dropdown with TTN presets + JSON presets
         aspect_ratios = [
             "width x height [custom]",
             "512 x 512 [S] 1:1",
@@ -47,7 +163,7 @@ class UltimateLoader:
             "682 x 512 [L] 4:3",
             "768 x 512 [L] 3:2",
             "910 x 512 [L] 16:9",
-            "1024 x 1024 [S] 1:1",                        
+            "1024 x 1024 [S] 1:1",
             "512 x 1024 [P] 1:2",
             "1024 x 512 [L] 2:1",
             "640 x 1536 [P] 9:21",
@@ -62,116 +178,127 @@ class UltimateLoader:
             "1216 x 768 [L] 8:5",
             "1216 x 832 [L] 3:2",
             "1152 x 896 [L] 4:3",
-            "--- Custom JSON Presets ---" 
+            "--- Custom JSON Presets ---"
         ]
-        
-        if os.path.exists(json_path_sizes):
-            try:
-                with open(json_path_sizes, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                    if isinstance(data, dict):
-                        aspect_ratios.extend(list(data.keys()))
-            except:
-                pass
-
-        # 4. VAE List
-        try:
-            vae_list = folder_paths.get_filename_list("vae")
-        except:
-            vae_list = []
+        size_presets = _load_json(SIZE_PRESET_FILE, {})
+        aspect_ratios.extend(list(size_presets.keys()))
 
         return {
             "required": {
-                # --- MODEL CONTROLS ---
-                "ckpt_name": (checkpoint_files, {"default": checkpoint_files[0] if checkpoint_files else ""}),
+                "ckpt_name": (checkpoints, {"default": checkpoints[0] if checkpoints else ""}),
                 "model_action": (["Load Model", "Save Favorite", "Delete Favorite"], {"default": "Load Model"}),
                 "model_preset": (["None"] + model_favs, {"default": "None"}),
                 "fav_name": ("STRING", {"default": "My Main Model"}),
-                
-                # --- VAE & CLIP ---
-                "vae_name": (["Baked VAE"] + vae_list, {"default": "Baked VAE"}),
+                "vae_name": (["Baked VAE"] + vaes, {"default": "Baked VAE"}),
                 "clip_skip": ("INT", {"default": -1, "min": -24, "max": 0, "step": 1}),
-                
-                # --- SIZE CONTROLS ---
                 "aspect_ratio": (aspect_ratios, {"default": "1024 x 1024 [S] 1:1"}),
                 "width": ("INT", {"default": 1024, "min": 64, "max": 8192}),
                 "height": ("INT", {"default": 1024, "min": 64, "max": 8192}),
                 "batch_size": ("INT", {"default": 1, "min": 1, "max": 32}),
+            },
+            "hidden": {
+                "LoaderState": ("STRING", {"default": "{}"}),
             }
         }
 
     RETURN_TYPES = ("MODEL", "CLIP", "VAE", "LATENT", "INT", "INT", "STRING")
     RETURN_NAMES = ("MODEL", "CLIP", "VAE", "LATENT", "WIDTH", "HEIGHT", "STATUS")
     FUNCTION = "load"
-    CATEGORY = "Ultimate Loader"
+    CATEGORY = "👑 Boss Nodes/📦 Loaders"
 
-    def load(self, ckpt_name, model_action, model_preset, fav_name, vae_name, clip_skip, aspect_ratio, width, height, batch_size):
-        json_path_models = os.path.join(os.path.dirname(__file__), "checkpoint_favorites.json")
-        json_path_sizes = os.path.join(os.path.dirname(__file__), "size_presets.json")
+    @classmethod
+    def IS_CHANGED(cls, LoaderState, **kwargs):
+        # Re‑execute when the JS state changes
+        return LoaderState
 
-        # 1. Handle Model Favorites
-        json_data = self._get_safe_json(json_path_models)
-        
-        if model_action == "Save Favorite":
-            json_data[fav_name] = ckpt_name
-            with open(json_path_models, "w") as f:
-                json.dump(json_data, f, indent=4)
-            return (None, None, None, None, width, height, f"Saved: {fav_name}")
+    def load(self, ckpt_name, model_action, model_preset, fav_name,
+             vae_name, clip_skip, aspect_ratio, width, height, batch_size,
+             LoaderState="{}"):
 
-        if model_action == "Delete Favorite":
-            if fav_name in json_data:
-                del json_data[fav_name]
-                with open(json_path_models, "w") as f:
-                    json.dump(json_data, f, indent=4)
-            return (None, None, None, None, width, height, f"Deleted: {fav_name}")
+        # ── Parse hidden state (override widgets) ─────────────────────────
+        try:
+            state = json.loads(LoaderState) if isinstance(LoaderState, str) else {}
+        except:
+            state = {}
+        if isinstance(state, dict):
+            # Override all inputs with state values if present
+            ckpt_name = state.get("ckpt_name", ckpt_name)
+            model_action = state.get("model_action", model_action)
+            model_preset = state.get("model_preset", model_preset)
+            fav_name = state.get("fav_name", fav_name)
+            vae_name = state.get("vae_name", vae_name)
+            clip_skip = int(state.get("clip_skip", clip_skip))
+            aspect_ratio = state.get("aspect_ratio", aspect_ratio)
+            width = int(state.get("width", width))
+            height = int(state.get("height", height))
+            batch_size = int(state.get("batch_size", batch_size))
 
-        # 2. Determine Checkpoint
+        # ── Resolve model from preset if needed ──────────────────────────
         if model_preset != "None":
-            actual_ckpt = self._get_json_val(json_path_models, model_preset)
-            if actual_ckpt: ckpt_name = actual_ckpt
+            model_favs = _load_json(MODEL_FAV_FILE, {})
+            if model_preset in model_favs:
+                ckpt_name = model_favs[model_preset]
 
-        # 3. Determine Size
-        if aspect_ratio.startswith("width x height"):
-            pass  # Use manual width/height inputs
-        elif aspect_ratio.startswith("---"):
-            pass  # Use manual inputs
+        # ── Handle model favorite actions ─────────────────────────────────
+        if model_action in ("Save Favorite", "Delete Favorite"):
+            json_data = _load_json(MODEL_FAV_FILE, {})
+            if model_action == "Save Favorite":
+                if fav_name.strip():
+                    json_data[fav_name] = ckpt_name
+                    _save_json(MODEL_FAV_FILE, json_data)
+                    status = f"Saved: {fav_name}"
+                else:
+                    status = "Error: Favorite name empty"
+                return (None, None, None, None, width, height, status)
+            else:  # Delete
+                if fav_name in json_data:
+                    del json_data[fav_name]
+                    _save_json(MODEL_FAV_FILE, json_data)
+                    status = f"Deleted: {fav_name}"
+                else:
+                    status = "Error: Favorite not found"
+                return (None, None, None, None, width, height, status)
+
+        # ── Resolve aspect ratio ──────────────────────────────────────────
+        if aspect_ratio.startswith("width x height") or aspect_ratio.startswith("---"):
+            pass  # use manual width/height
         else:
-            # Try to parse TTN string (e.g., "512 x 768 [P]")
+            # Try to parse TTN string first
             match = re.search(r"(\d+)\s*x\s*(\d+)", aspect_ratio)
             if match:
                 width = int(match.group(1))
                 height = int(match.group(2))
             else:
                 # Try JSON preset
-                size_data = self._get_json_val(json_path_sizes, aspect_ratio)
-                if size_data:
-                    width = size_data.get("width", width)
-                    height = size_data.get("height", height)
-                    batch_size = size_data.get("batch_size", batch_size)
+                presets = _load_json(SIZE_PRESET_FILE, {})
+                if aspect_ratio in presets:
+                    p = presets[aspect_ratio]
+                    width = p.get("width", width)
+                    height = p.get("height", height)
+                    batch_size = p.get("batch_size", batch_size)
 
-        # 4. Load Model & CLIP
+        # ── Load checkpoint ──────────────────────────────────────────────
         try:
+            ckpt_path = folder_paths.get_full_path("checkpoints", ckpt_name)
             out = comfy.sd.load_checkpoint_guess_config(
-                folder_paths.get_full_path("checkpoints", ckpt_name),
+                ckpt_path,
                 output_vae=True,
                 output_clip=True,
                 embedding_directory=folder_paths.get_folder_paths("embeddings")
             )
-            model = out[0]
-            clip = out[1]
-            vae = out[2]
+            model, clip, vae = out[0], out[1], out[2]
         except Exception as e:
-            return (None, None, None, None, width, height, f"Load Error: {e}")
+            return (None, None, None, None, width, height, f"Load error: {e}")
 
-        # 5. Load External VAE (if selected)
+        # ── Load external VAE ─────────────────────────────────────────────
         if vae_name != "Baked VAE":
             try:
                 vae_path = folder_paths.get_full_path("vae", vae_name)
                 vae = comfy.sd.VAE(ckpt_path=vae_path)
             except Exception as e:
-                return (model, clip, vae, None, width, height, f"VAE Error: {e}")
+                return (model, clip, vae, None, width, height, f"VAE error: {e}")
 
-        # 6. Clip Skip (FIXED for ModelPatcher)
+        # ── Clip Skip ────────────────────────────────────────────────────
         if clip_skip != -1:
             try:
                 # Unwrap if patched
@@ -187,46 +314,19 @@ class UltimateLoader:
             except Exception as e:
                 print(f"[UltimateLoader] Clip Skip error: {e}")
 
-        # 7. Generate Latent (Standard Method)
+        # ── Latent ──────────────────────────────────────────────────────
         try:
             device = comfy.model_management.get_torch_device()
-            
-            # Latent resolution is 1/8th of the image resolution
-            latent_width = width // 8
-            latent_height = height // 8
-            
-            samples = torch.zeros([batch_size, 4, latent_height, latent_width], device=device)
-            latent = {"samples": samples}
-            
+            latent = {
+                "samples": torch.zeros([batch_size, 4, height // 8, width // 8], device=device)
+            }
         except Exception as e:
-            return (model, clip, vae, None, width, height, f"Latent Error: {e}")
+            return (model, clip, vae, None, width, height, f"Latent error: {e}")
 
-        status = f"Loaded: {ckpt_name} | VAE: {vae_name} | Size: {width}x{height}"
+        status = f"Loaded: {ckpt_name} | VAE: {vae_name} | {width}x{height}"
         return (model, clip, vae, latent, width, height, status)
 
-    # --- Helpers ---
-    def _get_safe_json(self, path):
-        data = {}
-        if os.path.exists(path):
-            try:
-                with open(path, "r", encoding="utf-8") as f: data = json.load(f)
-            except:
-                data = {}
-        return data
-
-    def _get_json_val(self, path, key):
-        if os.path.exists(path):
-            try:
-                with open(path, "r", encoding="utf-8") as f:
-                    data = json.load(f)
-                return data.get(key)
-            except:
-                return None
-        return None
-
-    @classmethod
-    def IS_CHANGED(cls, *args, **kwargs):
-        return float("nan")
 
 NODE_CLASS_MAPPINGS = {"UltimateLoader": UltimateLoader}
-NODE_DISPLAY_NAME_MAPPINGS = {"UltimateLoader": "Ultimate Loader v3 (Hybrid)"}
+NODE_DISPLAY_NAME_MAPPINGS = {"UltimateLoader": "Ultimate Loader Pro"}
+__all__ = ["NODE_CLASS_MAPPINGS", "NODE_DISPLAY_NAME_MAPPINGS"]
