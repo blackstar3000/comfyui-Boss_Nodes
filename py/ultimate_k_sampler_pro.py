@@ -118,6 +118,46 @@ register_api_routes()
 # ── Node class ──────────────────────────────────────────────────────────────
 
 class UltimateKSamplerPro:
+    """
+    Ultimate KSampler Pro — Advanced sampling node with presets, favorites, and hidden state integration.
+
+    This node wraps ComfyUI's common_ksampler and VAE decode, offering:
+    - A choice of built‑in presets (Fast, Balanced, High Quality, Anime, etc.)
+    - Customizable CFG presets (Low Creativity, Creative, etc.) that override the preset's CFG
+    - Manual override mode to ignore the preset and use direct values
+    - Favorites system: save any combination of sampler, scheduler, steps, and CFG as a named favorite
+    - Full hidden state (`KSamplerState`) support for UI synchronization and state persistence
+    - REST API routes for managing favorites (list, save, delete)
+    - Outputs both the latent and the decoded image
+
+    **Usage:**
+    - Connect your model, conditioning, latent, and VAE.
+    - Choose a preset or use manual override.
+    - Optionally apply a CFG preset to adjust creativity.
+    - Toggle `save_as_favorite` and provide a `favorite_name` to store the current settings.
+    - The hidden `KSamplerState` string can be used by custom UI wrappers to read/write all parameters.
+
+    The node also returns a UI preview with the effective settings and favorite count.
+    """
+    DESCRIPTION = (
+        "Ultimate KSampler Pro — Advanced sampling node with presets, favorites, and hidden state integration.\n\n"
+        "This node wraps ComfyUI's common_ksampler and VAE decode, offering:\n"
+        "- A choice of built‑in presets (Fast, Balanced, High Quality, Anime, etc.)\n"
+        "- Customizable CFG presets (Low Creativity, Creative, etc.) that override the preset's CFG\n"
+        "- Manual override mode to ignore the preset and use direct values\n"
+        "- Favorites system: save any combination of sampler, scheduler, steps, and CFG as a named favorite\n"
+        "- Full hidden state (`KSamplerState`) support for UI synchronization and state persistence\n"
+        "- REST API routes for managing favorites (list, save, delete)\n"
+        "- Outputs both the latent and the decoded image\n\n"
+        "**Usage:**\n"
+        "- Connect your model, conditioning, latent, and VAE.\n"
+        "- Choose a preset or use manual override.\n"
+        "- Optionally apply a CFG preset to adjust creativity.\n"
+        "- Toggle `save_as_favorite` and provide a `favorite_name` to store the current settings.\n"
+        "- The hidden `KSamplerState` string can be used by custom UI wrappers to read/write all parameters.\n\n"
+        "The node also returns a UI preview with the effective settings and favorite count."
+    )
+
     @classmethod
     def INPUT_TYPES(cls):
         favorites = _load_favorites()

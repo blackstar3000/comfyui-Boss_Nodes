@@ -137,6 +137,47 @@ register_api_routes()
 # ── Node class ─────────────────────────────────────────────────────────────
 
 class UltimateLoader:
+    """
+    Ultimate Loader Pro — All‑in‑one checkpoint loader with favorites, aspect‑ratio presets, and hidden state.
+
+    This node loads a checkpoint (model + CLIP + baked VAE), optionally loads an external VAE,
+    applies CLIP skip, and creates an empty latent with the chosen dimensions. It supports:
+
+    - Model favorites: save/delete named shortcuts to your favourite checkpoints.
+    - Aspect ratio presets: choose from a large set of TTN‑style presets or custom JSON‑defined presets.
+    - Manual width/height override when using the custom option.
+    - Hidden state (`LoaderState`) for UI synchronization (mirrors the Boss‑style stateful pattern).
+    - REST API routes for fetching checkpoints/VAEs and managing favorites/presets.
+    - Outputs: MODEL, CLIP, VAE, LATENT, WIDTH, HEIGHT, and a STATUS string.
+
+    **Usage:**
+    - Connect the outputs to your sampler and other nodes.
+    - Select a checkpoint, VAE, and aspect ratio.
+    - Use the `model_action` dropdown to save or delete a favorite (the node will return early with a status).
+    - The `model_preset` allows you to load a favorite directly.
+    - The `LoaderState` hidden input can be used by custom UIs to push/pull all widget values.
+
+    The node also returns a status message indicating what was loaded or which action was performed.
+    """
+    DESCRIPTION = (
+        "Ultimate Loader Pro — All‑in‑one checkpoint loader with favorites, aspect‑ratio presets, and hidden state.\n\n"
+        "This node loads a checkpoint (model + CLIP + baked VAE), optionally loads an external VAE,\n"
+        "applies CLIP skip, and creates an empty latent with the chosen dimensions. It supports:\n\n"
+        "- Model favorites: save/delete named shortcuts to your favourite checkpoints.\n"
+        "- Aspect ratio presets: choose from a large set of TTN‑style presets or custom JSON‑defined presets.\n"
+        "- Manual width/height override when using the custom option.\n"
+        "- Hidden state (`LoaderState`) for UI synchronization (mirrors the Boss‑style stateful pattern).\n"
+        "- REST API routes for fetching checkpoints/VAEs and managing favorites/presets.\n"
+        "- Outputs: MODEL, CLIP, VAE, LATENT, WIDTH, HEIGHT, and a STATUS string.\n\n"
+        "**Usage:**\n"
+        "- Connect the outputs to your sampler and other nodes.\n"
+        "- Select a checkpoint, VAE, and aspect ratio.\n"
+        "- Use the `model_action` dropdown to save or delete a favorite (the node will return early with a status).\n"
+        "- The `model_preset` allows you to load a favorite directly.\n"
+        "- The `LoaderState` hidden input can be used by custom UIs to push/pull all widget values.\n\n"
+        "The node also returns a status message indicating what was loaded or which action was performed."
+    )
+
     @classmethod
     def INPUT_TYPES(cls):
         # Dynamic lists (re‑evaluated each time)
