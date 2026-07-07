@@ -1,6 +1,6 @@
-// ╔═══════════════════════════════════════════════════════════════╗
+// ╔═══════════════════════════════════════════════════════════════════╗
 // ║  Outfit Selector Boss — DOM widget + editor modal           ║
-// ╚═══════════════════════════════════════════════════════════════╝
+// ╚═══════════════════════════════════════════════════════════════════╝
 //
 // Mirrors comfyui-Boss_Nodes/js/artist_selector/index.js + the Pixaroma
 // "stateful UI" pattern (comfyui-pixaroma/js/seed/index.js):
@@ -356,6 +356,21 @@ function injectCSS() {
       cursor: pointer;
     }
     .boss-out-cancel:hover { background: #3a3d40; }
+
+    /* Modal error banner */
+    .boss-out-error {
+      background: #5a1a1a;
+      color: #ff9999;
+      padding: 12px 16px;
+      border-radius: 6px;
+      border-left: 4px solid #ff4444;
+      margin-bottom: 12px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .boss-out-error .icon { font-size: 18px; }
   `;
   const style = document.createElement("style");
   style.id = "boss-outfit-css";
@@ -372,7 +387,7 @@ function defaultState() {
     category: ALL_CATEGORIES,
     strength: STRENGTH_DEFAULT,
     seed: 0,
-    seedMode: "random",  // "random" | "fixed"
+    seedMode: "random", // "random" | "fixed"
   };
 }
 
@@ -391,7 +406,9 @@ function readState(node) {
         merged.seedMode = "random";
       }
       return merged;
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
   }
   return defaultState();
 }
@@ -437,7 +454,13 @@ function hideCanvasWidget(widgets, name) {
 // Names of the visible native widgets. We keep them in INPUT_TYPES so the
 // schema is correct and existing workflows wire through them, but we hide
 // them on the canvas — the editor modal is the only UI surface.
-const VISIBLE_NATIVE_WIDGETS = ["outfit", "category", "strength", "seed", "force_refresh"];
+const VISIBLE_NATIVE_WIDGETS = [
+  "outfit",
+  "category",
+  "strength",
+  "seed",
+  "force_refresh",
+];
 
 // ── On-node body ───────────────────────────────────────────────────────────
 
@@ -456,8 +479,7 @@ function renderHeader(node) {
   } else {
     label = state.outfit;
   }
-  head.innerHTML =
-    `<span class="label">Outfit:</span> <span class="${cls}">${escapeHtml(label)}</span>`;
+  head.innerHTML = `<span class="label">Outfit:</span> <span class="${cls}">${escapeHtml(label)}</span>`;
 }
 
 function escapeHtml(s) {
@@ -482,19 +504,26 @@ function setStatus(node, text, isError = false) {
 // node (for users who want the basic combo) but are styled canvasOnly so
 // only our header line is visible.
 function syncNativeWidgets(node, state) {
-  const w = (widgets) => widgets.find((x) => x.name === n);
   const outfitW = (node.widgets || []).find((x) => x.name === "outfit");
   if (outfitW && outfitW.value !== state.outfit) {
     outfitW.value = state.outfit;
     if (typeof outfitW.callback === "function") {
-      try { outfitW.callback(state.outfit); } catch { /* */ }
+      try {
+        outfitW.callback(state.outfit);
+      } catch {
+        /* */
+      }
     }
   }
   const catW = (node.widgets || []).find((x) => x.name === "category");
   if (catW && catW.value !== state.category) {
     catW.value = state.category;
     if (typeof catW.callback === "function") {
-      try { catW.callback(state.category); } catch { /* */ }
+      try {
+        catW.callback(state.category);
+      } catch {
+        /* */
+      }
     }
   }
   const strW = (node.widgets || []).find((x) => x.name === "strength");
@@ -503,7 +532,11 @@ function syncNativeWidgets(node, state) {
     if (strW.value !== s) {
       strW.value = s;
       if (typeof strW.callback === "function") {
-        try { strW.callback(s); } catch { /* */ }
+        try {
+          strW.callback(s);
+        } catch {
+          /* */
+        }
       }
     }
   }
@@ -513,7 +546,11 @@ function syncNativeWidgets(node, state) {
     if (seedW.value !== sd) {
       seedW.value = sd;
       if (typeof seedW.callback === "function") {
-        try { seedW.callback(sd); } catch { /* */ }
+        try {
+          seedW.callback(sd);
+        } catch {
+          /* */
+        }
       }
     }
   }
@@ -609,9 +646,16 @@ function buildPreviewHTML(state, library) {
 
   // Color based on strength (same rule as the original _preview).
   let color, glow;
-  if (s >= 1.3) { color = "#ffd700"; glow = "0 0 40px rgba(255,215,0,0.4)"; }
-  else if (s >= 1.0) { color = "#00ff00"; glow = "0 0 40px rgba(0,255,0,0.3)"; }
-  else { color = "#ff5555"; glow = "0 0 40px rgba(255,85,85,0.3)"; }
+  if (s >= 1.3) {
+    color = "#ffd700";
+    glow = "0 0 40px rgba(255,215,0,0.4)";
+  } else if (s >= 1.0) {
+    color = "#00ff00";
+    glow = "0 0 40px rgba(0,255,0,0.3)";
+  } else {
+    color = "#ff5555";
+    glow = "0 0 40px rgba(255,85,85,0.3)";
+  }
 
   // We can't easily restyle the wrapper from JS-injected HTML inside a
   // shadow-free DOM, so we return HTML for the contents and let CSS handle
@@ -629,6 +673,16 @@ function buildPreviewHTML(state, library) {
   };
 }
 
+// ── Debounce helper ─────────────────────────────────────────────────────────
+
+function debounce(fn, delay) {
+  let timer = null;
+  return function (...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn.apply(this, args), delay);
+  };
+}
+
 // ── OutfitEditor ────────────────────────────────────────────────────────────
 
 class OutfitEditor {
@@ -636,10 +690,10 @@ class OutfitEditor {
     this.node = node;
     this.library = {};
     this.categories = {};
-    // Working copy of state — Save commits it; Cancel discards it.
     this.state = readState(node);
     this.lastSeed = node._pixBossLastSeed ?? null;
     this.modal = null;
+    this.loadError = false;
     this._previewDirty = true;
   }
 
@@ -649,17 +703,27 @@ class OutfitEditor {
     const data = await r.json();
     this.library = data.outfits || {};
     this.categories = data.categories || {};
+    this.loadError = false;
   }
 
   // ── Modal scaffolding ──────────────────────────────────────────────────
-  open() {
-    return this.fetchData().then(() => {
-      this.buildModal();
-    });
+  async open() {
+    try {
+      await this.fetchData();
+    } catch (err) {
+      console.error("[OutfitEditor] fetch failed", err);
+      this.loadError = true;
+      this.library = {};
+      this.categories = {};
+    }
+    this.buildModal();
   }
 
   buildModal() {
-    if (this.modal) { this.modal.remove(); this.modal = null; }
+    if (this.modal) {
+      this.modal.remove();
+      this.modal = null;
+    }
     const modal = document.createElement("div");
     modal.className = "boss-out-modal";
 
@@ -681,6 +745,14 @@ class OutfitEditor {
     const side = document.createElement("div");
     side.className = "boss-out-side";
     body.appendChild(side);
+
+    // ── Error banner (if load failed) ──
+    if (this.loadError) {
+      const errDiv = document.createElement("div");
+      errDiv.className = "boss-out-error";
+      errDiv.innerHTML = `<span class="icon">⚠️</span> Failed to load outfit library. Check console and ensure the server is running.`;
+      side.appendChild(errDiv);
+    }
 
     // Outfit section: search + scrollable list
     const outfitSec = this.buildOutfitSection();
@@ -715,6 +787,7 @@ class OutfitEditor {
     saveBtn.type = "button";
     saveBtn.className = "boss-out-save";
     saveBtn.textContent = "Save";
+    saveBtn.disabled = this.loadError;
     saveBtn.addEventListener("click", () => this.save());
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
@@ -753,9 +826,11 @@ class OutfitEditor {
     list.className = "boss-out-outfit-list";
     wrap.appendChild(list);
 
+    // Apply debounce to search input
+    const debouncedRefresh = debounce(() => this.refreshOutfitList(), 200);
     search.addEventListener("input", (e) => {
       this._outfitSearch = e.target.value;
-      this.refreshOutfitList();
+      debouncedRefresh();
     });
 
     this._outfitSearch = "";
@@ -779,8 +854,9 @@ class OutfitEditor {
     if (this.state.category === ALL_CATEGORIES || !this.state.category) {
       names = Object.keys(this.library).sort();
     } else {
-      const catItems = (this.categories[this.state.category] || [])
-        .filter((n) => n in this.library);
+      const catItems = (this.categories[this.state.category] || []).filter(
+        (n) => n in this.library,
+      );
       names = catItems.sort();
     }
     for (const n of names) {
@@ -790,7 +866,8 @@ class OutfitEditor {
 
     for (const it of items) {
       const row = document.createElement("div");
-      row.className = "boss-out-outfit-item" +
+      row.className =
+        "boss-out-outfit-item" +
         (this.state.outfit === it.name ? " selected" : "");
       const name = document.createElement("span");
       name.className = "name";
@@ -913,7 +990,10 @@ class OutfitEditor {
     };
     num.addEventListener("keydown", (e) => {
       e.stopPropagation();
-      if (e.key === "Enter") { e.preventDefault(); num.blur(); }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        num.blur();
+      }
     });
     num.addEventListener("blur", commit);
     wrap.appendChild(num);
@@ -926,10 +1006,14 @@ class OutfitEditor {
         s.classList.toggle("active", s.dataset.mode === this.state.seedMode);
       });
     };
-    for (const [m, label] of [["random", "Random"], ["fixed", "Fixed"]]) {
+    for (const [m, label] of [
+      ["random", "Random"],
+      ["fixed", "Fixed"],
+    ]) {
       const seg = document.createElement("button");
       seg.type = "button";
-      seg.className = "boss-out-seg" + (this.state.seedMode === m ? " active" : "");
+      seg.className =
+        "boss-out-seg" + (this.state.seedMode === m ? " active" : "");
       seg.textContent = label;
       seg.dataset.mode = m;
       seg.addEventListener("click", () => {
@@ -993,13 +1077,22 @@ class OutfitEditor {
         ta.value = text;
         ta.style.cssText = "position:fixed;opacity:0;";
         let ok = false;
-        try { document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); }
-        catch { ok = false; }
-        finally { ta.remove(); }
+        try {
+          document.body.appendChild(ta);
+          ta.select();
+          ok = document.execCommand("copy");
+        } catch {
+          ok = false;
+        } finally {
+          ta.remove();
+        }
         flash(ok);
       };
       if (navigator.clipboard?.writeText) {
-        navigator.clipboard.writeText(text).then(() => flash(true)).catch(legacy);
+        navigator.clipboard
+          .writeText(text)
+          .then(() => flash(true))
+          .catch(legacy);
       } else {
         legacy();
       }
@@ -1058,24 +1151,11 @@ class OutfitEditor {
   }
 
   close() {
-    if (this.modal) { this.modal.remove(); this.modal = null; }
-  }
-}
-
-// ── loadGraphData 300 ms guard (same trick as artist selector) ────────────
-let _bossOutLoadingGraph = false;
-if (app && app.loadGraphData && !app._bossOutLoadWrapped) {
-  app._bossOutLoadWrapped = true;
-  const _origLoad = app.loadGraphData.bind(app);
-  app.loadGraphData = function (...args) {
-    _bossOutLoadingGraph = true;
-    let r;
-    try { r = _origLoad(...args); }
-    finally {
-      Promise.resolve(r).finally(() => setTimeout(() => { _bossOutLoadingGraph = false; }, 300));
+    if (this.modal) {
+      this.modal.remove();
+      this.modal = null;
     }
-    return r;
-  };
+  }
 }
 
 // ── Extension registration ─────────────────────────────────────────────────
@@ -1088,7 +1168,12 @@ app.registerExtension({
     const _origConfigure = nodeType.prototype.onConfigure;
     nodeType.prototype.onConfigure = function (info) {
       const r = _origConfigure?.apply(this, arguments);
-      if (this._bossOutHead) renderHeader(this);
+      // Resync state from properties after loading a workflow.
+      if (this._bossOutHead) {
+        const state = readState(this);
+        syncNativeWidgets(this, state);
+        renderHeader(this);
+      }
       return r;
     };
   },
@@ -1111,7 +1196,10 @@ function buildOutfitNodeIndex() {
     const nodes = graph._nodes || graph.nodes || [];
     for (const n of nodes) {
       if (!n) continue;
-      if (n.comfyClass === "BossOutfitSelector" || n.type === "BossOutfitSelector") {
+      if (
+        n.comfyClass === "BossOutfitSelector" ||
+        n.type === "BossOutfitSelector"
+      ) {
         index.set(String(n.id), n);
       }
       const inner = n.subgraph || n.graph || n._graph;
@@ -1154,7 +1242,10 @@ app.graphToPrompt = async function (...args) {
         runSeed = clampSeed(state.seed);
       }
       entry.inputs = entry.inputs || {};
-      entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify({ ...state, seed: runSeed });
+      entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify({
+        ...state,
+        seed: runSeed,
+      });
     }
   } catch (e) {
     console.warn("[BossOutfitSelector] graphToPrompt inject failed", e);

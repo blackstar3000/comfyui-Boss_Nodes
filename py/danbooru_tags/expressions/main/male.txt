@@ -1,0 +1,7 @@
+blush
+shy
+bashful
+embarrassed
+flustered
+soft_smile
+gentle_smile

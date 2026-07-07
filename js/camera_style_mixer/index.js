@@ -5,12 +5,14 @@
 // Mirrors comfyui-Boss_Nodes/js/outfit_selector/index.js and the Pixaroma
 // "stateful UI" pattern (comfyui-pixaroma/js/seed/index.js):
 //   - Python declares a single hidden CameraState STRING input.
-//   - JS owns angle + style + categories + strengths + format + delimiter
+//   - JS owns angle + framing + style + categories + strengths + format + delimiter
 //     + seed(+seedMode) on node.properties.cameraState.
 //   - The graphToPrompt wrapper injects the resolved state at execution
 //     time, including a fresh per-run seed in Random mode.
 //   - All interactive UI (header, Open Editor button, fullscreen
 //     editor with live preview) is a DOM widget via addDOMWidget.
+//
+// UPDATED: Added Camera Framing as a third independent axis.
 
 import { app } from "/scripts/app.js";
 
@@ -22,6 +24,7 @@ const STATE_PROP = "cameraState";
 const HIDDEN_INPUT_NAME = "CameraState";
 
 const RANDOM_ANGLE = "__RANDOM_ANGLE__";
+const RANDOM_FRAMING = "__RANDOM_FRAMING__";
 const RANDOM_STYLE = "__RANDOM_STYLE__";
 const NONE_SENTINEL = "__NONE__";
 const ALL_CATEGORIES = "All";
@@ -287,7 +290,7 @@ function injectCSS() {
     }
     .boss-cam-cards {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 10px;
       margin-bottom: 12px;
     }
@@ -381,6 +384,9 @@ function defaultState() {
     cameraAngle: RANDOM_ANGLE,
     angleCategory: ALL_CATEGORIES,
     angleStrength: STRENGTH_DEFAULT,
+    cameraFraming: RANDOM_FRAMING,
+    framingCategory: ALL_CATEGORIES,
+    framingStrength: STRENGTH_DEFAULT,
     artStyle: RANDOM_STYLE,
     styleCategory: ALL_CATEGORIES,
     styleStrength: STRENGTH_DEFAULT,
@@ -398,6 +404,7 @@ function readState(node) {
       const obj = JSON.parse(v);
       const merged = { ...defaultState(), ...obj };
       merged.angleStrength = clampStrength(merged.angleStrength);
+      merged.framingStrength = clampStrength(merged.framingStrength);
       merged.styleStrength = clampStrength(merged.styleStrength);
       merged.seed = clampSeed(merged.seed);
       if (merged.seedMode !== "random" && merged.seedMode !== "fixed") {
@@ -448,6 +455,9 @@ const VISIBLE_NATIVE_WIDGETS = [
   "camera_angle",
   "angle_category",
   "angle_strength",
+  "camera_framing",
+  "framing_category",
+  "framing_strength",
   "art_style",
   "style_category",
   "style_strength",
@@ -481,9 +491,16 @@ function renderHeader(node) {
   if (!head) return;
   const state = readState(node);
   const ang = shortLabel(state.cameraAngle, state.angleCategory, RANDOM_ANGLE);
+  const fra = shortLabel(
+    state.cameraFraming,
+    state.framingCategory,
+    RANDOM_FRAMING,
+  );
   const sty = shortLabel(state.artStyle, state.styleCategory, RANDOM_STYLE);
   head.innerHTML =
     `<span class="label">Angle:</span> <span class="${ang.cls}">${escapeHtml(ang.text)}</span>` +
+    `<span class="sep">·</span>` +
+    `<span class="label">Framing:</span> <span class="${fra.cls}">${escapeHtml(fra.text)}</span>` +
     `<span class="sep">·</span>` +
     `<span class="label">Style:</span> <span class="${sty.cls}">${escapeHtml(sty.text)}</span>`;
 }
@@ -497,8 +514,6 @@ function setStatus(node, text, isError = false) {
   s.classList.toggle("is-error", !!isError);
 }
 
-// Mirror values into the (hidden) native widgets so Python reads the same
-// numbers at execution time. Called on first paint and on every Save.
 function syncNativeWidgets(node, state) {
   const setWidget = (name, value) => {
     const w = (node.widgets || []).find((x) => x.name === name);
@@ -517,6 +532,9 @@ function syncNativeWidgets(node, state) {
   setWidget("camera_angle", state.cameraAngle);
   setWidget("angle_category", state.angleCategory);
   setWidget("angle_strength", clampStrength(state.angleStrength));
+  setWidget("camera_framing", state.cameraFraming);
+  setWidget("framing_category", state.framingCategory);
+  setWidget("framing_strength", clampStrength(state.framingStrength));
   setWidget("art_style", state.artStyle);
   setWidget("style_category", state.styleCategory);
   setWidget("style_strength", clampStrength(state.styleStrength));
@@ -559,8 +577,6 @@ function setupCameraNode(node) {
   node._bossCamRoot = root;
   node._bossCamHead = head;
 
-  // Seed hidden widgets so Python reads the right values on first Run,
-  // before the user has opened the editor.
   syncNativeWidgets(node, readState(node));
 
   openBtn.addEventListener("click", async () => {
@@ -578,7 +594,7 @@ function setupCameraNode(node) {
   renderHeader(node);
 }
 
-// ── Weight formatting (mirrors Python _apply_weight exactly) ───────────────
+// ── Weight formatting (mirrors Python _apply_weight exactly) ──────────────
 
 function applyWeight(text, strength, fmt) {
   if (!text || strength < 0.01) return "";
@@ -601,21 +617,26 @@ function applyWeight(text, strength, fmt) {
   return text;
 }
 
-// ── Live preview HTML (replicates the v3.0 _build_preview) ─────────────────
+// ── Live preview HTML ──────────────────────────────────────────────────────
 
 function buildPreviewHTML(state, lib) {
   const angKey = state.cameraAngle;
+  const fraKey = state.cameraFraming;
   const styKey = state.artStyle;
   const fmt = state.weightFormat;
   const angStr = clampStrength(state.angleStrength);
+  const fraStr = clampStrength(state.framingStrength);
   const styStr = clampStrength(state.styleStrength);
 
-  // Resolve angle text (Random can't be resolved client-side; show the
-  // empty placeholder so the user knows the pick will happen on Run).
   let angText = "";
   if (angKey === NONE_SENTINEL) angText = "";
   else if (angKey === RANDOM_ANGLE) angText = "(random pick on Run)";
   else angText = lib.angles[angKey] || `(missing: ${angKey})`;
+
+  let fraText = "";
+  if (fraKey === NONE_SENTINEL) fraText = "";
+  else if (fraKey === RANDOM_FRAMING) fraText = "(random pick on Run)";
+  else fraText = lib.framings[fraKey] || `(missing: ${fraKey})`;
 
   let styText = "";
   if (styKey === NONE_SENTINEL) styText = "";
@@ -623,10 +644,10 @@ function buildPreviewHTML(state, lib) {
   else styText = lib.styles[styKey] || `(missing: ${styKey})`;
 
   const angWeighted = applyWeight(angText, angStr, fmt);
+  const fraWeighted = applyWeight(fraText, fraStr, fmt);
   const styWeighted = applyWeight(styText, styStr, fmt);
 
-  // Skip empty halves (matches Python's `delimiter.join(filter(None, [...]))`).
-  const parts = [angWeighted, styWeighted].filter(Boolean);
+  const parts = [angWeighted, fraWeighted, styWeighted].filter(Boolean);
   const combined = parts.join(state.delimiter);
 
   const fmtLabel = (
@@ -645,6 +666,19 @@ function buildPreviewHTML(state, lib) {
          <div class="h">📐 ANGLE</div>
          <div class="v">${escapeHtml(angKey === RANDOM_ANGLE ? "(random)" : angKey)}</div>
          <div class="w">weight: ${angStr.toFixed(2)}</div>
+       </div>`;
+
+  const framingCard =
+    fraKey === NONE_SENTINEL
+      ? `<div class="boss-cam-mini none" style="--accent:#ffaa88">
+         <div class="h">📦 FRAMING</div>
+         <div class="v">(none)</div>
+         <div class="w">weight: ${fraStr.toFixed(2)}</div>
+       </div>`
+      : `<div class="boss-cam-mini" style="--accent:#ffaa88">
+         <div class="h">📦 FRAMING</div>
+         <div class="v">${escapeHtml(fraKey === RANDOM_FRAMING ? "(random)" : fraKey)}</div>
+         <div class="w">weight: ${fraStr.toFixed(2)}</div>
        </div>`;
 
   const styleCard =
@@ -669,6 +703,7 @@ function buildPreviewHTML(state, lib) {
     <div class="boss-cam-card-title">📷 CAMERA STYLE MIXER BOSS</div>
     <div class="boss-cam-cards">
       ${angleCard}
+      ${framingCard}
       ${styleCard}
     </div>
     <div class="boss-cam-meta">
@@ -686,8 +721,10 @@ class CameraEditor {
     this.node = node;
     this.library = {
       angles: {},
+      framings: {},
       styles: {},
       angleCategories: {},
+      framingCategories: {},
       styleCategories: {},
       weightFormats: [],
     };
@@ -702,8 +739,10 @@ class CameraEditor {
     const data = await r.json();
     this.library = {
       angles: data.angles || {},
+      framings: data.framings || {},
       styles: data.styles || {},
       angleCategories: data.angleCategories || {},
+      framingCategories: data.framingCategories || {},
       styleCategories: data.styleCategories || {},
       weightFormats: data.weightFormats || [],
     };
@@ -741,6 +780,7 @@ class CameraEditor {
     const side = document.createElement("div");
     side.className = "boss-cam-side";
 
+    // ── Angle ──────────────────────────────────────────────────────────
     side.appendChild(
       this.buildListSection({
         title: "Angle",
@@ -767,6 +807,34 @@ class CameraEditor {
       }),
     );
 
+    // ── Framing ──────────────────────────────────────────────────────
+    side.appendChild(
+      this.buildListSection({
+        title: "Framing",
+        sentinel: RANDOM_FRAMING,
+        stateKey: "cameraFraming",
+        categoryKey: "framingCategory",
+        data: this.library.framings,
+        categories: this.library.framingCategories,
+        searchVar: "_framingSearch",
+        listVar: "_framingListEl",
+      }),
+    );
+    side.appendChild(
+      this.buildCategorySection({
+        title: "Framing Category",
+        stateKey: "framingCategory",
+        categories: this.library.framingCategories,
+      }),
+    );
+    side.appendChild(
+      this.buildStrengthSection({
+        title: "Framing Strength",
+        stateKey: "framingStrength",
+      }),
+    );
+
+    // ── Style ──────────────────────────────────────────────────────────
     side.appendChild(
       this.buildListSection({
         title: "Style",
@@ -793,6 +861,7 @@ class CameraEditor {
       }),
     );
 
+    // ── Format, delimiter, seed ──────────────────────────────────────
     side.appendChild(this.buildFormatSection());
     side.appendChild(this.buildDelimiterSection());
     side.appendChild(this.buildSeedSection());
@@ -830,11 +899,12 @@ class CameraEditor {
     this.cardEl = card;
 
     this.refreshList("angle");
+    this.refreshList("framing");
     this.refreshList("style");
     this.refreshPreview();
   }
 
-  // ── Angle / Style list section ─────────────────────────────────────────
+  // ── List section ──────────────────────────────────────────────────────
   buildListSection({
     title,
     sentinel,
@@ -869,7 +939,9 @@ class CameraEditor {
 
     search.addEventListener("input", (e) => {
       this[searchVar] = e.target.value;
-      this.refreshList(title === "Angle" ? "angle" : "style");
+      this.refreshList(
+        title === "Angle" ? "angle" : title === "Framing" ? "framing" : "style",
+      );
     });
 
     return wrap;
@@ -877,15 +949,43 @@ class CameraEditor {
 
   refreshList(which) {
     const isAngle = which === "angle";
-    const data = isAngle ? this.library.angles : this.library.styles;
+    const isFraming = which === "framing";
+    const isStyle = which === "style";
+    const data = isAngle
+      ? this.library.angles
+      : isFraming
+        ? this.library.framings
+        : this.library.styles;
     const cats = isAngle
       ? this.library.angleCategories
-      : this.library.styleCategories;
-    const sentinel = isAngle ? RANDOM_ANGLE : RANDOM_STYLE;
-    const stateKey = isAngle ? "cameraAngle" : "artStyle";
-    const categoryKey = isAngle ? "angleCategory" : "styleCategory";
-    const searchVar = isAngle ? "_angleSearch" : "_styleSearch";
-    const listVar = isAngle ? "_angleListEl" : "_styleListEl";
+      : isFraming
+        ? this.library.framingCategories
+        : this.library.styleCategories;
+    const sentinel = isAngle
+      ? RANDOM_ANGLE
+      : isFraming
+        ? RANDOM_FRAMING
+        : RANDOM_STYLE;
+    const stateKey = isAngle
+      ? "cameraAngle"
+      : isFraming
+        ? "cameraFraming"
+        : "artStyle";
+    const categoryKey = isAngle
+      ? "angleCategory"
+      : isFraming
+        ? "framingCategory"
+        : "styleCategory";
+    const searchVar = isAngle
+      ? "_angleSearch"
+      : isFraming
+        ? "_framingSearch"
+        : "_styleSearch";
+    const listVar = isAngle
+      ? "_angleListEl"
+      : isFraming
+        ? "_framingListEl"
+        : "_styleListEl";
     const el = this[listVar];
     if (!el) return;
     el.innerHTML = "";
@@ -960,7 +1060,13 @@ class CameraEditor {
     }
     sel.addEventListener("change", (e) => {
       this.state[stateKey] = e.target.value;
-      this.refreshList(stateKey === "angleCategory" ? "angle" : "style");
+      const which =
+        stateKey === "angleCategory"
+          ? "angle"
+          : stateKey === "framingCategory"
+            ? "framing"
+            : "style";
+      this.refreshList(which);
       this.refreshPreview();
     });
     wrap.appendChild(sel);
@@ -1051,7 +1157,7 @@ class CameraEditor {
     return wrap;
   }
 
-  // ── Seed section (mirrors outfit_selector) ─────────────────────────────
+  // ── Seed section ────────────────────────────────────────────────────────
   buildSeedSection() {
     const wrap = document.createElement("div");
 
@@ -1211,7 +1317,6 @@ class CameraEditor {
     this.cardEl.innerHTML = buildPreviewHTML(this.state, this.library);
   }
 
-  // ── Commit / cancel ────────────────────────────────────────────────────
   save() {
     writeState(this.node, this.state);
     syncNativeWidgets(this.node, this.state);
@@ -1231,7 +1336,7 @@ class CameraEditor {
   }
 }
 
-// ── loadGraphData 300 ms guard (same trick as the two siblings) ───────────
+// ── loadGraphData 300 ms guard ────────────────────────────────────────────
 let _bossCamLoadingGraph = false;
 if (app && app.loadGraphData && !app._bossCamLoadWrapped) {
   app._bossCamLoadWrapped = true;
@@ -1327,6 +1432,12 @@ app.graphToPrompt = async function (...args) {
         runSeed = clampSeed(state.seed);
       }
       entry.inputs = entry.inputs || {};
+      // Write to the REAL wire input - mix() reads `seed` directly and
+      // never parses CameraState, so this is what actually reaches
+      // execution each run. Without this, random mode only changed the
+      // (unused) hidden state and kept reusing whatever seed was last
+      // synced by the editor's Apply button.
+      entry.inputs.seed = runSeed;
       entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify({
         ...state,
         seed: runSeed,

@@ -1,6 +1,7 @@
 {
-    "My Main Model": "Illustrious\\waiIllustriousSDXL_v160.safetensors",
-    "Juggernaut XL": "SDXL 1.0\\Juggernaut_X_RunDiffusion.safetensors",
-    "Danbooru": "Illustrious\\waiIllustriousSDXL_v150.safetensors",
-    "test": "Illustrious\\waiIllustriousSDXL_v160.safetensors"
+  "My Main Model": "Illustrious\\waiIllustriousSDXL_v160.safetensors",
+  "Juggernaut XL": "SDXL 1.0\\Juggernaut_X_RunDiffusion.safetensors",
+  "Danbooru": "Illustrious\\waiIllustriousSDXL_v150.safetensors",
+  "BSSEquinoxILSemi_v30": "Illustrious\\BSSEquinoxILSemi_v30.safetensors",
+  "illustrij_v18": "Illustrious\\illustrij_v18.safetensors"
 }

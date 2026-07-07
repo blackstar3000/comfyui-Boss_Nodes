@@ -122,7 +122,7 @@ class TextConcatenateSimple:
 
     RETURN_TYPES = ("STRING",)
     FUNCTION = "go"
-    CATEGORY = "🌟 Pro Tools/Text"
+    CATEGORY = "👑 Boss Nodes/📝 Text"
 
     def go(self, **kwargs):
         texts = [v.strip() for v in kwargs.values() if isinstance(v, str) and v.strip()]
@@ -136,8 +136,8 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "TextConcatenatePro": "🌟 Text Concatenate Pro",
-    "TextConcatenateSimple": "Text Concatenate (Legacy)"
+    "TextConcatenatePro": "📝 Text Concatenate Pro",
+    "TextConcatenateSimple": "📝 Text Concatenate (Legacy)"
 }
 
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']

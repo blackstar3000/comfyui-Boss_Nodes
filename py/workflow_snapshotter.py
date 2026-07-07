@@ -21,14 +21,16 @@ def _load_snapshots() -> dict:
         return {}
 
 def _save_snapshots(snapshots: dict) -> None:
-    """Save the snapshots dictionary to disk (with backup)."""
+    """Save the snapshots dictionary to disk (with backup, atomically)."""
     if os.path.exists(SNAPSHOTS_FILE):
         with open(SNAPSHOTS_FILE, "r", encoding="utf-8") as f:
             old = f.read()
         with open(SNAPSHOTS_FILE + ".bak", "w", encoding="utf-8") as f:
             f.write(old)
-    with open(SNAPSHOTS_FILE, "w", encoding="utf-8") as f:
+    tmp_path = SNAPSHOTS_FILE + ".tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
         json.dump(snapshots, f, indent=2, ensure_ascii=False)
+    os.replace(tmp_path, SNAPSHOTS_FILE)
 
 # ── API routes ──────────────────────────────────────────────────────────────
 
@@ -51,7 +53,8 @@ def register_api_routes():
                 "name": name,
                 "timestamp": data.get("timestamp", ""),
                 "nodeCount": data.get("nodeCount", 0),
-                "preview": data.get("preview", "")
+                "preview": data.get("preview", ""),
+                "hasFullData": bool(data.get("workflow")),
             })
         return web.json_response(summary)
 
@@ -114,8 +117,19 @@ class WorkflowSnapshotter:
 
     This node acts as a controller for the snapshot system. It does not affect execution;
     instead, it provides a UI panel (via the "Workflow Snapshotter" tab) to save the
-    current workflow state (nodes, connections, etc.) to a named snapshot, and later
-    restore it.
+    current workflow state to a named snapshot, and later restore it. Two restore modes
+    are available:
+
+    - Selective Restore (Restore / Restore Selected / Restore All): reviews a per-node
+      diff and lets you pick which nodes to update. Restores widget values, properties,
+      and position/size for nodes that still exist in the current graph (matched by node
+      ID). Nodes deleted since the snapshot was taken are listed as missing and skipped.
+      Does not touch node connections/links.
+    - Full Restore: replaces the ENTIRE current graph (nodes, connections, positions,
+      groups) with the snapshot's captured workflow, the same way opening a saved
+      workflow file does. This is destructive - anything on the canvas not in the
+      snapshot is discarded. Only available for snapshots saved after this feature was
+      added (older snapshots lack the required data and will show Full Restore disabled).
 
     Snapshots are stored in snapshots.json in the custom node directory, with metadata
     (timestamp, node count, preview). The UI allows listing, viewing, deleting, and
@@ -128,8 +142,11 @@ class WorkflowSnapshotter:
         "from the UI.\n\n"
         "This node acts as a controller for the snapshot system. It does not affect "
         "execution; instead, it provides a UI panel (via the 'Workflow Snapshotter' tab) "
-        "to save the current workflow state (nodes, connections, etc.) to a named snapshot, "
-        "and later restore it.\n\n"
+        "to save the current workflow state to a named snapshot, and later restore it.\n\n"
+        "Two restore modes: Selective Restore reviews a per-node diff (widgets, "
+        "properties, position/size) for nodes still present in the graph; Full Restore "
+        "replaces the entire graph - including connections - the same way opening a "
+        "saved workflow file does.\n\n"
         "Snapshots are stored in snapshots.json in the custom node directory, with metadata "
         "(timestamp, node count, preview). The UI allows listing, viewing, deleting, and "
         "restoring snapshots.\n\n"

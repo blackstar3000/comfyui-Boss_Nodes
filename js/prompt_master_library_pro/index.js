@@ -2000,6 +2000,12 @@ app.graphToPrompt = async function (...args) {
         runSeed = clampSeed(state.seed);
       }
       entry.inputs = entry.inputs || {};
+      // Write the resolved seed to the REAL wire input - go() reads `seed`
+      // directly and never parses MasterState, so this is what actually
+      // reaches the sampler each run. Without this, "random" mode only
+      // ever changed the (unused) hidden state and the node kept reusing
+      // whatever seed was last synced by the editor's Apply button.
+      entry.inputs.seed = runSeed;
       entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify({
         ...state,
         seed: runSeed,

@@ -338,6 +338,35 @@ class SceneMakerGOD:
         if force_refresh:
             _load_all(force=True)
 
+        # Parse the hidden editor state. Despite being documented as "the"
+        # state channel, this was previously accepted but never read -
+        # dead code (same gap found and fixed in the sibling
+        # prompt_master_library_pro.py). Use it as a fallback so SceneState
+        # actually has the effect the architecture doc describes,
+        # independent of whether the native widgets happened to be synced
+        # before this run.
+        try:
+            _state = json.loads(SceneState) if isinstance(SceneState, str) else {}
+        except (TypeError, ValueError):
+            _state = {}
+        if isinstance(_state, dict):
+            girl = _state.get("girl", girl)
+            girl_cat = _state.get("girlCat", girl_cat)
+            if "girlW" in _state:
+                girl_w = _state["girlW"]
+            male = _state.get("male", male)
+            male_cat = _state.get("maleCat", male_cat)
+            if "maleW" in _state:
+                male_w = _state["maleW"]
+            scene = _state.get("scene", scene)
+            scene_cat = _state.get("sceneCat", scene_cat)
+            if "sceneW" in _state:
+                scene_w = _state["sceneW"]
+            if "delimiter" in _state:
+                delimiter = _state["delimiter"]
+            if "seed" in _state:
+                seed = _state["seed"]
+
         # Per-call RNG so a node can't disturb the global random state.
         rng = random.Random()
         rng.seed(int(seed) if seed else int.from_bytes(os.urandom(8), "big"))

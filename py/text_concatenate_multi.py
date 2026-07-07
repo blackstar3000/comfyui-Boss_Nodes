@@ -36,7 +36,7 @@ class TextConcatenate:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("text",)
     FUNCTION = "concatenate"
-    CATEGORY = "🌟 Pro Tools/Text"
+    CATEGORY = "👑 Boss Nodes/📝 Text"
 
     def concatenate(self, delimiter=", ", clean_whitespace="true", **kwargs):
         # Special handling for newline representations
@@ -69,7 +69,7 @@ NODE_CLASS_MAPPINGS = {
 }
 
 NODE_DISPLAY_NAME_MAPPINGS = {
-    "TextConcatenate": "🌟 Text Concatenate (Multi)"
+    "TextConcatenate": "📝 Text Concatenate (Multi)"
 }
 
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS']

@@ -1,4 +1,4 @@
-// Ultimate Loader Pro - DOM widget + editor modal
+// Ultimate Loader Pro - DOM widget + editor modal (with model preview)
 import { app } from "/scripts/app.js";
 
 const BRAND = "#8B5CF6";
@@ -244,6 +244,19 @@ function injectCSS() {
       text-align: center;
     }
     .boss-lr-summary strong { color: ${BRAND}; }
+    .boss-lr-preview-img {
+      display: block;
+      max-width: 100%;
+      max-height: 200px;
+      margin: 8px auto;
+      border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: #1a1a1a;
+      object-fit: contain;
+    }
+    .boss-lr-preview-img.placeholder {
+      opacity: 0.4;
+    }
   `;
   const style = document.createElement("style");
   style.id = "boss-loader-css";
@@ -376,12 +389,19 @@ function setStatus(node, text, isError = false) {
 
 // ── Preview HTML ──────────────────────────────────────────────────────────
 
-function buildPreviewHTML(state) {
+function buildPreviewHTML(state, previewUrl) {
   const model = state.ckpt_name || "(none)";
   const dims = `${state.width}×${state.height}`;
+  const imgHtml = previewUrl
+    ? `<img class="boss-lr-preview-img" src="${escapeHtml(previewUrl)}" alt="Model preview"
+          onerror="console.warn('[UltimateLoader] Preview image failed to load:', this.src); this.style.display='none'; var f=this.nextElementSibling; if(f) f.style.display='flex';" />`
+    : "";
+  const fallbackHtml = `<div class="boss-lr-preview-img placeholder" style="display:${previewUrl ? "none" : "flex"};align-items:center;justify-content:center;color:#666;font-size:12px;height:60px;">⚠️ No preview available</div>`;
   return `
     <div class="boss-lr-card">
       <div class="boss-lr-card-title">📦 Ultimate Loader</div>
+      ${imgHtml}
+      ${fallbackHtml}
       <div class="boss-lr-grid">
         <div class="boss-lr-item"><span class="label">Model</span><span class="value">${escapeHtml(model)}</span></div>
         <div class="boss-lr-item"><span class="label">VAE</span><span class="value">${escapeHtml(state.vae_name)}</span></div>
@@ -410,6 +430,7 @@ class LoaderEditor {
       size_presets: {},
     };
     this.modal = null;
+    this.previewUrl = null;
   }
 
   async fetchData() {
@@ -466,6 +487,13 @@ class LoaderEditor {
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const result = await r.json();
     this.data.size_presets = result.presets;
+  }
+
+  previewImageUrl(ckpt) {
+    if (!ckpt) return null;
+    // Served directly from disk by the backend - no JSON round-trip needed,
+    // the browser's own onerror on the <img> tag handles a missing file.
+    return `/ultimate_loader/preview_image?ckpt=${encodeURIComponent(ckpt)}`;
   }
 
   open() {
@@ -535,6 +563,8 @@ class LoaderEditor {
 
     document.body.appendChild(modal);
     this.modal = modal;
+    // Set preview for initial model
+    this.previewUrl = this.previewImageUrl(this.state.ckpt_name);
     this.refreshPreview();
   }
 
@@ -560,6 +590,7 @@ class LoaderEditor {
     }
     ckptSel.addEventListener("change", () => {
       this.state.ckpt_name = ckptSel.value;
+      this.previewUrl = this.previewImageUrl(this.state.ckpt_name);
       this.refreshPreview();
     });
     wrap.appendChild(ckptSel);
@@ -623,6 +654,8 @@ class LoaderEditor {
               if (opt.value === ckpt) opt.selected = true;
             }
           }
+          // Set preview for the loaded favorite
+          this.previewUrl = this.previewImageUrl(ckpt);
         }
       }
       this.refreshPreview();
@@ -996,7 +1029,7 @@ class LoaderEditor {
 
   refreshPreview() {
     if (!this.previewEl) return;
-    this.previewEl.innerHTML = buildPreviewHTML(this.state);
+    this.previewEl.innerHTML = buildPreviewHTML(this.state, this.previewUrl);
   }
 
   save() {

@@ -579,6 +579,22 @@ class SnapshotterEditor {
           changes[`[prop] ${pname}`] = { old: oldVal, new: newVal };
         }
       }
+      // Also check position/size (rounded to avoid noisy sub-pixel diffs)
+      const round = (v) => (Array.isArray(v) ? v.map((n) => Math.round(n)) : v);
+      if (Array.isArray(snapNode.pos) && Array.isArray(graphNode.pos)) {
+        const a = round(snapNode.pos);
+        const b = round(graphNode.pos);
+        if (a[0] !== b[0] || a[1] !== b[1]) {
+          changes["[position]"] = { old: `${b[0]}, ${b[1]}`, new: `${a[0]}, ${a[1]}` };
+        }
+      }
+      if (Array.isArray(snapNode.size) && Array.isArray(graphNode.size)) {
+        const a = round(snapNode.size);
+        const b = round(graphNode.size);
+        if (a[0] !== b[0] || a[1] !== b[1]) {
+          changes["[size]"] = { old: `${b[0]}×${b[1]}`, new: `${a[0]}×${a[1]}` };
+        }
+      }
       if (Object.keys(changes).length > 0 || diff[id]?.missing) {
         diff[id] = { class_type: snapNode.class_type, changes, missing: false };
       }
@@ -589,6 +605,7 @@ class SnapshotterEditor {
   // ── Selective restore confirmation ────────────────────────────────────
   showRestoreConfirmation(name, snapshotData) {
     const diff = this.generateDiff(snapshotData);
+    const missingIds = Object.keys(diff).filter((id) => diff[id].missing);
     const nodeIds = Object.keys(diff).filter((id) => !diff[id].missing);
     const allNodeIds = nodeIds;
     // selected set starts with all
@@ -621,6 +638,17 @@ class SnapshotterEditor {
     );
     sub.textContent = `Select which nodes to restore (${allNodeIds.length} nodes, ${totalChanges} changes total)`;
     box.appendChild(sub);
+
+    if (missingIds.length > 0) {
+      const warn = document.createElement("div");
+      warn.className = "boss-ss-confirm-sub";
+      warn.style.color = "#f87171";
+      const missingTypes = missingIds
+        .map((id) => `#${id} (${diff[id].class_type || "unknown"})`)
+        .join(", ");
+      warn.textContent = `⚠️ ${missingIds.length} node${missingIds.length !== 1 ? "s" : ""} from this snapshot no longer exist in the current graph and will NOT be restored: ${missingTypes}`;
+      box.appendChild(warn);
+    }
 
     // Controls row: Select All, Search, Summary
     const controls = document.createElement("div");
@@ -901,6 +929,22 @@ class SnapshotterEditor {
         }
       }
 
+      // 2b. Restore position/size
+      if (Array.isArray(ndata.pos) && Array.isArray(node.pos)) {
+        if (node.pos[0] !== ndata.pos[0] || node.pos[1] !== ndata.pos[1]) {
+          node.pos[0] = ndata.pos[0];
+          node.pos[1] = ndata.pos[1];
+          nodeChanged = true;
+        }
+      }
+      if (Array.isArray(ndata.size) && Array.isArray(node.size)) {
+        if (node.size[0] !== ndata.size[0] || node.size[1] !== ndata.size[1]) {
+          node.size[0] = ndata.size[0];
+          node.size[1] = ndata.size[1];
+          nodeChanged = true;
+        }
+      }
+
       // 3. If the node has an onConfigure method, call it to re‑apply its internal state
       if (nodeChanged && typeof node.onConfigure === "function") {
         try {
@@ -919,6 +963,55 @@ class SnapshotterEditor {
     // Final global canvas refresh
     app.graph.setDirtyCanvas(true, true);
     return restoredCount;
+  }
+
+  // ── Full restore: complete graph replace (nodes, links, positions, groups) ─
+  async fullRestore(name) {
+    let data;
+    try {
+      data = await this.fetchSnapshot(name);
+    } catch (err) {
+      setStatus(this.node, `❌ ${err.message}`, "is-error");
+      return;
+    }
+
+    const workflow = data.workflow;
+    if (!workflow || typeof workflow !== "object" || !Array.isArray(workflow.nodes)) {
+      setStatus(
+        this.node,
+        `❌ "${name}" doesn't include full graph data (saved before Full Restore was added)`,
+        "is-error",
+      );
+      return;
+    }
+
+    const nodeCount = workflow.nodes.length;
+    const linkCount = Array.isArray(workflow.links) ? workflow.links.length : 0;
+    const confirmed = confirm(
+      `Full Restore "${name}"?\n\n` +
+        `This REPLACES your entire current workflow with the snapshot ` +
+        `(${nodeCount} nodes, ${linkCount} connections). Anything currently on ` +
+        `the canvas that isn't in this snapshot will be lost.\n\n` +
+        `This cannot be undone. Continue?`,
+    );
+    if (!confirmed) return;
+
+    try {
+      // Same mechanism ComfyUI uses to open a saved workflow file - fully
+      // reconstructs nodes, connections, positions, and groups.
+      await app.loadGraphData(workflow);
+      setStatus(
+        this.node,
+        `✅ Full Restore complete: "${name}" (${nodeCount} nodes, ${linkCount} connections)`,
+        "is-success",
+      );
+      // The graph was just fully replaced, which may have destroyed/recreated
+      // this exact node instance - close rather than risk operating on a
+      // stale reference.
+      this.close();
+    } catch (err) {
+      setStatus(this.node, `❌ Full Restore failed: ${err.message}`, "is-error");
+    }
   }
 
   // ── Open modal ──────────────────────────────────────────────────────────
@@ -1011,7 +1104,8 @@ class SnapshotterEditor {
         setStatus(this.node, "Enter a snapshot name", "is-error");
         return;
       }
-      const data = this.collectGraphData();
+      setStatus(this.node, "Capturing workflow…");
+      const data = await this.collectGraphData();
       try {
         await this.saveSnapshot(name, data);
         setStatus(this.node, `✅ Snapshot "${name}" saved`, "is-success");
@@ -1028,7 +1122,7 @@ class SnapshotterEditor {
     return wrap;
   }
 
-  collectGraphData() {
+  async collectGraphData() {
     const nodes = app.graph._nodes || [];
     const snapshot = {
       nodes: {},
@@ -1052,8 +1146,29 @@ class SnapshotterEditor {
         class_type: n.type || n.comfyClass,
         widgets: widgets,
         properties: props,
+        pos: Array.isArray(n.pos) ? [n.pos[0], n.pos[1]] : null,
+        size: Array.isArray(n.size) ? [n.size[0], n.size[1]] : null,
       };
     }
+
+    // Full native graph capture - same serialization ComfyUI's own "Save
+    // Workflow" uses. Includes connections/links, groups, and exact
+    // positions. Used only by "Full Restore", since safely splicing
+    // partial connection changes into a live graph isn't something we
+    // can do reliably - a full restore instead does a complete graph
+    // replace via app.loadGraphData(), the same as opening a saved
+    // workflow file.
+    try {
+      const p = await app.graphToPrompt();
+      snapshot.workflow = p.workflow;
+    } catch (e) {
+      console.warn(
+        "[Snapshotter] Failed to capture full workflow - Full Restore will be unavailable for this snapshot",
+        e,
+      );
+      snapshot.workflow = null;
+    }
+
     return snapshot;
   }
 
@@ -1097,6 +1212,12 @@ class SnapshotterEditor {
         ? new Date(item.timestamp).toLocaleString()
         : "unknown";
       meta.textContent = `${item.nodeCount || 0} nodes · ${ts}`;
+      if (item.hasFullData) {
+        const badge = document.createElement("span");
+        badge.textContent = " · 📐 layout+links";
+        badge.style.color = "#4ade80";
+        meta.appendChild(badge);
+      }
       const actions = document.createElement("div");
       actions.className = "actions";
 
@@ -1104,6 +1225,7 @@ class SnapshotterEditor {
       restoreBtn.type = "button";
       restoreBtn.className = "boss-ss-btn";
       restoreBtn.textContent = "Restore";
+      restoreBtn.title = "Selectively restore widget values, properties, and position/size for nodes still present in the graph";
       restoreBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
         try {
@@ -1113,6 +1235,21 @@ class SnapshotterEditor {
           setStatus(this.node, `❌ ${err.message}`, "is-error");
         }
       });
+
+      const fullRestoreBtn = document.createElement("button");
+      fullRestoreBtn.type = "button";
+      fullRestoreBtn.className = "boss-ss-btn danger";
+      fullRestoreBtn.textContent = "Full Restore";
+      if (item.hasFullData) {
+        fullRestoreBtn.title = "Replace the ENTIRE current graph (nodes, connections, positions, groups) with this snapshot. Destructive - anything not in the snapshot is discarded.";
+        fullRestoreBtn.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          await this.fullRestore(item.name);
+        });
+      } else {
+        fullRestoreBtn.disabled = true;
+        fullRestoreBtn.title = "This snapshot was saved before Full Restore support was added and doesn't include connection/layout data. Use Restore instead.";
+      }
 
       const deleteBtn = document.createElement("button");
       deleteBtn.type = "button";
@@ -1132,6 +1269,7 @@ class SnapshotterEditor {
       });
 
       actions.appendChild(restoreBtn);
+      actions.appendChild(fullRestoreBtn);
       actions.appendChild(deleteBtn);
       div.appendChild(nameSpan);
       div.appendChild(meta);
@@ -1157,8 +1295,16 @@ class SnapshotterEditor {
       const data = await this.fetchSnapshot(name);
       const nodes = data.nodes || {};
       const nodeKeys = Object.keys(nodes);
+      const hasFullData = !!(data.workflow && Array.isArray(data.workflow.nodes));
       let html = `<div class="boss-ss-card"><div class="boss-ss-card-title">📋 ${escapeHtml(name)}</div>`;
-      html += `<div style="color:#999; margin-bottom:8px;">${nodeKeys.length} nodes</div>`;
+      html += `<div style="color:#999; margin-bottom:8px;">${nodeKeys.length} nodes`;
+      if (hasFullData) {
+        const linkCount = Array.isArray(data.workflow.links) ? data.workflow.links.length : 0;
+        html += ` · <span style="color:#4ade80;">📐 Full Restore available (${linkCount} connections)</span>`;
+      } else {
+        html += ` · <span style="color:#999;">values-only snapshot</span>`;
+      }
+      html += `</div>`;
       const displayed = nodeKeys.slice(0, 10);
       for (const id of displayed) {
         const ndata = nodes[id];

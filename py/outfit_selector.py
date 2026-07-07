@@ -13,6 +13,7 @@ Mirrors the rebuilt artist_selector (py/artist_selector.py) and the Pixaroma
 
 import json
 import random
+import time
 from pathlib import Path
 
 # ── File paths ──────────────────────────────────────────────────────────────
@@ -179,9 +180,16 @@ class BossOutfitSelector:
 
     @classmethod
     def IS_CHANGED(cls, OutfitState: str, **kwargs):
-        # Re-execute whenever the JS-side state changes. Random mode writes a
-        # fresh run-seed on the JS side via the graphToPrompt wrapper, so
-        # identical Fixed-mode state caches like ComfyUI's native seed widget.
+        # Parse OutfitState to check seedMode; if "random", force re‑execution.
+        try:
+            state = json.loads(OutfitState) if OutfitState else {}
+            if isinstance(state, dict) and state.get("seedMode") == "random":
+                # Return a unique value to force a fresh execution each time.
+                return str(time.time_ns())
+        except Exception:
+            # If state is invalid, fall back to default behaviour.
+            pass
+        # For fixed mode (or invalid state), use the state string as the cache key.
         return OutfitState
 
     def dress(self, outfit, category, strength, seed,
@@ -190,6 +198,22 @@ class BossOutfitSelector:
         # param so old workflow JSONs that referenced it still load.
         del delimiter
 
+        # ── Override all widget arguments from OutfitState ──
+        try:
+            state = json.loads(OutfitState) if OutfitState else {}
+            if isinstance(state, dict) and state:
+                # Respect every field from the state; this includes the fresh
+                # seed injected by the front‑end for Random mode.
+                outfit = state.get("outfit", outfit)
+                category = state.get("category", category)
+                strength = state.get("strength", strength)
+                seed = state.get("seed", seed)
+                # seedMode is not needed here – the seed itself is already resolved.
+        except Exception:
+            # If the state is invalid, fall back to the widget values.
+            pass
+
+        # ── Load library ──
         try:
             outfits, categories = _load_library(force=force_refresh)
         except FileNotFoundError:
@@ -197,8 +221,7 @@ class BossOutfitSelector:
         except Exception:
             return ("", "Library error", "→ load failed")
 
-        # Clamp strength defensively (the slider already enforces this, but a
-        # wired upstream INT could land outside the range).
+        # Clamp strength defensively.
         strength = max(STRENGTH_MIN, min(STRENGTH_MAX, float(strength)))
 
         name = ""

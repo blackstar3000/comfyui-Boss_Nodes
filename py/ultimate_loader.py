@@ -1,5 +1,5 @@
 # ComfyUI/custom_nodes/ultimate_loader.py
-# Ultimate Loader v3 - Hybrid Edition (Boss style)
+# Ultimate Loader Pro - Hybrid Edition (Boss style) with model preview
 
 import os
 import json
@@ -9,6 +9,7 @@ import folder_paths
 import comfy.sd
 import comfy.sample
 import comfy.model_management
+from urllib.parse import quote
 
 # ── Constants ───────────────────────────────────────────────────────────────
 
@@ -66,6 +67,90 @@ def register_api_routes():
             })
         except Exception as e:
             return web.json_response({"error": str(e)}, status=500)
+
+    @routes.get("/ultimate_loader/preview")
+    async def get_preview(request):
+        """Return the preview URL for a given checkpoint."""
+        ckpt = request.query.get("ckpt")
+        if not ckpt:
+            return web.json_response({"error": "Missing ckpt"}, status=400)
+
+        def to_forward_slashes(p):
+            # Don't rely on os.sep matching what's actually in the string -
+            # on some setups (e.g. WSL-hosted ComfyUI with Windows-style
+            # checkpoint names) os.sep won't match the literal backslashes
+            # present in the path, silently leaving them unconverted.
+            return p.replace("\\", "/").replace(os.sep, "/")
+
+        # Get checkpoint folders
+        folders = folder_paths.get_folder_paths("checkpoints")
+        full_path = os.path.normpath(ckpt)
+
+        # Find which folder contains this checkpoint
+        folder_index = None
+        rel_path = None
+        for i, folder in enumerate(folders):
+            norm_folder = os.path.normpath(folder)
+            if full_path.startswith(norm_folder + os.sep) or full_path == norm_folder:
+                folder_index = i
+                rel_path = os.path.relpath(full_path, norm_folder)
+                rel_path = to_forward_slashes(rel_path)
+                break
+
+        if folder_index is None:
+            # Fallback: try to match by checking if the checkpoint is a file in any folder
+            for i, folder in enumerate(folders):
+                norm_folder = os.path.normpath(folder)
+                # Check if the path is under this folder
+                try:
+                    common = os.path.commonpath([norm_folder, full_path])
+                    if common == norm_folder:
+                        folder_index = i
+                        rel_path = os.path.relpath(full_path, norm_folder)
+                        rel_path = to_forward_slashes(rel_path)
+                        break
+                except ValueError:
+                    continue
+
+        if folder_index is None:
+            # Last resort: treat the whole ckpt as relative to the first folder
+            if folders:
+                folder_index = 0
+                rel_path = to_forward_slashes(ckpt)
+            else:
+                return web.json_response({"error": "No checkpoint folders found"}, status=400)
+
+        # URL-encode each path segment (preserves the '/' separators)
+        rel_path_encoded = "/".join(quote(seg) for seg in rel_path.split("/"))
+        preview_url = f"/api/experiment/models/preview/checkpoints/{folder_index}/{rel_path_encoded}.webp?format=webp"
+        return web.json_response({"url": preview_url})
+
+    # Preview image extensions to look for, in priority order
+    _PREVIEW_EXTS = (".webp", ".png", ".jpg", ".jpeg")
+
+    @routes.get("/ultimate_loader/preview_image")
+    async def get_preview_image(request):
+        """
+        Serve a checkpoint's preview image directly from disk, bypassing
+        ComfyUI's private/experimental preview API. Looks for a file with
+        the same name as the checkpoint but an image extension, sitting
+        right next to it (e.g. mymodel.safetensors -> mymodel.webp).
+        """
+        ckpt = request.query.get("ckpt")
+        if not ckpt:
+            return web.Response(status=400, text="Missing ckpt")
+
+        full_path = folder_paths.get_full_path("checkpoints", ckpt)
+        if not full_path or not os.path.isfile(full_path):
+            return web.Response(status=404, text="Checkpoint file not found")
+
+        base, _ = os.path.splitext(full_path)
+        for ext in _PREVIEW_EXTS:
+            candidate = base + ext
+            if os.path.isfile(candidate):
+                return web.FileResponse(candidate)
+
+        return web.Response(status=404, text="No preview image found next to checkpoint")
 
     @routes.post("/ultimate_loader/favorites/model")
     async def save_model_fav(request):
@@ -139,48 +224,10 @@ register_api_routes()
 class UltimateLoader:
     """
     Ultimate Loader Pro — All‑in‑one checkpoint loader with favorites, aspect‑ratio presets, and hidden state.
-
-    This node loads a checkpoint (model + CLIP + baked VAE), optionally loads an external VAE,
-    applies CLIP skip, and creates an empty latent with the chosen dimensions. It supports:
-
-    - Model favorites: save/delete named shortcuts to your favourite checkpoints.
-    - Aspect ratio presets: choose from a large set of TTN‑style presets or custom JSON‑defined presets.
-    - Manual width/height override when using the custom option.
-    - Hidden state (`LoaderState`) for UI synchronization (mirrors the Boss‑style stateful pattern).
-    - REST API routes for fetching checkpoints/VAEs and managing favorites/presets.
-    - Outputs: MODEL, CLIP, VAE, LATENT, WIDTH, HEIGHT, and a STATUS string.
-
-    **Usage:**
-    - Connect the outputs to your sampler and other nodes.
-    - Select a checkpoint, VAE, and aspect ratio.
-    - Use the `model_action` dropdown to save or delete a favorite (the node will return early with a status).
-    - The `model_preset` allows you to load a favorite directly.
-    - The `LoaderState` hidden input can be used by custom UIs to push/pull all widget values.
-
-    The node also returns a status message indicating what was loaded or which action was performed.
     """
-    DESCRIPTION = (
-        "Ultimate Loader Pro — All‑in‑one checkpoint loader with favorites, aspect‑ratio presets, and hidden state.\n\n"
-        "This node loads a checkpoint (model + CLIP + baked VAE), optionally loads an external VAE,\n"
-        "applies CLIP skip, and creates an empty latent with the chosen dimensions. It supports:\n\n"
-        "- Model favorites: save/delete named shortcuts to your favourite checkpoints.\n"
-        "- Aspect ratio presets: choose from a large set of TTN‑style presets or custom JSON‑defined presets.\n"
-        "- Manual width/height override when using the custom option.\n"
-        "- Hidden state (`LoaderState`) for UI synchronization (mirrors the Boss‑style stateful pattern).\n"
-        "- REST API routes for fetching checkpoints/VAEs and managing favorites/presets.\n"
-        "- Outputs: MODEL, CLIP, VAE, LATENT, WIDTH, HEIGHT, and a STATUS string.\n\n"
-        "**Usage:**\n"
-        "- Connect the outputs to your sampler and other nodes.\n"
-        "- Select a checkpoint, VAE, and aspect ratio.\n"
-        "- Use the `model_action` dropdown to save or delete a favorite (the node will return early with a status).\n"
-        "- The `model_preset` allows you to load a favorite directly.\n"
-        "- The `LoaderState` hidden input can be used by custom UIs to push/pull all widget values.\n\n"
-        "The node also returns a status message indicating what was loaded or which action was performed."
-    )
 
     @classmethod
     def INPUT_TYPES(cls):
-        # Dynamic lists (re‑evaluated each time)
         try:
             checkpoints = folder_paths.get_filename_list("checkpoints") or []
         except:
@@ -192,7 +239,6 @@ class UltimateLoader:
 
         model_favs = list(_load_json(MODEL_FAV_FILE, {}).keys())
 
-        # Build aspect ratio dropdown with TTN presets + JSON presets
         aspect_ratios = [
             "width x height [custom]",
             "512 x 512 [S] 1:1",
@@ -249,20 +295,17 @@ class UltimateLoader:
 
     @classmethod
     def IS_CHANGED(cls, LoaderState, **kwargs):
-        # Re‑execute when the JS state changes
         return LoaderState
 
     def load(self, ckpt_name, model_action, model_preset, fav_name,
              vae_name, clip_skip, aspect_ratio, width, height, batch_size,
              LoaderState="{}"):
 
-        # ── Parse hidden state (override widgets) ─────────────────────────
         try:
             state = json.loads(LoaderState) if isinstance(LoaderState, str) else {}
         except:
             state = {}
         if isinstance(state, dict):
-            # Override all inputs with state values if present
             ckpt_name = state.get("ckpt_name", ckpt_name)
             model_action = state.get("model_action", model_action)
             model_preset = state.get("model_preset", model_preset)
@@ -274,13 +317,11 @@ class UltimateLoader:
             height = int(state.get("height", height))
             batch_size = int(state.get("batch_size", batch_size))
 
-        # ── Resolve model from preset if needed ──────────────────────────
         if model_preset != "None":
             model_favs = _load_json(MODEL_FAV_FILE, {})
             if model_preset in model_favs:
                 ckpt_name = model_favs[model_preset]
 
-        # ── Handle model favorite actions ─────────────────────────────────
         if model_action in ("Save Favorite", "Delete Favorite"):
             json_data = _load_json(MODEL_FAV_FILE, {})
             if model_action == "Save Favorite":
@@ -291,7 +332,7 @@ class UltimateLoader:
                 else:
                     status = "Error: Favorite name empty"
                 return (None, None, None, None, width, height, status)
-            else:  # Delete
+            else:
                 if fav_name in json_data:
                     del json_data[fav_name]
                     _save_json(MODEL_FAV_FILE, json_data)
@@ -300,17 +341,14 @@ class UltimateLoader:
                     status = "Error: Favorite not found"
                 return (None, None, None, None, width, height, status)
 
-        # ── Resolve aspect ratio ──────────────────────────────────────────
         if aspect_ratio.startswith("width x height") or aspect_ratio.startswith("---"):
-            pass  # use manual width/height
+            pass
         else:
-            # Try to parse TTN string first
             match = re.search(r"(\d+)\s*x\s*(\d+)", aspect_ratio)
             if match:
                 width = int(match.group(1))
                 height = int(match.group(2))
             else:
-                # Try JSON preset
                 presets = _load_json(SIZE_PRESET_FILE, {})
                 if aspect_ratio in presets:
                     p = presets[aspect_ratio]
@@ -318,7 +356,6 @@ class UltimateLoader:
                     height = p.get("height", height)
                     batch_size = p.get("batch_size", batch_size)
 
-        # ── Load checkpoint ──────────────────────────────────────────────
         try:
             ckpt_path = folder_paths.get_full_path("checkpoints", ckpt_name)
             out = comfy.sd.load_checkpoint_guess_config(
@@ -331,7 +368,6 @@ class UltimateLoader:
         except Exception as e:
             return (None, None, None, None, width, height, f"Load error: {e}")
 
-        # ── Load external VAE ─────────────────────────────────────────────
         if vae_name != "Baked VAE":
             try:
                 vae_path = folder_paths.get_full_path("vae", vae_name)
@@ -339,10 +375,8 @@ class UltimateLoader:
             except Exception as e:
                 return (model, clip, vae, None, width, height, f"VAE error: {e}")
 
-        # ── Clip Skip ────────────────────────────────────────────────────
         if clip_skip != -1:
             try:
-                # Unwrap if patched
                 clip_model = model.clip if hasattr(model, "clip") else model.model.clip if hasattr(model, "model") else None
                 if clip_model:
                     clip_model = clip_model.clone().clip(clip_skip)
@@ -355,7 +389,6 @@ class UltimateLoader:
             except Exception as e:
                 print(f"[UltimateLoader] Clip Skip error: {e}")
 
-        # ── Latent ──────────────────────────────────────────────────────
         try:
             device = comfy.model_management.get_torch_device()
             latent = {
@@ -366,7 +399,6 @@ class UltimateLoader:
 
         status = f"Loaded: {ckpt_name} | VAE: {vae_name} | {width}x{height}"
         return (model, clip, vae, latent, width, height, status)
-
 
 NODE_CLASS_MAPPINGS = {"UltimateLoader": UltimateLoader}
 NODE_DISPLAY_NAME_MAPPINGS = {"UltimateLoader": "Ultimate Loader Pro"}

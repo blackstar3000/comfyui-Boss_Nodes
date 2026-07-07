@@ -1,0 +1,7 @@
+v-shaped_eyebrows
+thick_eyebrows
+raised_eyebrows
+short_eyebrows
+eyebrows_hidden_by_hair
+raised_inner_eyebrows
+forked_eyebrows

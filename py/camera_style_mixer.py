@@ -1,5 +1,5 @@
-"""Camera Style Mixer Boss — pick a camera angle + art style, with category
-filtering, strength weighting, and a Random/Fixed seed source.
+"""Camera Style Mixer Boss — pick a camera angle, framing, and art style, with
+category filtering, strength weighting, and a Random/Fixed seed source.
 
 Mirrors the rebuilt `py/outfit_selector.py` and the Pixaroma "stateful UI"
 pattern (comfyui-pixaroma/nodes/node_seed.py):
@@ -22,8 +22,9 @@ from pathlib import Path
 BASE_DIR = Path(__file__).parent
 JSON_FILE = BASE_DIR / "camera_style_mixer.json"
 
-# ── Sentinel values for the angle / style combos ─────────────────────────────
+# ── Sentinel values for the angle / framing / style combos ────────────────
 RANDOM_ANGLE = "__RANDOM_ANGLE__"
+RANDOM_FRAMING = "__RANDOM_FRAMING__"
 RANDOM_STYLE = "__RANDOM_STYLE__"
 NONE_SENTINEL = "__NONE__"
 ALL_CATEGORIES = "All"
@@ -66,13 +67,15 @@ class _LibraryState:
 
     def __init__(self):
         self.angles: dict[str, str] = {}
+        self.framings: dict[str, str] = {}
         self.styles: dict[str, str] = {}
         self.cat_angle: dict[str, list[str]] = {}
+        self.cat_framing: dict[str, list[str]] = {}
         self.cat_style: dict[str, list[str]] = {}
         self.mtime: float | None = None
 
     def is_empty(self) -> bool:
-        return not (self.angles or self.styles)
+        return not (self.angles or self.framings or self.styles)
 
 
 _LIB = _LibraryState()
@@ -110,23 +113,27 @@ def _sanitize_categories(cats: dict, valid_keys: set) -> dict[str, list[str]]:
 
 
 def _split_unified_categories(
-    unified: dict, angle_keys: set, style_keys: set,
-) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
-    """Split a unified `categories` block into angle/style halves by checking
-    which data dict each item belongs to. A category can appear in both if it
-    references both types. Removes the fragile name-heuristic entirely."""
+    unified: dict, angle_keys: set, framing_keys: set, style_keys: set,
+) -> tuple[dict[str, list[str]], dict[str, list[str]], dict[str, list[str]]]:
+    """Split a unified `categories` block into angle/framing/style halves by
+    checking which data dict each item belongs to. A category can appear in
+    multiple if it references multiple types. Removes the fragile name-heuristic."""
     cat_angle: dict[str, list[str]] = {}
+    cat_framing: dict[str, list[str]] = {}
     cat_style: dict[str, list[str]] = {}
     for cat_name, items in unified.items():
         if not isinstance(items, list):
             continue
         a_items = [x for x in items if x in angle_keys]
+        f_items = [x for x in items if x in framing_keys]
         s_items = [x for x in items if x in style_keys]
         if a_items:
             cat_angle[cat_name] = a_items
+        if f_items:
+            cat_framing[cat_name] = f_items
         if s_items:
             cat_style[cat_name] = s_items
-    return cat_angle, cat_style
+    return cat_angle, cat_framing, cat_style
 
 
 def _load_library(force: bool = False) -> _LibraryState:
@@ -160,35 +167,46 @@ def _load_library(force: bool = False) -> _LibraryState:
         return _LIB
 
     raw_angles = data.get("camera_angles", {})
+    raw_framings = data.get("camera_framings", {})
     raw_styles = data.get("art_styles", {})
     if not isinstance(raw_angles, dict):
         _log("'camera_angles' must be a dict — skipped.")
         raw_angles = {}
+    if not isinstance(raw_framings, dict):
+        _log("'camera_framings' must be a dict — skipped.")
+        raw_framings = {}
     if not isinstance(raw_styles, dict):
         _log("'art_styles' must be a dict — skipped.")
         raw_styles = {}
 
     angles = _sanitize_entries(raw_angles)
+    framings = _sanitize_entries(raw_framings)
     styles = _sanitize_entries(raw_styles)
 
     # Prefer the explicit split keys; fall back to splitting the unified
     # `categories` block (matches the v3.0 backwards-compat path).
     raw_cat_angle = data.get("angle_categories")
+    raw_cat_framing = data.get("framing_categories")
     raw_cat_style = data.get("style_categories")
-    if raw_cat_angle is None or raw_cat_style is None:
-        raw_cat_angle, raw_cat_style = _split_unified_categories(
-            data.get("categories", {}), set(angles.keys()), set(styles.keys()),
+    if any(x is None for x in (raw_cat_angle, raw_cat_framing, raw_cat_style)):
+        raw_cat_angle, raw_cat_framing, raw_cat_style = _split_unified_categories(
+            data.get("categories", {}),
+            set(angles.keys()),
+            set(framings.keys()),
+            set(styles.keys()),
         )
 
     _LIB.angles = angles
+    _LIB.framings = framings
     _LIB.styles = styles
     _LIB.cat_angle = _sanitize_categories(raw_cat_angle, set(angles.keys()))
+    _LIB.cat_framing = _sanitize_categories(raw_cat_framing, set(framings.keys()))
     _LIB.cat_style = _sanitize_categories(raw_cat_style, set(styles.keys()))
     _LIB.mtime = mtime
 
     _log(
-        f"Loaded: {len(angles)} angles, {len(styles)} styles, "
-        f"{len(_LIB.cat_angle)} angle-cats, {len(_LIB.cat_style)} style-cats"
+        f"Loaded: {len(angles)} angles, {len(framings)} framings, {len(styles)} styles, "
+        f"{len(_LIB.cat_angle)} angle-cats, {len(_LIB.cat_framing)} framing-cats, {len(_LIB.cat_style)} style-cats"
     )
     return _LIB
 
@@ -256,15 +274,14 @@ def _apply_weight(text: str, strength: float, fmt: str) -> str:
 
 class CameraStyleMixer:
     DESCRIPTION = (
-        "Camera Style Mixer Boss - mix a camera angle and an art style into a "
+        "Camera Style Mixer Boss - mix a camera angle, framing, and an art style into a "
         "single weighted prompt. Click Open Editor to choose from the loaded "
         "library (camera_style_mixer.json), filter by category, drag each "
         "strength slider (0 = omit, 1.0 = normal, 1.3+ = bold), pick a weight "
         "format (ComfyUI / stacked parentheses / multiply / de-emphasis / "
         "none), and pick a Random or Fixed seed for reproducible picks.\n\n"
-        "Returns three STRING outputs: combined_prompt (angle + delimiter + "
-        "style, each weighted), angle_prompt (angle alone, weighted), and "
-        "style_prompt (style alone, weighted)."
+        "Returns three STRING outputs: combined_prompt (angle + framing + style, each weighted), "
+        "angle_prompt (angle alone, weighted), and style_prompt (style alone, weighted)."
     )
 
     @classmethod
@@ -304,6 +321,33 @@ class CameraStyleMixer:
                         "min": STRENGTH_MIN, "max": STRENGTH_MAX,
                         "step": STRENGTH_STEP, "display": "slider",
                         "tooltip": "Attention weight for the angle prompt. 1.0 = no change.",
+                    },
+                ),
+                "camera_framing": (
+                    entry_list(lib.framings, RANDOM_FRAMING),
+                    {
+                        "default": RANDOM_FRAMING,
+                        "tooltip": (
+                            "Camera framing preset. '(Random)' samples from the "
+                            "selected framing category on each run; '(None)' "
+                            "omits the framing from the combined output."
+                        ),
+                    },
+                ),
+                "framing_category": (
+                    cat_list(lib.cat_framing),
+                    {
+                        "default": ALL_CATEGORIES,
+                        "tooltip": "Filter random framing picks to this category.",
+                    },
+                ),
+                "framing_strength": (
+                    "FLOAT",
+                    {
+                        "default": STRENGTH_DEFAULT,
+                        "min": STRENGTH_MIN, "max": STRENGTH_MAX,
+                        "step": STRENGTH_STEP, "display": "slider",
+                        "tooltip": "Attention weight for the framing prompt. 1.0 = no change.",
                     },
                 ),
                 "art_style": (
@@ -348,7 +392,7 @@ class CameraStyleMixer:
                     "STRING",
                     {
                         "default": ", ",
-                        "tooltip": "String placed between angle and style in the combined output.",
+                        "tooltip": "String placed between angle, framing, and style in the combined output.",
                     },
                 ),
                 "seed": (
@@ -383,7 +427,7 @@ class CameraStyleMixer:
     RETURN_TYPES = ("STRING", "STRING", "STRING")
     RETURN_NAMES = ("combined_prompt", "angle_prompt", "style_prompt")
     OUTPUT_TOOLTIPS = (
-        "Angle and style joined by `delimiter`, each wrapped by `weight_format`.",
+        "Angle, framing, and style joined by `delimiter`, each wrapped by `weight_format`.",
         "The angle fragment alone, weighted.",
         "The style fragment alone, weighted.",
     )
@@ -399,12 +443,38 @@ class CameraStyleMixer:
 
     def mix(
         self, camera_angle, angle_category, angle_strength,
+        camera_framing, framing_category, framing_strength,
         art_style, style_category, style_strength,
         weight_format, delimiter=", ", seed=-1, force_refresh=False,
         CameraState="{}",
     ):
         if force_refresh:
             _load_library(force=True)
+
+        # Parse the hidden editor state.
+        try:
+            _state = json.loads(CameraState) if isinstance(CameraState, str) else {}
+        except (TypeError, ValueError):
+            _state = {}
+        if isinstance(_state, dict):
+            camera_angle = _state.get("cameraAngle", camera_angle)
+            angle_category = _state.get("angleCategory", angle_category)
+            if "angleStrength" in _state:
+                angle_strength = _state["angleStrength"]
+            camera_framing = _state.get("cameraFraming", camera_framing)
+            framing_category = _state.get("framingCategory", framing_category)
+            if "framingStrength" in _state:
+                framing_strength = _state["framingStrength"]
+            art_style = _state.get("artStyle", art_style)
+            style_category = _state.get("styleCategory", style_category)
+            if "styleStrength" in _state:
+                style_strength = _state["styleStrength"]
+            if "weightFormat" in _state:
+                weight_format = _state["weightFormat"]
+            if "delimiter" in _state:
+                delimiter = _state["delimiter"]
+            if "seed" in _state:
+                seed = _state["seed"]
 
         lib = _LIB
 
@@ -418,13 +488,17 @@ class CameraStyleMixer:
         angle_key, angle_text = _resolve(
             rng, camera_angle, RANDOM_ANGLE, lib.angles, lib.cat_angle, angle_category,
         )
+        framing_key, framing_text = _resolve(
+            rng, camera_framing, RANDOM_FRAMING, lib.framings, lib.cat_framing, framing_category,
+        )
         style_key, style_text = _resolve(
             rng, art_style, RANDOM_STYLE, lib.styles, lib.cat_style, style_category,
         )
 
         weighted_angle = _apply_weight(angle_text, angle_strength, weight_format)
+        weighted_framing = _apply_weight(framing_text, framing_strength, weight_format)
         weighted_style = _apply_weight(style_text, style_strength, weight_format)
-        combined = delimiter.join(filter(None, [weighted_angle, weighted_style]))
+        combined = delimiter.join(filter(None, [weighted_angle, weighted_framing, weighted_style]))
 
         return (combined, weighted_angle, weighted_style)
 
@@ -446,8 +520,10 @@ def register_api_routes():
             lib = _load_library()
             return web.json_response({
                 "angles": lib.angles,
+                "framings": lib.framings,
                 "styles": lib.styles,
                 "angleCategories": lib.cat_angle,
+                "framingCategories": lib.cat_framing,
                 "styleCategories": lib.cat_style,
                 "weightFormats": [
                     {"key": k, "label": WEIGHT_FORMAT_LABELS[k]}
@@ -463,10 +539,12 @@ def register_api_routes():
             lib = _load_library(force=True)
             return web.json_response({
                 "angles": lib.angles,
+                "framings": lib.framings,
                 "styles": lib.styles,
                 "angleCategories": lib.cat_angle,
+                "framingCategories": lib.cat_framing,
                 "styleCategories": lib.cat_style,
-                "count": len(lib.angles) + len(lib.styles),
+                "count": len(lib.angles) + len(lib.framings) + len(lib.styles),
             })
         except Exception:
             return web.json_response({"error": "Internal server error"}, status=500)

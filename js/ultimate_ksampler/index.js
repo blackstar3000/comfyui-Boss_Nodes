@@ -58,6 +58,22 @@ const SCHEDULERS = [
   "simple",
   "ddim_uniform",
 ];
+const SEED_CONTROL_MODES = ["fixed", "increment", "decrement", "randomize"];
+const SEED_MAX = 0xffffffff; // kept in sync with the modal's seed input range
+
+function nextSeed(currentSeed, mode) {
+  switch (mode) {
+    case "increment":
+      return currentSeed >= SEED_MAX ? 0 : currentSeed + 1;
+    case "decrement":
+      return currentSeed <= 0 ? SEED_MAX : currentSeed - 1;
+    case "randomize":
+      return Math.floor(Math.random() * (SEED_MAX + 1));
+    case "fixed":
+    default:
+      return currentSeed;
+  }
+}
 
 const VISIBLE_NATIVE_WIDGETS = [
   "preset",
@@ -337,6 +353,7 @@ function defaultStateFromWidgets(node) {
     scheduler: widgetValue(node, "scheduler", "karras"),
     denoise: parseFloat(widgetValue(node, "denoise", 1.0) || 1.0),
     seed: parseInt(widgetValue(node, "seed", 0) || 0),
+    seed_control: "randomize",
     override_preset: !!widgetValue(node, "override_preset", false),
     save_as_favorite: false,
     favorite_name: "",
@@ -355,6 +372,8 @@ function readState(node) {
         merged.cfg = parseFloat(merged.cfg) || base.cfg;
         merged.denoise = parseFloat(merged.denoise) || base.denoise;
         merged.seed = parseInt(merged.seed) || 0;
+        if (!SEED_CONTROL_MODES.includes(merged.seed_control))
+          merged.seed_control = base.seed_control;
         if (
           !BUILTIN_PRESETS.includes(merged.preset) &&
           !merged.preset.startsWith("---")
@@ -387,6 +406,7 @@ function writeState(node, state) {
     scheduler: state.scheduler,
     denoise: state.denoise,
     seed: state.seed,
+    seed_control: state.seed_control || "randomize",
     override_preset: !!state.override_preset,
     save_as_favorite: !!state.save_as_favorite,
     favorite_name: state.favorite_name || "",
@@ -463,7 +483,7 @@ function renderHeader(node) {
       <span class="label" style="margin-left:12px;">Scheduler:</span>
       <span class="value">${escapeHtml(state.scheduler)}</span>
       <span class="label" style="margin-left:12px;">Seed:</span>
-      <span class="value">${state.seed || "random"}</span>
+      <span class="value">${state.seed || "random"} (${state.seed_control || "randomize"})</span>
     </div>
   `;
 }
@@ -497,6 +517,7 @@ function buildPreviewHTML(state) {
         <div class="boss-ks-setting"><span class="label">CFG</span><span class="value">${state.cfg}</span></div>
         <div class="boss-ks-setting"><span class="label">Denoise</span><span class="value">${state.denoise}</span></div>
         <div class="boss-ks-setting"><span class="label">Seed</span><span class="value">${state.seed || "random"}</span></div>
+        <div class="boss-ks-setting"><span class="label">Seed Control</span><span class="value">${escapeHtml(state.seed_control || "randomize")}</span></div>
       </div>
       <div class="boss-ks-fav-summary"><strong>${summary}</strong></div>
     </div>
@@ -584,6 +605,9 @@ class KSamplerEditor {
     side.appendChild(this.buildNumberSection("CFG", "cfg", 0, 100, 0.1));
     side.appendChild(this.buildNumberSection("Denoise", "denoise", 0, 1, 0.01));
     side.appendChild(this.buildNumberSection("Seed", "seed", 0, 0xffffffff, 1));
+    side.appendChild(
+      this.buildSelectSection("Seed Control", "seed_control", SEED_CONTROL_MODES),
+    );
     side.appendChild(this.buildFavoriteSaveSection());
 
     const workspace = document.createElement("div");
@@ -968,8 +992,23 @@ app.graphToPrompt = async function (...args) {
       const node = app.graph._nodes.find((n) => String(n.id) === id);
       if (!node) continue;
       const state = readState(node);
+
+      // Inject the CURRENT seed - this is what actually gets used for this run.
       entry.inputs = entry.inputs || {};
       entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify(state);
+
+      // Advance the seed for the NEXT run (fixed/increment/decrement/randomize),
+      // same as ComfyUI's native "control after generate" behavior. This has to
+      // happen AFTER injecting the current state above, so this run still uses
+      // the seed the person saw in the UI when they hit queue.
+      const mode = state.seed_control || "randomize";
+      const advanced = nextSeed(state.seed, mode);
+      if (mode !== "fixed" && advanced !== state.seed) {
+        const newState = { ...state, seed: advanced };
+        writeState(node, newState);
+        setWidgetValue(node, "seed", advanced);
+        renderHeader(node);
+      }
     }
   } catch (e) {
     console.warn("[UltimateKSampler] graphToPrompt inject failed", e);

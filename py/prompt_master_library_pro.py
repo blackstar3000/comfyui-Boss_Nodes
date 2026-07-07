@@ -609,7 +609,7 @@ class PromptMasterLibraryPro:
         "Style-aware auto-negative + your extra negatives, weighted.",
     )
     FUNCTION = "go"
-    CATEGORY = "👑 Boss Nodes/✨ Prompting"
+    CATEGORY = "👑 Boss Nodes/⚡ Prompting"
 
     @classmethod
     def IS_CHANGED(cls, MasterState: str, **kwargs):
@@ -643,6 +643,40 @@ class PromptMasterLibraryPro:
         kwargs.pop("confirm_delete", None)
         if kwargs:
             _log(f"Ignoring unknown wire kwargs: {sorted(kwargs.keys())}")
+
+        # Parse the hidden editor state. Despite being documented as "the"
+        # state channel, this was previously accepted but never read -
+        # dead code. Use it as a fallback so MasterState actually has the
+        # effect the architecture doc describes, independent of whether
+        # the native widgets happened to be synced before this run (the
+        # seed field in particular is refreshed here on every queue in
+        # random mode, not just when the editor's Apply button runs).
+        try:
+            _state = json.loads(MasterState) if isinstance(MasterState, str) else {}
+        except (TypeError, ValueError):
+            _state = {}
+        if isinstance(_state, dict):
+            light = _state.get("light", light)
+            theme = _state.get("theme", theme)
+            style = _state.get("style", style)
+            if "lightStrength" in _state:
+                light_strength = _state["lightStrength"]
+            if "themeStrength" in _state:
+                theme_strength = _state["themeStrength"]
+            if "styleStrength" in _state:
+                style_strength = _state["styleStrength"]
+            if "seed" in _state:
+                seed = _state["seed"]
+            if "separator" in _state:
+                separator = _state["separator"]
+            if "newlines" in _state:
+                newlines = bool(_state["newlines"])
+            if "weightFormat" in _state:
+                weight_format = _state["weightFormat"]
+            if "negativeStrength" in _state:
+                negative_strength = _state["negativeStrength"]
+            if "negativeText" in _state:
+                negative_text = _state["negativeText"]
 
         if force_refresh:
             _load_all(force=True)

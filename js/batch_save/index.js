@@ -751,6 +751,19 @@ app.graphToPrompt = async function (...args) {
       const state = readState(node);
       entry.inputs = entry.inputs || {};
       entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify(state);
+
+      // The checkbox is labeled "Will reset to 0001 on NEXT save" - a
+      // one-shot action, not a persistent setting. Nothing was ever
+      // turning it back off, so leaving it checked silently reset the
+      // counter on every subsequent save too. Auto-clear it here for the
+      // next run, same pattern as the seed-advance fix in the KSampler
+      // node.
+      if (state.reset_counter) {
+        const newState = { ...state, reset_counter: false };
+        writeState(node, newState);
+        setWidgetValue(node, "reset_counter", false);
+        renderHeader(node);
+      }
     }
   } catch (e) {
     console.warn("[BatchSave] graphToPrompt inject failed", e);

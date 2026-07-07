@@ -9,7 +9,7 @@ from datetime import datetime
 class QualityBoosterPRO:
     _cache = {}
     _last_modified = 0
-    _json_path = os.path.join(os.path.dirname(__file__), "quality_boosts.json")
+    _json_path = os.path.join(os.path.dirname(__file__), "prompt_quality_booster.json")
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -145,14 +145,14 @@ if not os.path.exists(QualityBoosterPRO._json_path):
     try:
         with open(QualityBoosterPRO._json_path, "w", encoding="utf-8") as f:
             json.dump(default_data, f, indent=2, ensure_ascii=False)
-        print("✨ Quality Booster PRO → Created quality_boosts.json with god-tier presets")
+        print("✨ Quality Booster PRO → Created prompt_quality_booster.json with god-tier presets")
     except:
         pass
 else:
     QualityBoosterPRO._auto_reload()
 
 print("\n✨ QUALITY BOOSTER PRO v4.0 — FULLY ARMED")
-print("   • Live auto-reload from quality_boosts.json")
+print("   • Live auto-reload from prompt_quality_booster.json")
 print("   • Weight prefixes + BREAK mode")
 print("   • Most beautiful preview in ComfyUI")
 print("   • This is now the ultimate quality injector. Forever.\n")

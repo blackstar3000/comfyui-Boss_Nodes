@@ -13,6 +13,17 @@ COUNTER_FILE = os.path.join(BASE_DIR, ".batch_save_counter.json")
 HISTORY_FILE = os.path.join(BASE_DIR, ".batch_save_history.json")
 HISTORY_LIMIT = 50
 
+
+def _atomic_write_json(path, data):
+    """Write JSON atomically: write to a temp file, then rename over the
+    target. If the process dies mid-write (crash, power loss, kill -9),
+    the original file is left untouched instead of being left truncated
+    or corrupted."""
+    tmp_path = path + ".tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    os.replace(tmp_path, path)
+
 # ── Counter I/O ──────────────────────────────────────────────────────────────
 
 def _load_counter() -> int:
@@ -24,8 +35,7 @@ def _load_counter() -> int:
         return 0
 
 def _save_counter(value: int) -> None:
-    with open(COUNTER_FILE, "w", encoding="utf-8") as f:
-        json.dump({"counter": value}, f)
+    _atomic_write_json(COUNTER_FILE, {"counter": value})
 
 # ── History I/O ─────────────────────────────────────────────────────────────
 
@@ -37,8 +47,7 @@ def _load_history() -> list:
         return []
 
 def _save_history(history: list) -> None:
-    with open(HISTORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(history[-HISTORY_LIMIT:], f, indent=2)
+    _atomic_write_json(HISTORY_FILE, history[-HISTORY_LIMIT:])
 
 # ── Sanitizers ──────────────────────────────────────────────────────────────
 
@@ -293,8 +302,7 @@ class BatchSaveAutoNaming:
             data = []
 
         data.append(entry)
-        with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+        _atomic_write_json(filepath, data)
 
 
 NODE_CLASS_MAPPINGS = {"BatchSaveAutoNaming": BatchSaveAutoNaming}

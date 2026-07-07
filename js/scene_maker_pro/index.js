@@ -1431,6 +1431,12 @@ app.graphToPrompt = async function (...args) {
         runSeed = clampSeed(state.seed);
       }
       entry.inputs = entry.inputs || {};
+      // Write to the REAL wire input - direct() reads `seed` directly and
+      // never parses SceneState, so this is what actually reaches
+      // execution each run. Without this, random mode only changed the
+      // (unused) hidden state and kept reusing whatever seed was last
+      // synced by the editor's Apply button.
+      entry.inputs.seed = runSeed;
       entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify({
         ...state,
         seed: runSeed,
