@@ -4,7 +4,7 @@
 import json
 import os
 import folder_paths
-from nodes import common_ksampler, VAEDecode
+from nodes import common_ksampler
 import comfy.samplers
 
 # ── Constants ───────────────────────────────────────────────────────────────
@@ -141,21 +141,22 @@ class UltimateKSamplerPro:
     """
     DESCRIPTION = (
         "Ultimate KSampler Pro — Advanced sampling node with presets, favorites, and hidden state integration.\n\n"
-        "This node wraps ComfyUI's common_ksampler and VAE decode, offering:\n"
+        "This node wraps ComfyUI's common_ksampler, offering:\n"
         "- A choice of built‑in presets (Fast, Balanced, High Quality, Anime, etc.)\n"
         "- Customizable CFG presets (Low Creativity, Creative, etc.) that override the preset's CFG\n"
         "- Manual override mode to ignore the preset and use direct values\n"
         "- Favorites system: save any combination of sampler, scheduler, steps, and CFG as a named favorite\n"
         "- Full hidden state (`KSamplerState`) support for UI synchronization and state persistence\n"
         "- REST API routes for managing favorites (list, save, delete)\n"
-        "- Outputs both the latent and the decoded image\n\n"
+        "- Outputs the denoised latent for external VAEDecode\n\n"
         "**Usage:**\n"
-        "- Connect your model, conditioning, latent, and VAE.\n"
+        "- Connect your model, conditioning, and latent.\n"
         "- Choose a preset or use manual override.\n"
         "- Optionally apply a CFG preset to adjust creativity.\n"
         "- Toggle `save_as_favorite` and provide a `favorite_name` to store the current settings.\n"
         "- The hidden `KSamplerState` string can be used by custom UI wrappers to read/write all parameters.\n\n"
-        "The node also returns a UI preview with the effective settings and favorite count."
+        "The node also returns a UI preview with the effective settings and favorite count.\n"
+        "Connect the latent output to a VAEDecode node for image output."
     )
 
     @classmethod
@@ -177,7 +178,6 @@ class UltimateKSamplerPro:
                 "positive": ("CONDITIONING",),
                 "negative": ("CONDITIONING",),
                 "latent_image": ("LATENT",),
-                "vae": ("VAE",),
                 "denoise": ("FLOAT", {"default": 1.0, "min": 0.0, "max": 1.0, "step": 0.01}),
                 "seed": ("INT", {"default": 0, "min": 0, "max": 0xffffffffffffffff}),
             },
@@ -195,8 +195,8 @@ class UltimateKSamplerPro:
             }
         }
 
-    RETURN_TYPES = ("LATENT", "IMAGE")
-    RETURN_NAMES = ("latent", "image")
+    RETURN_TYPES = ("LATENT",)
+    RETURN_NAMES = ("latent",)
     FUNCTION = "sample"
     CATEGORY = "👑 Boss Nodes/🧬 Sampling"
 
@@ -205,7 +205,7 @@ class UltimateKSamplerPro:
         # Re‑execute when the JS state changes
         return KSamplerState
 
-    def sample(self, model, positive, negative, latent_image, vae,
+    def sample(self, model, positive, negative, latent_image,
                preset="Balanced", cfg_preset="None",
                steps=28, cfg=7.5, sampler_name="dpmpp_2m", scheduler="karras",
                denoise=1.0, seed=0, override_preset=False,
@@ -294,10 +294,6 @@ class UltimateKSamplerPro:
         )
         latent_out = result[0]
 
-        # ── Decode ──────────────────────────────────────────────────────
-        decoder = VAEDecode()
-        image_out = decoder.decode(samples=latent_out, vae=vae)[0]
-
         # ── UI preview ─────────────────────────────────────────────────
         favs = _load_favorites()
         status = f"{len(favs)} favorites" if favs else "No favorites"
@@ -308,7 +304,7 @@ class UltimateKSamplerPro:
             f"🌱 Seed: {seed if seed != 0 else 'Random'}",
             f"⭐ {status}"
         ]
-        return {"result": (latent_out, image_out), "ui": {"text": preview_lines}}
+        return {"result": (latent_out,), "ui": {"text": preview_lines}}
 
 
 NODE_CLASS_MAPPINGS = {"UltimateKSamplerPro": UltimateKSamplerPro}
