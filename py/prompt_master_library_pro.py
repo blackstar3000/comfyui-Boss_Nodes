@@ -22,6 +22,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from utils.constants import SEED_MAX, STRENGTH_MIN, STRENGTH_MAX, STRENGTH_DEFAULT, STRENGTH_STEP, WEIGHT_FORMAT_KEYS, WEIGHT_FORMAT_LABELS, WEIGHT_FORMAT_DEFAULT, RANDOM_STYLE
+from utils.prompt_utils import apply_weight, clamp_strength, to_bool
+from utils.logging_utils import make_logger
+
 # ── File paths ──────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).parent
 
@@ -33,26 +37,8 @@ FAVORITES_FILE = BASE_DIR / "PromptMaster_favorites.json"
 # ── Sentinel values for the per-collection combos ──────────────────────────
 RANDOM_LIGHT = "__RANDOM_LIGHT__"
 RANDOM_THEME = "__RANDOM_THEME__"
-RANDOM_STYLE = "__RANDOM_STYLE__"
 NONE_SENTINEL = "__NONE__"
 
-# ── Weight format registry ──────────────────────────────────────────────────
-WEIGHT_FORMAT_KEYS = ["comfyui", "parentheses", "multiply", "none"]
-WEIGHT_FORMAT_LABELS = {
-    "comfyui":     "(text:1.30) — ComfyUI / A1111 standard",
-    "parentheses": "((text))    — Stacked parentheses",
-    "multiply":    "text * 1.30 — Multiply style",
-    "none":        "none        — No weighting",
-}
-WEIGHT_FORMAT_DEFAULT = "comfyui"
-
-# ── Strength bounds (shared by Python + JS) ────────────────────────────────
-STRENGTH_MIN = 0.0
-STRENGTH_MAX = 2.0
-STRENGTH_DEFAULT = 1.0
-STRENGTH_STEP = 0.05
-
-SEED_MAX = 0xFFFFFFFFFFFFFFFF  # match ComfyUI's seed widget bound
 SEPARATOR_DEFAULT = ", "
 NEWLINES_DEFAULT = False
 
@@ -99,8 +85,7 @@ class _LibraryState:
     other four rebuilt nodes."""
 
 
-def _log(msg: str) -> None:
-    print(f"[PromptMasterLibraryPro] {msg}")
+_log = make_logger("PromptMasterLibraryPro")
 
 
 # — Sanitization helpers (kept from v3.0 to preserve flat-or-categorized
@@ -243,30 +228,6 @@ class _Selection:
     @classmethod
     def empty(cls) -> "_Selection":
         return cls("", "", "")
-
-
-# ── Apply weight (4 formats) ────────────────────────────────────────────────
-
-def _apply_weight(text: str, strength: float, fmt: str) -> str:
-    """Apply attention weighting to prompt text. Returns '' if text is empty."""
-    if not text or (strength is None) or strength < 0.01:
-        return ""
-    s = float(strength)
-
-    if fmt == "none":
-        return text
-    if fmt == "comfyui":
-        return text if abs(s - 1.0) < 1e-4 else f"({text}:{s:.2f})"
-    if fmt == "parentheses":
-        if abs(s - 1.0) < 1e-4:
-            return text
-        layers = max(1, min(5, int(round(abs(s - 1.0) / 0.1))))
-        if s > 1.0:
-            return "(" * layers + text + ")" * layers
-        return "[" * layers + text + "]" * layers
-    if fmt == "multiply":
-        return f"{text} * {s:.2f}"
-    return text  # Unknown format — pass through
 
 
 # ── Resolve selection ──────────────────────────────────────────────────────
@@ -463,26 +424,6 @@ def _delete_favorite(name: str) -> list[dict]:
     favs = [f for f in favs if f.get("name") != name]
     _write_favorites(favs)
     return favs
-
-
-# ── Misc helpers ───────────────────────────────────────────────────────────
-
-def _clamp_strength(s, fallback: float = STRENGTH_DEFAULT) -> float:
-    try:
-        v = float(s)
-    except (TypeError, ValueError):
-        return fallback
-    return max(STRENGTH_MIN, min(STRENGTH_MAX, v))
-
-
-def _bool(v) -> bool:
-    if isinstance(v, bool):
-        return v
-    if isinstance(v, (int, float)):
-        return bool(v)
-    if isinstance(v, str):
-        return v.strip().lower() in ("true", "1", "yes", "on")
-    return False
 
 
 # ── Node class ──────────────────────────────────────────────────────────────
@@ -705,13 +646,13 @@ class PromptMasterLibraryPro:
         t_sel = _resolve(rng, theme, themes, "theme")
         s_sel = _resolve(rng, style, styles, "style")
 
-        light_strength  = _clamp_strength(light_strength)
-        theme_strength  = _clamp_strength(theme_strength)
-        style_strength  = _clamp_strength(style_strength)
+        light_strength  = clamp_strength(light_strength)
+        theme_strength  = clamp_strength(theme_strength)
+        style_strength  = clamp_strength(style_strength)
 
-        l_prompt = _apply_weight(l_sel.text, light_strength, weight_format)
-        t_prompt = _apply_weight(t_sel.text, theme_strength, weight_format)
-        s_prompt = _apply_weight(s_sel.text, style_strength, weight_format)
+        l_prompt = apply_weight(l_sel.text, light_strength, weight_format)
+        t_prompt = apply_weight(t_sel.text, theme_strength, weight_format)
+        s_prompt = apply_weight(s_sel.text, style_strength, weight_format)
 
         parts = [p for p in [l_prompt, t_prompt, s_prompt] if p]
         join_str = "\n" if newlines else separator
@@ -727,8 +668,8 @@ class PromptMasterLibraryPro:
         else:
             raw_neg = ""
 
-        negative_strength = _clamp_strength(negative_strength)
-        full_negative = _apply_weight(raw_neg, negative_strength, weight_format)
+        negative_strength = clamp_strength(negative_strength)
+        full_negative = apply_weight(raw_neg, negative_strength, weight_format)
 
         # Favorites are saved through the in-editor Favorites panel
         # (HTTP-backed). The wire-level save widget was removed to
