@@ -19,6 +19,10 @@ import os
 import random
 from pathlib import Path
 
+from utils.constants import SEED_MAX
+from utils.prompt_utils import clamp_strength
+from utils.logging_utils import make_logger
+
 # ── File paths ──────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).parent
 JSON_FILE = BASE_DIR / "promptunstuck.json"
@@ -33,8 +37,6 @@ INTENSITY_MIN = 0.0
 INTENSITY_MAX = 2.0
 INTENSITY_DEFAULT = 1.0
 INTENSITY_STEP = 0.05
-
-SEED_MAX = 0xFFFFFFFFFFFFFFFF  # match ComfyUI's own seed widget bound
 
 # Fragment flags — mirrors the JS-side toggle grid.
 DEFAULT_FLAGS = {
@@ -97,8 +99,7 @@ class _LibraryState:
 _LIB = _LibraryState()
 
 
-def _log(msg: str) -> None:
-    print(f"[PromptUnstuckPro] {msg}")
+_log = make_logger("PromptUnstuckPro")
 
 
 def _safe_list(d: dict, *keys, default=None):
@@ -186,14 +187,6 @@ def _pick(rng: random.Random, items: list[str]) -> str:
     if not items:
         return ""
     return rng.choice(items)
-
-
-def _clamp_intensity(intensity) -> float:
-    try:
-        v = float(intensity)
-    except (TypeError, ValueError):
-        return INTENSITY_DEFAULT
-    return max(INTENSITY_MIN, min(INTENSITY_MAX, v))
 
 
 def _merge_flags(flags) -> dict:
@@ -378,7 +371,7 @@ class PromptUnstuckPro:
         rng.seed(int(seed) if seed else int.from_bytes(os.urandom(8), "big"))
 
         flags = _merge_flags(PunstuckState_flags(PunstuckState))
-        intensity = _clamp_intensity(intensity)
+        intensity = clamp_strength(intensity, INTENSITY_MIN, INTENSITY_MAX, INTENSITY_DEFAULT)
 
         # Resolve mode.
         if mode == NONE_MODE:
