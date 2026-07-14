@@ -20,6 +20,12 @@ import random
 from datetime import datetime
 from pathlib import Path
 
+from utils.constants import SEED_MAX, ALL_CATEGORIES, DELIMITER_DEFAULT
+from utils.prompt_utils import apply_weight, clamp_strength
+from utils.logging_utils import make_logger
+from utils.json_utils import sanitize_entries, sanitize_categories
+from utils.cache_utils import Collection
+
 # ── File paths ──────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).parent
 
@@ -32,7 +38,6 @@ RANDOM_CHARACTER    = "__RANDOM_CHARACTER__"
 RANDOM_EXPRESSION   = "__RANDOM_EXPRESSION__"
 RANDOM_POSE         = "__RANDOM_POSE__"
 NONE_SENTINEL       = "__NONE__"
-ALL_CATEGORIES      = "All"
 
 # ── Strength bounds (shared by Python + JS) ────────────────────────────────
 # Character strength goes to 2.5 (preserved from v3.2); expression + pose
@@ -47,120 +52,22 @@ CHARACTER_STRENGTH_DEFAULT = 1.3
 EXPRESSION_STRENGTH_DEFAULT = 1.1
 POSE_STRENGTH_DEFAULT = 1.2
 
-DELIMITER_DEFAULT = ", "
-
-SEED_MAX = 0xFFFFFFFFFFFFFFFF  # match ComfyUI's seed widget bound
-
 
 # ── Per-collection library cache ───────────────────────────────────────────
 
-class _Collection:
-    """One library (character / pose / expression) with hot reload."""
-
-    def __init__(self, filename: str, data_key: str):
-        self.filename = filename
-        self.data_key = data_key  # 'characters' / 'poses' / 'expressions'
-        self.items: dict[str, str] = {}
-        self.categories: dict[str, list[str]] = {}
-        self.mtime: float | None = None
-
-    @property
-    def path(self) -> Path:
-        return BASE_DIR / self.filename
-
-    def is_empty(self) -> bool:
-        return not self.items
+_CHARACTERS  = Collection("characters.json",  "characters", "UltimateCharacterBuilderPro")
+_POSES       = Collection("poses.json",        "poses", "UltimateCharacterBuilderPro")
+_EXPRESSIONS = Collection("expressions.json",  "expressions", "UltimateCharacterBuilderPro")
 
 
-_CHARACTERS  = _Collection("characters.json",  "characters")
-_POSES       = _Collection("poses.json",        "poses")
-_EXPRESSIONS = _Collection("expressions.json",  "expressions")
+_log = make_logger("UltimateCharacterBuilderPro")
 
-
-def _log(msg: str) -> None:
-    print(f"[UltimateCharacterBuilderPro] {msg}")
-
-
-def _sanitize_entries(raw: dict, filename: str) -> dict[str, str]:
-    """Keep only entries with non-empty string values. Warn on bad entries."""
-    clean: dict[str, str] = {}
-    for k, v in raw.items():
-        if isinstance(v, str) and v.strip():
-            clean[k] = v.strip()
-        else:
-            _log(f"  Skipped entry '{k}': expected non-empty string, got {type(v).__name__}")
-    return clean
-
-
-def _sanitize_categories(cats: dict, valid_keys: set) -> dict[str, list[str]]:
-    """Validate category lists against known keys. Warn on missing refs."""
-    clean: dict[str, list[str]] = {}
-    for cat_name, items in cats.items():
-        if not isinstance(items, list):
-            _log(f"  Category '{cat_name}' skipped: expected list")
-            continue
-        valid = [x for x in items if x in valid_keys]
-        missing = [x for x in items if x not in valid_keys]
-        if missing:
-            _log(f"  Category '{cat_name}': {len(missing)} item(s) not in library — skipped")
-        if valid:
-            clean[cat_name] = valid
-    return clean
-
-
-def _load_collection(col: _Collection, force: bool = False) -> _Collection:
-    """Hot-reload a collection's JSON file. Returns the populated `_Collection`.
-
-    Reads from disk only when the file's mtime changes (or `force=True`).
-    On any parse error, leaves the previous cache intact and logs a warning.
-    """
-    if not force and col.mtime is not None and col.items:
-        try:
-            if os.path.getmtime(col.path) == col.mtime:
-                return col
-        except OSError:
-            pass  # fall through to the full load below
-
-    if not col.path.exists():
-        _log(f"File not found: {col.filename} — that collection will be empty.")
-        return col
-
-    try:
-        mtime = os.path.getmtime(col.path)
-    except OSError as e:
-        _log(f"Cannot stat {col.filename}: {e}")
-        return col
-
-    try:
-        with col.path.open("r", encoding="utf-8") as f:
-            data = json.load(f)
-    except (json.JSONDecodeError, OSError) as e:
-        _log(f"Error reading {col.filename}: {e}")
-        return col
-
-    if not isinstance(data, dict):
-        _log(f"{col.filename} root is not an object — skipping.")
-        return col
-
-    raw_items = data.get(col.data_key)
-    if not isinstance(raw_items, dict):
-        _log(f"{col.filename} has no '{col.data_key}' object — skipping.")
-        return col
-
-    items = _sanitize_entries(raw_items, col.filename)
-    cats = _sanitize_categories(data.get("categories", {}), set(items.keys()))
-
-    col.items = items
-    col.categories = cats
-    col.mtime = mtime
-    _log(f"Loaded {col.filename}: {len(items)} items, {len(cats)} categories")
-    return col
 
 
 def _load_all(force: bool = False) -> None:
-    _load_collection(_CHARACTERS, force)
-    _load_collection(_POSES, force)
-    _load_collection(_EXPRESSIONS, force)
+    _CHARACTERS.load(force)
+    _POSES.load(force)
+    _EXPRESSIONS.load(force)
 
 
 # ── Resolve + weight helpers ───────────────────────────────────────────────
@@ -188,25 +95,6 @@ def _resolve(
         _log(f"Key '{choice}' not found in library — skipping.")
         return "", ""
     return choice, text
-
-
-def _apply_weight(text: str, strength: float) -> str:
-    """Single comfyui-format attention weight. Returns '' when text or
-    strength is effectively zero."""
-    if not text or strength < 0.01:
-        return ""
-    s = float(strength)
-    if abs(s - 1.0) < 1e-4:
-        return text
-    return f"({text}:{s:.2f})"
-
-
-def _clamp_strength(strength, minimum, maximum, default) -> float:
-    try:
-        v = float(strength)
-    except (TypeError, ValueError):
-        return default
-    return max(minimum, min(maximum, v))
 
 
 def _collection_payload(items: dict[str, str], cats: dict[str, list[str]]) -> tuple[dict, list[str]]:
@@ -342,13 +230,13 @@ class UltimateCharacterBuilderPRO:
         e_key, e_text = _resolve(rng, expression, _EXPRESSIONS.items, _EXPRESSIONS.categories, expression_cat)
         p_key, p_text = _resolve(rng, pose,      _POSES.items,       _POSES.categories,       pose_cat)
 
-        cs = _clamp_strength(character_strength, CHARACTER_STRENGTH_MIN, CHARACTER_STRENGTH_MAX, CHARACTER_STRENGTH_DEFAULT)
-        es = _clamp_strength(expression_strength, SUB_STRENGTH_MIN, SUB_STRENGTH_MAX, EXPRESSION_STRENGTH_DEFAULT)
-        ps = _clamp_strength(pose_strength,      SUB_STRENGTH_MIN, SUB_STRENGTH_MAX, POSE_STRENGTH_DEFAULT)
+        cs = clamp_strength(character_strength, CHARACTER_STRENGTH_MIN, CHARACTER_STRENGTH_MAX, CHARACTER_STRENGTH_DEFAULT)
+        es = clamp_strength(expression_strength, SUB_STRENGTH_MIN, SUB_STRENGTH_MAX, EXPRESSION_STRENGTH_DEFAULT)
+        ps = clamp_strength(pose_strength,      SUB_STRENGTH_MIN, SUB_STRENGTH_MAX, POSE_STRENGTH_DEFAULT)
 
-        cw = _apply_weight(c_text, cs)
-        ew = _apply_weight(e_text, es)
-        pw = _apply_weight(p_text, ps)
+        cw = apply_weight(c_text, cs)
+        ew = apply_weight(e_text, es)
+        pw = apply_weight(p_text, ps)
 
         parts = [x for x in [cw, ew, pw] if x]
         full = delimiter.join(parts) if parts else ""
