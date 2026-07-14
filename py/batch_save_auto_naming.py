@@ -5,7 +5,10 @@ import os
 import json
 import re
 from datetime import datetime
+from pathlib import Path
 import folder_paths
+
+from utils.json_utils import load_json
 
 VERSION = "3.0"
 BASE_DIR = os.path.dirname(__file__)
@@ -27,12 +30,7 @@ def _atomic_write_json(path, data):
 # ── Counter I/O ──────────────────────────────────────────────────────────────
 
 def _load_counter() -> int:
-    try:
-        with open(COUNTER_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            return int(data.get("counter", 0))
-    except (FileNotFoundError, json.JSONDecodeError, ValueError):
-        return 0
+    return int(load_json(Path(COUNTER_FILE), default=0))
 
 def _save_counter(value: int) -> None:
     _atomic_write_json(COUNTER_FILE, {"counter": value})
@@ -40,11 +38,7 @@ def _save_counter(value: int) -> None:
 # ── History I/O ─────────────────────────────────────────────────────────────
 
 def _load_history() -> list:
-    try:
-        with open(HISTORY_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        return []
+    return load_json(Path(HISTORY_FILE), default=[])
 
 def _save_history(history: list) -> None:
     _atomic_write_json(HISTORY_FILE, history[-HISTORY_LIMIT:])
