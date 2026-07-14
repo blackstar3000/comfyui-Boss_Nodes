@@ -16,6 +16,8 @@ import random
 import time
 from pathlib import Path
 
+from utils.constants import SEED_MAX
+
 # ── File paths ──────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).parent
 OUTFITS_FILE = BASE_DIR / "outfits.json"
@@ -25,12 +27,12 @@ OUTFITS_FILE = BASE_DIR / "outfits.json"
 RANDOM_SENTINEL = "(Random)"
 NONE_SENTINEL = "(None)"
 
+# outfit_selector uses 2.5 max (higher than the common 2.0 default).
 STRENGTH_MIN = 0.0
 STRENGTH_MAX = 2.5
 STRENGTH_DEFAULT = 1.35
 STRENGTH_STEP = 0.05
 
-SEED_MAX = 0xFFFFFFFFFFFFFFFF  # match ComfyUI's own seed widget bounds
 SEED_DEFAULT = 0
 
 # Module-level cache; busted by force_refresh=True.
