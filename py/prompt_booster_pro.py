@@ -23,27 +23,17 @@ import random
 from datetime import datetime
 from pathlib import Path
 
+from utils.constants import STRENGTH_MIN, STRENGTH_MAX, STRENGTH_DEFAULT, STRENGTH_STEP, WEIGHT_FORMAT_KEYS, WEIGHT_FORMAT_LABELS, WEIGHT_FORMAT_DEFAULT
+from utils.prompt_utils import apply_weight
+from utils.logging_utils import make_logger
+from utils.json_utils import sanitize_entries
+from utils.cache_utils import Collection
+
 # ── File paths ──────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).parent
 
 QUALITY_FILE   = BASE_DIR / "quality_boosts.json"
 NEGATIVES_FILE = BASE_DIR / "negative_boosts.json"
-
-# ── Strength bounds (shared by Python + JS) ────────────────────────────────
-STRENGTH_MIN  = 0.0
-STRENGTH_MAX  = 2.0
-STRENGTH_STEP = 0.05
-STRENGTH_DEFAULT = 1.0
-
-# ── Weight formats (4 keys) ─────────────────────────────────────────────────
-WEIGHT_FORMAT_KEYS = ["comfyui", "parentheses", "multiply", "none"]
-WEIGHT_FORMAT_LABELS = {
-    "comfyui":     "(text:1.30) — ComfyUI / A1111",
-    "parentheses": "((text)) — Stacked parentheses",
-    "multiply":    "text * 1.30 — Multiply style",
-    "none":        "none — No weighting",
-}
-WEIGHT_FORMAT_DEFAULT = "comfyui"
 
 # ── Defaults for the editor (Python + JS) ──────────────────────────────────
 POSITIVE_LEVEL_DEFAULT  = "god tier"
@@ -53,30 +43,50 @@ NEGATIVE_LEVEL_DEFAULT  = "hardcore"
 
 # ── Per-collection library cache ───────────────────────────────────────────
 
-class _Collection:
+class _Collection(Collection):
     """One library (quality / negatives) with hot reload."""
 
     def __init__(self, filename: str, kind: str):
-        self.filename = filename
-        self.kind = kind           # 'quality' or 'negatives'
-        self.items: dict = {}      # quality: {name: text}; negatives: {preset: {level: text}}
+        super().__init__(filename, kind, "PromptBoosterPro")
+        self.kind = kind  # 'quality' or 'negatives'
         self.levels: list[str] = []  # negatives only — union of all level names across presets
-        self.mtime: float | None = None
 
-    @property
-    def path(self) -> Path:
-        return BASE_DIR / self.filename
+    def _process_data(self, data: dict) -> bool:
+        """Process loaded JSON data for quality or negatives."""
+        if self.kind == "quality":
+            if not isinstance(data, dict):
+                self._log(f"{self.filename} root is not an object — skipping.")
+                return False
+            self.items = _sanitize_quality(data, self.filename)
+            self.levels = []  # quality has no levels
+        else:  # negatives
+            items = _sanitize_negatives(data, self.filename)
+            self.items = items
+            # Compute the union of all level names so the native combo can
+            # accept any value the JS sends (matches camera_style_mixer's
+            # approach for cross-collection combos).
+            all_levels: set[str] = set()
+            for lvls in items.values():
+                all_levels.update(lvls.keys())
+            self.levels = sorted(all_levels)
+        return True
 
-    def is_empty(self) -> bool:
-        return not self.items
+    def load(self, force: bool = False) -> "_Collection":
+        """Hot-reload the collection's JSON file."""
+        super().load(force)
+        if self.kind == "quality":
+            self._log(f"Loaded {self.filename}: {len(self.items)} levels")
+        else:
+            total = sum(len(v) for v in self.items.values())
+            self._log(f"Loaded {self.filename}: {len(self.items)} presets / {total} levels")
+        return self
 
 
 _QUALITY   = _Collection("quality_boosts.json",  "quality")
 _NEGATIVES = _Collection("negative_boosts.json",  "negatives")
 
 
-def _log(msg: str) -> None:
-    print(f"[PromptBoosterPro] {msg}")
+_log = make_logger("PromptBoosterPro")
 
 
 def _sanitize_quality(raw: dict, filename: str) -> dict[str, str]:
@@ -111,87 +121,12 @@ def _sanitize_negatives(raw, filename: str) -> dict[str, dict[str, str]]:
     return clean
 
 
-def _load_collection(col: _Collection, force: bool = False) -> _Collection:
-    """Hot-reload a collection's JSON file. Returns the populated `_Collection`."""
-    if not force and col.mtime is not None and col.items:
-        try:
-            if os.path.getmtime(col.path) == col.mtime:
-                return col
-        except OSError:
-            pass
-
-    if not col.path.exists():
-        _log(f"File not found: {col.filename} — that collection will be empty.")
-        return col
-
-    try:
-        mtime = os.path.getmtime(col.path)
-    except OSError as e:
-        _log(f"Cannot stat {col.filename}: {e}")
-        return col
-
-    try:
-        with col.path.open("r", encoding="utf-8") as f:
-            data = json.load(f)
-    except (json.JSONDecodeError, OSError) as e:
-        _log(f"Error reading {col.filename}: {e}")
-        return col
-
-    if col.kind == "quality":
-        if not isinstance(data, dict):
-            _log(f"{col.filename} root is not an object — skipping.")
-            return col
-        items = _sanitize_quality(data, col.filename)
-        col.items = items
-        col.levels = []  # quality has no levels
-    else:  # negatives
-        items = _sanitize_negatives(data, col.filename)
-        col.items = items
-        # Compute the union of all level names so the native combo can
-        # accept any value the JS sends (matches camera_style_mixer's
-        # approach for cross-collection combos).
-        all_levels: set[str] = set()
-        for lvls in items.values():
-            all_levels.update(lvls.keys())
-        col.levels = sorted(all_levels)
-    col.mtime = mtime
-    if col.kind == "quality":
-        _log(f"Loaded {col.filename}: {len(items)} levels")
-    else:
-        total = sum(len(v) for v in items.values())
-        _log(f"Loaded {col.filename}: {len(items)} presets / {total} levels")
-    return col
-
-
 def _load_all(force: bool = False) -> None:
-    _load_collection(_QUALITY, force)
-    _load_collection(_NEGATIVES, force)
+    _QUALITY.load(force)
+    _NEGATIVES.load(force)
 
 
 # ── Weight + data helpers ──────────────────────────────────────────────────
-
-def _apply_weight(text: str, strength: float, fmt: str) -> str:
-    """Apply attention weighting to prompt text. Returns '' if text/strength
-    is effectively zero. Copied verbatim from prompt_master_library_pro."""
-    if not text or strength is None or strength < 0.01:
-        return ""
-    s = float(strength)
-
-    if fmt == "none":
-        return text
-    if fmt == "comfyui":
-        return text if abs(s - 1.0) < 1e-4 else f"({text}:{s:.2f})"
-    if fmt == "parentheses":
-        if abs(s - 1.0) < 1e-4:
-            return text
-        layers = max(1, min(5, int(round(abs(s - 1.0) / 0.1))))
-        if s > 1.0:
-            return "(" * layers + text + ")" * layers
-        return "[" * layers + text + "]" * layers
-    if fmt == "multiply":
-        return f"{text} * {s:.2f}"
-    return text  # Unknown format — pass through
-
 
 def _resolve_positive(level: str, custom: str) -> str:
     """Positive: custom override wins, else look up the level."""
@@ -346,8 +281,8 @@ class PromptBoosterPRO:
         pos_text = _resolve_positive(positive_level, positive_custom)
         neg_text = _resolve_negative(negative_preset, negative_level, negative_custom)
 
-        pos_final = _apply_weight(pos_text, float(positive_strength), weight_format)
-        neg_final = _apply_weight(neg_text, float(negative_strength), weight_format)
+        pos_final = apply_weight(pos_text, float(positive_strength), weight_format)
+        neg_final = apply_weight(neg_text, float(negative_strength), weight_format)
 
         return (pos_final, neg_final)
 
