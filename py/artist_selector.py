@@ -371,7 +371,7 @@ class BossArtistSelector:
 
         # Update on-disk history (most-recent first, deduped, capped).
         for name in reversed(selected):
-            if name in history:
+            while name in history:
                 history.remove(name)
             history.insert(0, name)
         del history[HISTORY_LIMIT:]
