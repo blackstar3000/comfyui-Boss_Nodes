@@ -29,15 +29,29 @@ def _load_json(path, default=None):
         return default if default is not None else {}
 
 def _save_json(path, data):
+    import tempfile
     try:
-        if os.path.exists(path):
-            with open(path, "r", encoding="utf-8") as f:
-                old = f.read()
-            with open(path + ".bak", "w", encoding="utf-8") as f:
-                f.write(old)
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=4, ensure_ascii=False)
-        return True
+        dir_name = os.path.dirname(path) or "."
+        fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=4, ensure_ascii=False)
+            # Backup existing file
+            if os.path.exists(path):
+                bak_path = path + ".bak"
+                try:
+                    os.replace(path, bak_path)
+                except OSError:
+                    pass
+            os.replace(tmp_path, path)
+            return True
+        except Exception:
+            # Clean up temp file on failure
+            try:
+                os.unlink(tmp_path)
+            except OSError:
+                pass
+            return False
     except Exception:
         return False
 
@@ -144,6 +158,21 @@ def register_api_routes():
         if not full_path or not os.path.isfile(full_path):
             return web.Response(status=404, text="Checkpoint file not found")
 
+        # Security: ensure resolved path is within a known checkpoint folder
+        norm_path = os.path.normpath(full_path)
+        folders = folder_paths.get_folder_paths("checkpoints")
+        in_valid_folder = False
+        for folder in folders:
+            norm_folder = os.path.normpath(folder)
+            try:
+                if os.path.commonpath([norm_folder, norm_path]) == norm_folder:
+                    in_valid_folder = True
+                    break
+            except ValueError:
+                continue
+        if not in_valid_folder:
+            return web.Response(status=403, text="Path outside checkpoint directories")
+
         base, _ = os.path.splitext(full_path)
         for ext in _PREVIEW_EXTS:
             candidate = base + ext
@@ -160,6 +189,8 @@ def register_api_routes():
             ckpt = (data.get("ckpt") or "").strip()
             if not name or not ckpt:
                 return web.json_response({"error": "Name and checkpoint required"}, status=400)
+            if len(name) > 200:
+                return web.json_response({"error": "Name too long (max 200 chars)"}, status=400)
             favs = _load_json(MODEL_FAV_FILE, {})
             favs[name] = ckpt
             _save_json(MODEL_FAV_FILE, favs)
@@ -193,11 +224,15 @@ def register_api_routes():
             batch_size = data.get("batch_size", 1)
             if not name or width is None or height is None:
                 return web.json_response({"error": "Name, width, height required"}, status=400)
+            if len(name) > 200:
+                return web.json_response({"error": "Name too long (max 200 chars)"}, status=400)
             width = int(width); height = int(height); batch_size = int(batch_size)
             presets = _load_json(SIZE_PRESET_FILE, {})
             presets[name] = {"width": width, "height": height, "batch_size": batch_size}
             _save_json(SIZE_PRESET_FILE, presets)
             return web.json_response({"success": True, "presets": presets})
+        except (ValueError, TypeError) as e:
+            return web.json_response({"error": f"Invalid numeric value: {e}"}, status=400)
         except Exception as e:
             return web.json_response({"error": str(e)}, status=500)
 
@@ -230,11 +265,11 @@ class UltimateLoader:
     def INPUT_TYPES(cls):
         try:
             checkpoints = folder_paths.get_filename_list("checkpoints") or []
-        except:
+        except Exception:
             checkpoints = []
         try:
             vaes = folder_paths.get_filename_list("vae") or []
-        except:
+        except Exception:
             vaes = []
 
         model_favs = list(_load_json(MODEL_FAV_FILE, {}).keys())
@@ -303,7 +338,7 @@ class UltimateLoader:
 
         try:
             state = json.loads(LoaderState) if isinstance(LoaderState, str) else {}
-        except:
+        except (json.JSONDecodeError, ValueError):
             state = {}
         if isinstance(state, dict):
             ckpt_name = state.get("ckpt_name", ckpt_name)
@@ -311,11 +346,23 @@ class UltimateLoader:
             model_preset = state.get("model_preset", model_preset)
             fav_name = state.get("fav_name", fav_name)
             vae_name = state.get("vae_name", vae_name)
-            clip_skip = int(state.get("clip_skip", clip_skip))
+            try:
+                clip_skip = int(state.get("clip_skip", clip_skip))
+            except (ValueError, TypeError):
+                clip_skip = -1
             aspect_ratio = state.get("aspect_ratio", aspect_ratio)
-            width = int(state.get("width", width))
-            height = int(state.get("height", height))
-            batch_size = int(state.get("batch_size", batch_size))
+            try:
+                width = int(state.get("width", width))
+            except (ValueError, TypeError):
+                width = 1024
+            try:
+                height = int(state.get("height", height))
+            except (ValueError, TypeError):
+                height = 1024
+            try:
+                batch_size = int(state.get("batch_size", batch_size))
+            except (ValueError, TypeError):
+                batch_size = 1
 
         if model_preset != "None":
             model_favs = _load_json(MODEL_FAV_FILE, {})
@@ -375,19 +422,24 @@ class UltimateLoader:
             except Exception as e:
                 return (model, clip, vae, None, width, height, f"VAE error: {e}")
 
+        clip_skip_warning = ""
         if clip_skip != -1:
             try:
-                clip_model = model.clip if hasattr(model, "clip") else model.model.clip if hasattr(model, "model") else None
+                clip_model = None
+                if hasattr(model, "clip"):
+                    clip_model = model.clip
+                elif hasattr(model, "model") and hasattr(model.model, "clip"):
+                    clip_model = model.model.clip
                 if clip_model:
                     clip_model = clip_model.clone().clip(clip_skip)
                     if hasattr(model, "clip"):
                         model.clip = clip_model
-                    elif hasattr(model, "model"):
+                    elif hasattr(model, "model") and hasattr(model.model, "clip"):
                         model.model.clip = clip_model
                 else:
-                    print("[UltimateLoader] No clip model found for skip")
+                    clip_skip_warning = " | Warning: No clip model found for skip"
             except Exception as e:
-                print(f"[UltimateLoader] Clip Skip error: {e}")
+                clip_skip_warning = f" | Warning: Clip Skip error: {e}"
 
         try:
             device = comfy.model_management.get_torch_device()
@@ -397,7 +449,7 @@ class UltimateLoader:
         except Exception as e:
             return (model, clip, vae, None, width, height, f"Latent error: {e}")
 
-        status = f"Loaded: {ckpt_name} | VAE: {vae_name} | {width}x{height}"
+        status = f"Loaded: {ckpt_name} | VAE: {vae_name} | {width}x{height}{clip_skip_warning}"
         return (model, clip, vae, latent, width, height, status)
 
 NODE_CLASS_MAPPINGS = {"UltimateLoader": UltimateLoader}
