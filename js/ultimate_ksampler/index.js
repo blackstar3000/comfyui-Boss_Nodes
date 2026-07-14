@@ -982,6 +982,15 @@ function setupKSamplerNode(node) {
 
 const _origGraphToPrompt = app.graphToPrompt.bind(app);
 app.graphToPrompt = async function (...args) {
+  // Sync native widgets BEFORE original reads them for serialization
+  try {
+    for (const node of app.graph._nodes) {
+      if (node.comfyClass !== "UltimateKSamplerPro") continue;
+      const state = readState(node);
+      syncNativeWidgets(node, state);
+    }
+  } catch (_) { /* ignore sync errors */ }
+
   const result = await _origGraphToPrompt(...args);
   try {
     const out = result?.output;
@@ -1009,6 +1018,31 @@ app.graphToPrompt = async function (...args) {
         setWidgetValue(node, "seed", advanced);
         renderHeader(node);
       }
+
+      // Add a synthetic KSampler entry for metadata viewers that only parse
+      // standard node types (KSampler, KSamplerAdvanced). This node won't
+      // execute because it has no outgoing connections to output nodes.
+      let maxId = 0;
+      for (const k in out) {
+        const nid = parseInt(k);
+        if (!isNaN(nid) && nid > maxId) maxId = nid;
+      }
+      const synId = String(maxId + 1);
+      out[synId] = {
+        class_type: "KSampler",
+        inputs: {
+          seed: state.seed,
+          steps: state.steps,
+          cfg: state.cfg,
+          sampler_name: state.sampler_name,
+          scheduler: state.scheduler,
+          denoise: state.denoise,
+          model: entry.inputs.model,
+          positive: entry.inputs.positive,
+          negative: entry.inputs.negative,
+          latent_image: entry.inputs.latent_image,
+        },
+      };
     }
   } catch (e) {
     console.warn("[UltimateKSampler] graphToPrompt inject failed", e);
