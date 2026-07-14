@@ -19,133 +19,41 @@ import os
 import random
 from pathlib import Path
 
+from utils.constants import SEED_MAX, ALL_CATEGORIES, DELIMITER_DEFAULT
+from utils.prompt_utils import apply_weight, clamp_strength
+from utils.logging_utils import make_logger
+from utils.json_utils import sanitize_entries, sanitize_categories
+from utils.cache_utils import Collection
+
 # ── File paths ──────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).parent
 
 # Sentinel values for the per-collection combos.
 RANDOM_SENTINEL = "Random"
 NONE_SENTINEL = "None"
-ALL_CATEGORIES = "All"
 
 # Strength bounds (shared by Python + JS) — match v4.0 ranges exactly.
+# scene_maker uses 2.5 max (higher than the common 2.0 default).
 STRENGTH_MIN = 0.0
 STRENGTH_MAX = 2.5
 STRENGTH_STEP = 0.05
 
-SEED_MAX = 0xFFFFFFFFFFFFFFFF  # match ComfyUI's seed widget bound
-DELIMITER_DEFAULT = ", "
-
 
 # ── Per-collection library cache ───────────────────────────────────────────
 
-class _Collection:
-    """One library (girls / males / scenes) with hot reload."""
-
-    def __init__(self, filename: str, data_key: str):
-        self.filename = filename
-        self.data_key = data_key  # 'girls' / 'males' / 'scenes'
-        self.items: dict[str, str] = {}
-        self.categories: dict[str, list[str]] = {}
-        self.mtime: float | None = None
-
-    @property
-    def path(self) -> Path:
-        return BASE_DIR / self.filename
-
-    def is_empty(self) -> bool:
-        return not self.items
+_GIRLS = Collection("girls.json", "girls", "SceneMakerPro")
+_MALES = Collection("males.json", "males", "SceneMakerPro")
+_SCENES = Collection("scenes.json", "scenes", "SceneMakerPro")
 
 
-_GIRLS = _Collection("girls.json", "girls")
-_MALES = _Collection("males.json", "males")
-_SCENES = _Collection("scenes.json", "scenes")
+_log = make_logger("SceneMakerPro")
 
-
-def _log(msg: str) -> None:
-    print(f"[SceneMakerPro] {msg}")
-
-
-def _sanitize_entries(raw: dict) -> dict[str, str]:
-    """Keep only entries with non-empty string values. Warn on bad entries."""
-    clean: dict[str, str] = {}
-    for k, v in raw.items():
-        if isinstance(v, str) and v.strip():
-            clean[k] = v.strip()
-        else:
-            _log(f"  Skipped entry '{k}': expected non-empty string, got {type(v).__name__}")
-    return clean
-
-
-def _sanitize_categories(cats: dict, valid_keys: set) -> dict[str, list[str]]:
-    """Validate category lists against known keys. Warn on missing refs."""
-    clean: dict[str, list[str]] = {}
-    for cat_name, items in cats.items():
-        if not isinstance(items, list):
-            _log(f"  Category '{cat_name}' skipped: expected list")
-            continue
-        valid = [x for x in items if x in valid_keys]
-        missing = [x for x in items if x not in valid_keys]
-        if missing:
-            _log(f"  Category '{cat_name}': {len(missing)} item(s) not in library — skipped")
-        if valid:
-            clean[cat_name] = valid
-    return clean
-
-
-def _load_collection(col: _Collection, force: bool = False) -> _Collection:
-    """Hot-reload a collection's JSON file. Returns the populated `_Collection`.
-
-    Reads from disk only when the file's mtime changes (or `force=True`).
-    On any parse error, leaves the previous cache intact and logs a warning.
-    """
-    if not force and col.mtime is not None and col.items:
-        try:
-            if os.path.getmtime(col.path) == col.mtime:
-                return col
-        except OSError:
-            pass  # fall through to the full load below
-
-    if not col.path.exists():
-        _log(f"File not found: {col.filename} — that collection will be empty.")
-        return col
-
-    try:
-        mtime = os.path.getmtime(col.path)
-    except OSError as e:
-        _log(f"Cannot stat {col.filename}: {e}")
-        return col
-
-    try:
-        with col.path.open("r", encoding="utf-8") as f:
-            data = json.load(f)
-    except (json.JSONDecodeError, OSError) as e:
-        _log(f"Error reading {col.filename}: {e}")
-        return col
-
-    if not isinstance(data, dict):
-        _log(f"{col.filename} root is not an object — skipping.")
-        return col
-
-    # v4.0 layout: {<data_key>: {name: text}, categories: {...}}
-    raw_items = data.get(col.data_key)
-    if not isinstance(raw_items, dict):
-        _log(f"{col.filename} has no '{col.data_key}' object — skipping.")
-        return col
-
-    items = _sanitize_entries(raw_items)
-    cats = _sanitize_categories(data.get("categories", {}), set(items.keys()))
-
-    col.items = items
-    col.categories = cats
-    col.mtime = mtime
-    _log(f"Loaded {col.filename}: {len(items)} items, {len(cats)} categories")
-    return col
 
 
 def _load_all(force: bool = False) -> None:
-    _load_collection(_GIRLS, force)
-    _load_collection(_MALES, force)
-    _load_collection(_SCENES, force)
+    _GIRLS.load(force)
+    _MALES.load(force)
+    _SCENES.load(force)
 
 
 # ── Resolve + weight helpers ───────────────────────────────────────────────
@@ -173,25 +81,6 @@ def _resolve(
         _log(f"Key '{choice}' not found in library — skipping.")
         return "", ""
     return choice, text
-
-
-def _apply_weight(text: str, strength: float) -> str:
-    """ComfyUI-format attention weight: `(text:1.30)` when !=1.0, else `text`.
-    Empty text stays empty."""
-    if not text or strength < 0.01:
-        return ""
-    s = float(strength)
-    if abs(s - 1.0) < 1e-4:
-        return text
-    return f"({text}:{s:.2f})"
-
-
-def _clamp_strength(strength) -> float:
-    try:
-        v = float(strength)
-    except (TypeError, ValueError):
-        return 1.0
-    return max(STRENGTH_MIN, min(STRENGTH_MAX, v))
 
 
 def _substitute_placeholders(
@@ -375,14 +264,14 @@ class SceneMakerGOD:
         male_key, male_text = _resolve(rng, male, _MALES.items, _MALES.categories, male_cat)
         scene_key, scene_text = _resolve(rng, scene, _SCENES.items, _SCENES.categories, scene_cat)
 
-        girl_w = _clamp_strength(girl_w)
-        male_w = _clamp_strength(male_w)
-        scene_w = _clamp_strength(scene_w)
+        girl_w = clamp_strength(girl_w, STRENGTH_MIN, STRENGTH_MAX, 1.0)
+        male_w = clamp_strength(male_w, STRENGTH_MIN, STRENGTH_MAX, 1.0)
+        scene_w = clamp_strength(scene_w, STRENGTH_MIN, STRENGTH_MAX, 1.0)
 
         # Weight-then-substitute (user decision: weight before substitute).
-        weighted_girl = _apply_weight(girl_text, girl_w)
-        weighted_male = _apply_weight(male_text, male_w)
-        weighted_scene = _apply_weight(scene_text, scene_w)
+        weighted_girl = apply_weight(girl_text, girl_w)
+        weighted_male = apply_weight(male_text, male_w)
+        weighted_scene = apply_weight(scene_text, scene_w)
         substituted_scene = _substitute_placeholders(weighted_scene, weighted_girl, weighted_male)
 
         parts = [p for p in [weighted_girl, weighted_male, substituted_scene] if p]
