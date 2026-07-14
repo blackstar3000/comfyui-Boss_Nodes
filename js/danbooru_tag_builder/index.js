@@ -718,7 +718,8 @@ function escapeHtml(s) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+    .replace(/'/g, "&#39;")
+    .replace(/`/g, "&#96;");
 }
 
 function renderHeader(node) {
@@ -824,12 +825,13 @@ class BossDropdown {
       this.toggle();
     });
 
-    // Close on outside click
-    document.addEventListener("click", (e) => {
+    // Close on outside click (stored for cleanup)
+    this._onDocClick = (e) => {
       if (this.isOpen && !container.contains(e.target)) {
         this.close();
       }
-    });
+    };
+    document.addEventListener("click", this._onDocClick);
 
     // Keyboard
     container.addEventListener("keydown", (e) => {
@@ -1119,6 +1121,8 @@ class BossDropdown {
   }
 
   destroy() {
+    this.close();
+    document.removeEventListener("click", this._onDocClick);
     if (this.element && this.element.parentNode) {
       this.element.parentNode.removeChild(this.element);
     }
@@ -1809,6 +1813,10 @@ class DanbooruEditor {
   }
 
   rebuildModal() {
+    for (const dd of Object.values(this.dropdowns)) {
+      dd.destroy();
+    }
+    this.dropdowns = {};
     this.close();
     this.buildModal();
   }
@@ -1816,30 +1824,53 @@ class DanbooruEditor {
   refreshPreview() {
     if (!this.previewEl) return;
     const prompt = this.buildPrompt(this.state, true);
-    const html = `
-      <div class="boss-db-card">
-        <div class="boss-db-card-title">📝 Prompt Preview</div>
-        <div class="boss-db-prompt-box">${escapeHtml(prompt)}</div>
-        <div style="margin-top:8px;display:flex;gap:6px;">
-          <button class="boss-db-btn" id="copy-prompt">📋 Copy</button>
-          <button class="boss-db-btn" id="refresh-preview">🔄 Refresh (re‑random)</button>
-        </div>
-      </div>
-    `;
-    this.previewEl.innerHTML = html;
-    const copyBtn = this.previewEl.querySelector("#copy-prompt");
-    if (copyBtn) {
+
+    // Build card structure once, reuse on subsequent calls
+    if (!this._previewCard) {
+      this.previewEl.innerHTML = "";
+      const card = document.createElement("div");
+      card.className = "boss-db-card";
+
+      const title = document.createElement("div");
+      title.className = "boss-db-card-title";
+      title.textContent = "Prompt Preview";
+      card.appendChild(title);
+
+      const promptBox = document.createElement("div");
+      promptBox.className = "boss-db-prompt-box";
+      card.appendChild(promptBox);
+
+      const btnRow = document.createElement("div");
+      btnRow.style.marginTop = "8px";
+      btnRow.style.display = "flex";
+      btnRow.style.gap = "6px";
+
+      const copyBtn = document.createElement("button");
+      copyBtn.type = "button";
+      copyBtn.className = "boss-db-btn";
+      copyBtn.textContent = "Copy";
       copyBtn.addEventListener("click", () => {
         navigator.clipboard
-          .writeText(prompt)
+          .writeText(promptBox.textContent)
           .then(() => setStatus(this.node, "Copied!", "is-success"))
           .catch(() => setStatus(this.node, "Copy failed", "is-error"));
       });
-    }
-    const refreshBtn = this.previewEl.querySelector("#refresh-preview");
-    if (refreshBtn) {
+      btnRow.appendChild(copyBtn);
+
+      const refreshBtn = document.createElement("button");
+      refreshBtn.type = "button";
+      refreshBtn.className = "boss-db-btn";
+      refreshBtn.textContent = "Refresh (re-random)";
       refreshBtn.addEventListener("click", () => this.refreshPreview());
+      btnRow.appendChild(refreshBtn);
+
+      card.appendChild(btnRow);
+      this.previewEl.appendChild(card);
+      this._previewCard = card;
+      this._promptBox = promptBox;
     }
+
+    this._promptBox.textContent = prompt;
   }
 
   save() {
@@ -1863,6 +1894,8 @@ class DanbooruEditor {
     if (this.modal) {
       this.modal.remove();
       this.modal = null;
+      this._previewCard = null;
+      this._promptBox = null;
     }
   }
 }
