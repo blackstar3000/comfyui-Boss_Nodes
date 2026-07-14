@@ -1220,15 +1220,23 @@ function findOutfitNode(index, promptId) {
 
 const _origGraphToPrompt = app.graphToPrompt.bind(app);
 app.graphToPrompt = async function (...args) {
+  // Sync native widgets BEFORE serialization, so the prompt JSON captures
+  // the current editor state (outfit, category, strength, seed).
+  try {
+    const syncIndex = buildOutfitNodeIndex();
+    for (const [, syncNode] of syncIndex) {
+      syncNativeWidgets(syncNode, readState(syncNode));
+    }
+  } catch (_) { /* ignore sync errors */ }
+
   const result = await _origGraphToPrompt(...args);
   try {
     const out = result?.output;
     if (!out) return result;
-    let index = null;
+    const index = buildOutfitNodeIndex();
     for (const id in out) {
       const entry = out[id];
       if (!entry || entry.class_type !== "BossOutfitSelector") continue;
-      if (!index) index = buildOutfitNodeIndex();
       const node = findOutfitNode(index, id);
       const state = node ? readState(node) : defaultState();
       // Resolve the per-run seed BEFORE we hand the state to Python.
