@@ -19,6 +19,10 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from utils.constants import SEED_MAX
+from utils.prompt_utils import to_bool
+from utils.logging_utils import make_logger
+
 # ── File paths ──────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).parent
 LENS_FILE = BASE_DIR / "lens.json"
@@ -44,7 +48,6 @@ MODE_TOOLTIPS = (
 )
 
 RANDOM_BRAND = "__RANDOM_BRAND__"
-SEED_MAX = 0xFFFFFFFFFFFFFFFF
 
 
 # ── Library cache ───────────────────────────────────────────────────────────
@@ -66,8 +69,7 @@ class _LensLibrary:
 _LIB = _LensLibrary()
 
 
-def _log(msg: str) -> None:
-    print(f"[PromptLensLibraryPro] {msg}")
+_log = make_logger("PromptLensLibraryPro")
 
 
 def _sanitize_brand_entry(item: Any) -> dict[str, Any] | None:
@@ -293,15 +295,6 @@ def _resolve_selection(
     return brand, camera_model, lens
 
 
-def _bool(v) -> bool:
-    if isinstance(v, bool):
-        return v
-    if isinstance(v, (int, float)):
-        return bool(v)
-    if isinstance(v, str):
-        return v.strip().lower() in ("true", "1", "yes", "on")
-    return False
-
 
 # ── Node class ──────────────────────────────────────────────────────────────
 
@@ -441,7 +434,7 @@ class PromptLensLibraryPro:
         )
 
         style = _output_style(mode)
-        text = _build_prompt(style, brand, camera_model, lens, _bool(add_focal_aperture))
+        text = _build_prompt(style, brand, camera_model, lens, to_bool(add_focal_aperture))
 
         debug = (
             f"Mode: {mode} → Output style: {style} | "
