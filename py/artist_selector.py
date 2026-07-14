@@ -13,6 +13,9 @@ import json
 import random
 from pathlib import Path
 
+from utils.prompt_utils import to_bool
+from utils.json_utils import load_json, save_json
+
 # ── File paths ──────────────────────────────────────────────────────────────
 # Sibling data files (artists.json / favorites.json / history.json) live next
 # to this module so existing users keep their data after the rebuild.
@@ -36,47 +39,18 @@ MAX_ARTISTS_MAX = 100
 _db_cache = None
 
 
-# ── Data I/O ─────────────────────────────────────────────────────────────────
-
-def _load_json(path: Path, default):
-    try:
-        with path.open("r", encoding="utf-8") as f:
-            return json.load(f)
-    except FileNotFoundError:
-        return default
-    except json.JSONDecodeError:
-        return default
-    except Exception:
-        return default
-
-
-def _save_json(path: Path, data) -> bool:
-    try:
-        # Mirror the old behavior: rotate a .bak before overwriting so a bad
-        # write doesn't destroy the previous good file.
-        if path.exists():
-            path.with_suffix(path.suffix + ".bak").write_text(
-                path.read_text(encoding="utf-8"), encoding="utf-8"
-            )
-        with path.open("w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
-        return True
-    except Exception:
-        return False
-
-
 def _get_database(force_refresh: bool = False):
     """Load and cache the artist database. Returns (library, favorites, history)."""
     global _db_cache
     if force_refresh or _db_cache is None:
-        raw_artists = _load_json(ARTISTS_FILE, {})
+        raw_artists = load_json(ARTISTS_FILE, {})
         library = raw_artists.get("artists", {}) if isinstance(raw_artists, dict) else {}
 
-        favorites = _load_json(FAVORITES_FILE, [])
+        favorites = load_json(FAVORITES_FILE, [])
         if not isinstance(favorites, list):
             favorites = []
 
-        history = _load_json(HISTORY_FILE, [])
+        history = load_json(HISTORY_FILE, [])
         if not isinstance(history, list):
             history = []
 
@@ -89,7 +63,7 @@ def _set_favorites(favorites: list):
     global _db_cache
     library, _, history = _get_database(force_refresh=False)
     _db_cache = (library, list(favorites), history)
-    _save_json(FAVORITES_FILE, favorites)
+    save_json(FAVORITES_FILE, favorites)
 
 
 # ── Sort / format helpers ───────────────────────────────────────────────────
@@ -121,14 +95,6 @@ def _format_output(names, output_mode: str, library):
         return ", ".join(combined), ", ".join(names)
     # Prompt
     return ", ".join(library.get(n, n) for n in names), ", ".join(names)
-
-
-def _coerce_bool(value, fallback=False):
-    if isinstance(value, bool):
-        return value
-    if isinstance(value, str):
-        return value.strip().lower() in {"1", "true", "yes", "on"}
-    return fallback
 
 
 def _coerce_int(value, fallback, minimum, maximum):
@@ -177,15 +143,15 @@ def _state_overrides(
         )
 
     if "randomize" in state:
-        randomize = _coerce_bool(state.get("randomize"), randomize)
+        randomize = to_bool(state.get("randomize"), randomize)
     if "favoritesOnly" in state:
-        favorites_only = _coerce_bool(state.get("favoritesOnly"), favorites_only)
+        favorites_only = to_bool(state.get("favoritesOnly"), favorites_only)
     if state.get("outputMode") in OUTPUT_MODES:
         output_mode = state.get("outputMode")
     if state.get("sortMode") in SORT_MODES:
         sort_mode = state.get("sortMode")
     if "forceRefresh" in state:
-        force_refresh = _coerce_bool(state.get("forceRefresh"), force_refresh)
+        force_refresh = to_bool(state.get("forceRefresh"), force_refresh)
 
     return (
         selection,
@@ -375,7 +341,7 @@ class BossArtistSelector:
                 history.remove(name)
             history.insert(0, name)
         del history[HISTORY_LIMIT:]
-        if _save_json(HISTORY_FILE, history):
+        if save_json(HISTORY_FILE, history):
             global _db_cache
             if _db_cache is not None:
                 lib, fav, _ = _db_cache
@@ -423,7 +389,7 @@ def register_api_routes():
             return web.json_response({"error": "Artist name required"}, status=400)
 
         try:
-            favorites = _load_json(FAVORITES_FILE, [])
+            favorites = load_json(FAVORITES_FILE, [])
             if not isinstance(favorites, list):
                 favorites = []
 
@@ -434,7 +400,7 @@ def register_api_routes():
                 favorites.append(artist_name)
                 action = "added to"
 
-            _save_json(FAVORITES_FILE, favorites)
+            save_json(FAVORITES_FILE, favorites)
             _set_favorites(favorites)
 
             return web.json_response({
