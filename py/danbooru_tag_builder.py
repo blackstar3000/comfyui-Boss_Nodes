@@ -47,13 +47,12 @@ def _build_database():
         if main_dir.exists():
             for f in main_dir.glob("*.txt"):
                 db[cat]["main"][f.stem] = _load_tag_file(f)
-        # sub folder (can be "sub", "styles", "variants")
+        # sub folders (can be "sub", "styles", "variants")
         for sub_dir_name in ["sub", "styles", "variants"]:
             sub_dir = cat_dir / sub_dir_name
             if sub_dir.exists():
                 for f in sub_dir.glob("*.txt"):
                     db[cat]["sub"][f.stem] = _load_tag_file(f)
-                break  # only one sub folder per category
     return db
 
 def get_database():
@@ -74,7 +73,7 @@ def _load_favorites():
     try:
         with open(FAVORITES_FILE, "r", encoding="utf-8") as f:
             return json.load(f)
-    except:
+    except Exception:
         return {}
 
 def _save_favorites(data):
@@ -113,6 +112,9 @@ def register_api_routes():
     async def save_favorite(request):
         data = await request.json()
         name = data.get("name")
+        if not name or not isinstance(name, str) or len(name) > 200:
+            return web.json_response({"error": "Valid name required (max 200 chars)"}, status=400)
+        name = name.strip()
         if not name:
             return web.json_response({"error": "Name required"}, status=400)
         favs = _load_favorites()
@@ -130,7 +132,7 @@ def register_api_routes():
     async def delete_favorite(request):
         data = await request.json()
         name = data.get("name")
-        if not name:
+        if not name or not isinstance(name, str):
             return web.json_response({"error": "Name required"}, status=400)
         favs = _load_favorites()
         if name in favs:
@@ -198,7 +200,8 @@ class DanbooruTagBuilder:
         # Parse hidden state (overrides all widget values)
         try:
             state = json.loads(TagState) if isinstance(TagState, str) else {}
-        except:
+        except (json.JSONDecodeError, ValueError) as e:
+            print(f"[DanbooruTagBuilder] Failed to parse TagState: {e}")
             state = {}
         # Merge state overrides
         for key, value in state.items():
@@ -261,8 +264,8 @@ class DanbooruTagBuilder:
 
             # If using wildcards, output placeholder
             if use_wildcards:
-                # FIXED: Ensure sub_list matches frontend join format exactly
-                sub_str = ",".join(sub_list) if sub_list else main_choice
+                # Ensure sub_list matches frontend join format (underscore-separated)
+                sub_str = "_".join(sub_list) if sub_list else main_choice
                 if wildcard_format == "__category_sub__":
                     parts.append(f"__{cat}_{main_choice}_{sub_str}__")
                 elif wildcard_format == "__category/main/sub__":
