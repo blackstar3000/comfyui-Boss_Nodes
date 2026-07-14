@@ -376,7 +376,8 @@ function escapeHtml(s) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+    .replace(/'/g, "&#39;")
+    .replace(/`/g, "&#96;");
 }
 
 function renderHeader(node) {
@@ -573,7 +574,7 @@ class ArtistEditor {
       btn.addEventListener("click", () => {
         this.state.randomize = mode === "random";
         sync();
-        this.refreshCount();
+        this.refreshList();
       });
       pill.appendChild(btn);
     }
@@ -584,7 +585,7 @@ class ArtistEditor {
     fav.checked = !!this.state.favoritesOnly;
     fav.addEventListener("change", (e) => {
       this.state.favoritesOnly = !!e.target.checked;
-      this.refreshCount();
+      this.refreshList();
     });
     favLabel.appendChild(fav);
     favLabel.appendChild(document.createTextNode("Random from favorites only"));
@@ -670,18 +671,19 @@ class ArtistEditor {
   }
 
   filteredList() {
-    const lib = this.data.library || {};
+    const lib = (this.data.library && typeof this.data.library === "object") ? this.data.library : {};
+    const favs = Array.isArray(this.data.favorites) ? this.data.favorites : [];
+    const hist = Array.isArray(this.data.history) ? this.data.history : [];
     let list;
     if (this.tab === "Favorites") {
-      list = (this.data.favorites || []).filter((n) => n in lib);
+      list = favs.filter((n) => n in lib);
     } else if (this.tab === "Recent") {
-      list = (this.data.history || []).filter((n) => n in lib);
+      list = hist.filter((n) => n in lib);
     } else {
       list = Object.keys(lib);
     }
 
-    const favSet = new Set(this.data.favorites || []);
-    const hist = this.data.history || [];
+    const favSet = new Set(favs);
     if (this.state.sortMode === "A-Z") {
       list.sort((a, b) => a.localeCompare(b));
     } else if (this.state.sortMode === "Z-A") {
@@ -758,7 +760,9 @@ class ArtistEditor {
   refreshCount() {
     if (!this.countEl) return;
     if (this.state.randomize) {
-      const pool = this.state.favoritesOnly ? (this.data.favorites || []) : Object.keys(this.data.library || {});
+      const pool = this.state.favoritesOnly
+        ? (Array.isArray(this.data.favorites) ? this.data.favorites : [])
+        : Object.keys((this.data.library && typeof this.data.library === "object") ? this.data.library : {});
       this.countEl.textContent = `Random pool: ${pool.length} artists`;
     } else {
       this.countEl.textContent = `Selected: ${(this.state.selectedNames || []).length} / ${this.state.maxArtists}`;
@@ -917,9 +921,6 @@ app.graphToPrompt = async function (...args) {
         forceRefresh: false,
       };
       const injected = { ...state };
-      if (injected.randomize) {
-        injected.runNonce = `${Date.now()}-${Math.random()}`;
-      }
       entry.inputs = entry.inputs || {};
       entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify(injected);
     }
