@@ -6,6 +6,8 @@ import random
 from pathlib import Path
 from datetime import datetime
 
+from utils.json_utils import load_json, save_json
+
 BASE_DIR = Path(__file__).parent
 TAG_FOLDER = BASE_DIR / "danbooru_tags"
 FAVORITES_FILE = BASE_DIR / "tag_favorites.json"
@@ -70,15 +72,10 @@ def invalidate_database_cache():
 # ── Favorites I/O ────────────────────────────────────────────────────────
 
 def _load_favorites():
-    try:
-        with open(FAVORITES_FILE, "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return {}
+    return load_json(FAVORITES_FILE, default={})
 
 def _save_favorites(data):
-    with open(FAVORITES_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
+    save_json(FAVORITES_FILE, data, backup=False)
 
 # ── API routes ───────────────────────────────────────────────────────────
 
