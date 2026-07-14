@@ -360,7 +360,8 @@ function escapeHtml(s) {
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+    .replace(/'/g, "&#39;")
+    .replace(/`/g, "&#96;");
 }
 
 function renderHeader(node) {
@@ -445,11 +446,10 @@ class LoaderEditor {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, ckpt }),
     });
-    if (!r.ok) {
-      const err = await r.json();
-      throw new Error(err.error || `HTTP ${r.status}`);
-    }
     const result = await r.json();
+    if (!r.ok) {
+      throw new Error(result.error || `HTTP ${r.status}`);
+    }
     this.data.model_favorites = result.favorites;
   }
 
@@ -470,11 +470,10 @@ class LoaderEditor {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, width, height, batch_size }),
     });
-    if (!r.ok) {
-      const err = await r.json();
-      throw new Error(err.error || `HTTP ${r.status}`);
-    }
     const result = await r.json();
+    if (!r.ok) {
+      throw new Error(result.error || `HTTP ${r.status}`);
+    }
     this.data.size_presets = result.presets;
   }
 
@@ -774,29 +773,21 @@ class LoaderEditor {
       if (match) {
         this.state.width = parseInt(match[1]);
         this.state.height = parseInt(match[2]);
-        // Update the width/height fields if they exist
-        const wInput = wrap.parentNode.querySelector('input[name="width"]');
-        const hInput = wrap.parentNode.querySelector('input[name="height"]');
-        if (wInput) wInput.value = this.state.width;
-        if (hInput) hInput.value = this.state.height;
+        if (this._wInput) this._wInput.value = this.state.width;
+        if (this._hInput) this._hInput.value = this.state.height;
       } else if (sel.value in presets) {
         const p = presets[sel.value];
         this.state.width = p.width;
         this.state.height = p.height;
         this.state.batch_size = p.batch_size || this.state.batch_size;
-        // Update fields
-        const wInput = wrap.parentNode.querySelector('input[name="width"]');
-        const hInput = wrap.parentNode.querySelector('input[name="height"]');
-        const bInput = wrap.parentNode.querySelector(
-          'input[name="batch_size"]',
-        );
-        if (wInput) wInput.value = this.state.width;
-        if (hInput) hInput.value = this.state.height;
-        if (bInput) bInput.value = this.state.batch_size;
+        if (this._wInput) this._wInput.value = this.state.width;
+        if (this._hInput) this._hInput.value = this.state.height;
+        if (this._bInput) this._bInput.value = this.state.batch_size;
       }
       this.refreshPreview();
     });
     wrap.appendChild(sel);
+    this._aspectRatioSel = sel;
 
     // Width/Height inputs
     const dimRow = document.createElement("div");
@@ -817,16 +808,15 @@ class LoaderEditor {
       val = clamp(val, 64, 8192);
       this.state.width = val;
       wInput.value = val;
-      // Clear aspect ratio to custom
       this.state.aspect_ratio = "width x height [custom]";
-      const sel2 = wrap.querySelector("select");
-      if (sel2) {
-        for (const opt of sel2.options) {
+      if (this._aspectRatioSel) {
+        for (const opt of this._aspectRatioSel.options) {
           if (opt.value === "width x height [custom]") opt.selected = true;
         }
       }
       this.refreshPreview();
     });
+    this._wInput = wInput;
     const hLabel = document.createElement("span");
     hLabel.textContent = "H";
     const hInput = document.createElement("input");
@@ -844,14 +834,14 @@ class LoaderEditor {
       this.state.height = val;
       hInput.value = val;
       this.state.aspect_ratio = "width x height [custom]";
-      const sel2 = wrap.querySelector("select");
-      if (sel2) {
-        for (const opt of sel2.options) {
+      if (this._aspectRatioSel) {
+        for (const opt of this._aspectRatioSel.options) {
           if (opt.value === "width x height [custom]") opt.selected = true;
         }
       }
       this.refreshPreview();
     });
+    this._hInput = hInput;
     dimRow.appendChild(wLabel);
     dimRow.appendChild(wInput);
     dimRow.appendChild(hLabel);
@@ -884,6 +874,7 @@ class LoaderEditor {
       input.value = val;
       this.refreshPreview();
     });
+    this._bInput = input;
     wrap.appendChild(input);
     return wrap;
   }
@@ -978,12 +969,8 @@ class LoaderEditor {
   }
 
   refreshSizeDropdown() {
-    // Rebuild the aspect ratio dropdown (the one in the size section)
-    const side = this.modal?.querySelector(".boss-lr-side");
-    if (!side) return;
-    const sizeSection = side.querySelector(".boss-lr-section-label + select");
-    if (!sizeSection) return;
-    // Rebuild options
+    const sel = this._aspectRatioSel;
+    if (!sel) return;
     const current = this.state.aspect_ratio;
     const presets = this.data.size_presets || {};
     const allRatios = [
@@ -1016,14 +1003,13 @@ class LoaderEditor {
     ];
     const customKeys = Object.keys(presets);
     const fullList = [...allRatios, ...customKeys];
-    // Clear existing options
-    sizeSection.innerHTML = "";
+    sel.innerHTML = "";
     for (const r of fullList) {
       const opt = document.createElement("option");
       opt.value = r;
       opt.textContent = r;
       if (r === current) opt.selected = true;
-      sizeSection.appendChild(opt);
+      sel.appendChild(opt);
     }
   }
 
@@ -1108,6 +1094,15 @@ function setupLoaderNode(node) {
 
 const _origGraphToPrompt = app.graphToPrompt.bind(app);
 app.graphToPrompt = async function (...args) {
+  // Sync native widgets BEFORE original reads them for serialization
+  try {
+    for (const node of app.graph._nodes) {
+      if (node.comfyClass !== "UltimateLoader") continue;
+      const state = readState(node);
+      syncNativeWidgets(node, state);
+    }
+  } catch (_) { /* ignore sync errors */ }
+
   const result = await _origGraphToPrompt(...args);
   try {
     const out = result?.output;
