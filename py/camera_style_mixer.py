@@ -18,6 +18,11 @@ import random
 from datetime import datetime
 from pathlib import Path
 
+from utils.constants import SEED_MAX, STRENGTH_MIN, STRENGTH_MAX, STRENGTH_DEFAULT, STRENGTH_STEP, ALL_CATEGORIES, RANDOM_STYLE
+from utils.prompt_utils import apply_weight
+from utils.logging_utils import make_logger
+from utils.json_utils import sanitize_entries, sanitize_categories
+
 # ── File paths ──────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).parent
 JSON_FILE = BASE_DIR / "camera_style_mixer.json"
@@ -25,14 +30,10 @@ JSON_FILE = BASE_DIR / "camera_style_mixer.json"
 # ── Sentinel values for the angle / framing / style combos ────────────────
 RANDOM_ANGLE = "__RANDOM_ANGLE__"
 RANDOM_FRAMING = "__RANDOM_FRAMING__"
-RANDOM_STYLE = "__RANDOM_STYLE__"
 NONE_SENTINEL = "__NONE__"
-ALL_CATEGORIES = "All"
 
 # ── Weight format registry ──────────────────────────────────────────────────
-# Internal keys (stable) + display labels (shown in the JS dropdown). Keeping
-# these here means the Python `_apply_weight` and the JS dropdown stay in
-# lockstep without duplicating the format list in two languages.
+# camera_style_mixer uses 5 formats (includes "deemphasis" beyond the common 4).
 WEIGHT_FORMAT_KEYS = [
     "comfyui",       # (text:1.30)
     "parentheses",   # ((text))  stacked by strength
@@ -50,14 +51,6 @@ WEIGHT_FORMAT_LABELS = {
 }
 
 WEIGHT_FORMAT_DEFAULT = "comfyui"
-
-# ── Strength bounds (shared by Python + JS) ────────────────────────────────
-STRENGTH_MIN = 0.0
-STRENGTH_MAX = 2.0
-STRENGTH_DEFAULT = 1.0
-STRENGTH_STEP = 0.05
-
-SEED_MAX = 0xFFFFFFFFFFFFFFFF  # match ComfyUI's seed widget bound
 
 
 # ── Library cache ───────────────────────────────────────────────────────────
@@ -81,35 +74,7 @@ class _LibraryState:
 _LIB = _LibraryState()
 
 
-def _log(msg: str) -> None:
-    print(f"[CameraStyleMixer] {msg}")
-
-
-def _sanitize_entries(raw: dict) -> dict[str, str]:
-    """Keep only entries with non-empty string values. Warn on bad entries."""
-    clean: dict[str, str] = {}
-    for k, v in raw.items():
-        if isinstance(v, str) and v.strip():
-            clean[k] = v.strip()
-        else:
-            _log(f"  Skipped entry '{k}': expected non-empty string, got {type(v).__name__}")
-    return clean
-
-
-def _sanitize_categories(cats: dict, valid_keys: set) -> dict[str, list[str]]:
-    """Validate category lists against known keys. Warn on missing references."""
-    clean: dict[str, list[str]] = {}
-    for cat_name, items in cats.items():
-        if not isinstance(items, list):
-            _log(f"  Category '{cat_name}' skipped: expected list")
-            continue
-        valid = [x for x in items if x in valid_keys]
-        missing = [x for x in items if x not in valid_keys]
-        if missing:
-            _log(f"  Category '{cat_name}': {len(missing)} item(s) not in library — skipped")
-        if valid:
-            clean[cat_name] = valid
-    return clean
+_log = make_logger("CameraStyleMixer")
 
 
 def _split_unified_categories(
@@ -179,9 +144,9 @@ def _load_library(force: bool = False) -> _LibraryState:
         _log("'art_styles' must be a dict — skipped.")
         raw_styles = {}
 
-    angles = _sanitize_entries(raw_angles)
-    framings = _sanitize_entries(raw_framings)
-    styles = _sanitize_entries(raw_styles)
+    angles = sanitize_entries(raw_angles)
+    framings = sanitize_entries(raw_framings)
+    styles = sanitize_entries(raw_styles)
 
     # Prefer the explicit split keys; fall back to splitting the unified
     # `categories` block (matches the v3.0 backwards-compat path).
@@ -199,9 +164,9 @@ def _load_library(force: bool = False) -> _LibraryState:
     _LIB.angles = angles
     _LIB.framings = framings
     _LIB.styles = styles
-    _LIB.cat_angle = _sanitize_categories(raw_cat_angle, set(angles.keys()))
-    _LIB.cat_framing = _sanitize_categories(raw_cat_framing, set(framings.keys()))
-    _LIB.cat_style = _sanitize_categories(raw_cat_style, set(styles.keys()))
+    _LIB.cat_angle = sanitize_categories(raw_cat_angle, set(angles.keys()))
+    _LIB.cat_framing = sanitize_categories(raw_cat_framing, set(framings.keys()))
+    _LIB.cat_style = sanitize_categories(raw_cat_style, set(styles.keys()))
     _LIB.mtime = mtime
 
     _log(
@@ -238,36 +203,6 @@ def _resolve(
         _log(f"Key '{choice}' not found in library — skipping.")
         return "", ""
     return choice, text
-
-
-def _apply_weight(text: str, strength: float, fmt: str) -> str:
-    """Apply attention weighting to prompt text."""
-    if not text or strength < 0.01:
-        return ""
-
-    s = float(strength)
-
-    if fmt == "none":
-        return text
-
-    if fmt == "comfyui":
-        return text if abs(s - 1.0) < 1e-4 else f"({text}:{s:.2f})"
-
-    if fmt == "parentheses":
-        if abs(s - 1.0) < 1e-4:
-            return text
-        layers = max(1, min(5, int(round(abs(s - 1.0) / 0.1))))
-        if s > 1.0:
-            return "(" * layers + text + ")" * layers
-        return "[" * layers + text + "]" * layers
-
-    if fmt == "multiply":
-        return f"{text} * {s:.2f}"
-
-    if fmt == "deemphasis":
-        return f"[{text}]"
-
-    return text  # Unknown format — pass through unchanged
 
 
 # ── Node class ──────────────────────────────────────────────────────────────
@@ -495,9 +430,9 @@ class CameraStyleMixer:
             rng, art_style, RANDOM_STYLE, lib.styles, lib.cat_style, style_category,
         )
 
-        weighted_angle = _apply_weight(angle_text, angle_strength, weight_format)
-        weighted_framing = _apply_weight(framing_text, framing_strength, weight_format)
-        weighted_style = _apply_weight(style_text, style_strength, weight_format)
+        weighted_angle = apply_weight(angle_text, angle_strength, weight_format)
+        weighted_framing = apply_weight(framing_text, framing_strength, weight_format)
+        weighted_style = apply_weight(style_text, style_strength, weight_format)
         combined = delimiter.join(filter(None, [weighted_angle, weighted_framing, weighted_style]))
 
         return (combined, weighted_angle, weighted_style)
