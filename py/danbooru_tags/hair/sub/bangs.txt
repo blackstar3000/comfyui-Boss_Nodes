@@ -14,3 +14,6 @@ parted bangs
 short bangs
 swept bangs
 wispy bangs
+parted_bangs
+long_bangs
+braided_bangs
