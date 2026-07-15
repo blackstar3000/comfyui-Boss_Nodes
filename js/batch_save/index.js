@@ -1,8 +1,7 @@
 // Batch Save Pro - DOM widget + editor modal
+// Uses shared Boss Theme classes from js/boss_theme/
 import { app } from "/scripts/app.js";
-
-const BRAND = "#8B5CF6";
-const BRAND_GLOW = "rgba(139, 92, 246, 0.3)";
+import { BossDropdown } from "../boss_theme/index.js";
 
 const STATE_PROP = "saveState";
 const HIDDEN_INPUT_NAME = "SaveState";
@@ -18,232 +17,6 @@ const VISIBLE_NATIVE_WIDGETS = [
   "folder_path",
   "reset_counter",
 ];
-
-// ── CSS (injected once) ──────────────────────────────────────────────────
-
-function injectCSS() {
-  if (document.getElementById("boss-batch-css")) return;
-  const css = `
-    .boss-bs-root {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 10px;
-      background: #131415;
-      border-radius: 6px;
-      color: #eee;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .boss-bs-head {
-      font-size: 12px;
-      color: #eee;
-      line-height: 1.5;
-      min-height: 18px;
-    }
-    .boss-bs-head .label { color: #999; }
-    .boss-bs-head .value { color: #fff; font-weight: 600; }
-    .boss-bs-head .sep { color: #555; margin: 0 6px; }
-    .boss-bs-open {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.05s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .boss-bs-open:hover { background: #7C3AED; }
-    .boss-bs-open:active { transform: translateY(1px); }
-    .boss-bs-status {
-      font-size: 11px;
-      color: #999;
-      text-align: center;
-      min-height: 14px;
-    }
-    .boss-bs-status.is-error { color: #ff8080; }
-
-    .boss-bs-modal {
-      position: fixed; inset: 0;
-      background: #131415;
-      color: #eee;
-      z-index: 2000;
-      display: flex; flex-direction: column;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-    }
-    .boss-bs-bar {
-      height: 56px;
-      background: #171718;
-      border-bottom: 1px solid #3a3d40;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-bs-bar-title { font-size: 14px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-    .boss-bs-bar-x {
-      background: transparent;
-      border: 1px solid #3a3d40;
-      color: #eee;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .boss-bs-bar-x:hover { background: #3a3d40; }
-
-    .boss-bs-body {
-      flex: 1; display: flex; overflow: hidden; min-height: 0;
-    }
-    .boss-bs-side {
-      width: 420px;
-      background: #171718;
-      border-right: 1px solid #3a3d40;
-      padding: 18px;
-      display: flex; flex-direction: column; gap: 14px;
-      flex-shrink: 0;
-      overflow-y: auto;
-    }
-    .boss-bs-section-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #999;
-      letter-spacing: 1px;
-      display: block;
-      margin-bottom: 6px;
-    }
-    .boss-bs-input, .boss-bs-select, .boss-bs-textarea {
-      width: 100%;
-      padding: 9px 12px;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      color: #fff;
-      border-radius: 6px;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    .boss-bs-input:focus, .boss-bs-select:focus, .boss-bs-textarea:focus { border-color: ${BRAND}; }
-    .boss-bs-textarea {
-      resize: vertical;
-      min-height: 80px;
-      font-family: ui-monospace, monospace;
-      font-size: 12px;
-    }
-    .boss-bs-row { display: flex; align-items: center; gap: 10px; }
-    .boss-bs-row .boss-bs-input { flex: 1; }
-    .boss-bs-check {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      color: #ddd;
-      font-size: 13px;
-      cursor: pointer;
-      user-select: none;
-    }
-    .boss-bs-check input { width: 16px; height: 16px; accent-color: ${BRAND}; }
-
-    .boss-bs-footer {
-      height: 56px;
-      background: #171718;
-      border-top: 1px solid #3a3d40;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-bs-save {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 2px 6px ${BRAND_GLOW};
-    }
-    .boss-bs-save:hover { background: #7C3AED; }
-    .boss-bs-cancel {
-      background: transparent;
-      color: #eee;
-      border: 1px solid #3a3d40;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .boss-bs-cancel:hover { background: #3a3d40; }
-
-    .boss-bs-preview {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-      box-sizing: border-box;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-    }
-    .boss-bs-card {
-      padding: 20px;
-      background: #2a2a2a;
-      border-radius: 12px;
-      border: 1px solid #444;
-      max-width: 600px;
-      width: 100%;
-      color: #fff;
-    }
-    .boss-bs-card-title {
-      font-size: 1.4em;
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 16px;
-      letter-spacing: 1px;
-      background: linear-gradient(#ffd700, #ff6b6b);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .boss-bs-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px 16px;
-      margin-bottom: 12px;
-    }
-    .boss-bs-item {
-      display: flex;
-      justify-content: space-between;
-      padding: 6px 8px;
-      border-radius: 4px;
-      background: rgba(255,255,255,0.04);
-    }
-    .boss-bs-item .label { color: #999; font-weight: 500; }
-    .boss-bs-item .value { color: #fff; font-weight: 600; font-family: ui-monospace, monospace; }
-    .boss-bs-preview-text {
-      background: rgba(255,255,255,0.06);
-      padding: 12px;
-      border-radius: 6px;
-      font-family: ui-monospace, monospace;
-      font-size: 12px;
-      max-height: 150px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      word-break: break-word;
-      color: #ccc;
-    }
-  `;
-  const style = document.createElement("style");
-  style.id = "boss-batch-css";
-  style.textContent = css;
-  document.head.appendChild(style);
-}
-injectCSS();
 
 // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -341,13 +114,13 @@ function renderHeader(node) {
   const state = readState(node);
   const mode = state.naming_mode.replace("_", " ").toUpperCase();
   const preview = state.text
-    ? state.text.slice(0, 40) + (state.text.length > 40 ? "…" : "")
+    ? state.text.slice(0, 40) + (state.text.length > 40 ? "\u2026" : "")
     : "(empty)";
   head.innerHTML = `
     <span class="label">Mode:</span> <span class="value">${escapeHtml(mode)}</span>
-    <span class="sep">·</span>
+    <span class="sep">\u00B7</span>
     <span class="label">File:</span> <span class="value">${escapeHtml(state.base_filename)}</span>
-    <span class="sep">·</span>
+    <span class="sep">\u00B7</span>
     <span class="label">Preview:</span> <span class="value">${escapeHtml(preview)}</span>
   `;
 }
@@ -355,7 +128,7 @@ function renderHeader(node) {
 function setStatus(node, text, isError = false) {
   const root = node._bossBsRoot;
   if (!root) return;
-  const s = root.querySelector(".boss-bs-status");
+  const s = root.querySelector(".boss-status");
   if (!s) return;
   s.textContent = text || "";
   s.classList.toggle("is-error", !!isError);
@@ -388,24 +161,24 @@ function buildPreviewHTML(state, counter) {
   }
 
   const textPreview = state.text
-    ? state.text.slice(0, 120) + (state.text.length > 120 ? "…" : "")
+    ? state.text.slice(0, 120) + (state.text.length > 120 ? "..." : "")
     : "(empty)";
 
   return `
-    <div class="boss-bs-card">
-      <div class="boss-bs-card-title">📁 Batch Save Preview</div>
-      <div class="boss-bs-grid">
-        <div class="boss-bs-item"><span class="label">Mode</span><span class="value">${escapeHtml(mode)}</span></div>
-        <div class="boss-bs-item"><span class="label">Extension</span><span class="value">${escapeHtml(ext)}</span></div>
-        <div class="boss-bs-item"><span class="label">Filename</span><span class="value">${escapeHtml(filename)}</span></div>
-        <div class="boss-bs-item"><span class="label">Simple mode</span><span class="value">${state.simple_mode ? "ON" : "OFF"}</span></div>
-        <div class="boss-bs-item"><span class="label">Custom key</span><span class="value">${escapeHtml(state.custom_key || "(none)")}</span></div>
-        <div class="boss-bs-item"><span class="label">Category folder</span><span class="value">${escapeHtml(state.category_folder || "(none)")}</span></div>
-        <div class="boss-bs-item"><span class="label">Override path</span><span class="value">${escapeHtml(state.folder_path || "(default)")}</span></div>
-        <div class="boss-bs-item"><span class="label">Reset counter</span><span class="value">${state.reset_counter ? "✅" : "❌"}</span></div>
+    <div class="boss-card">
+      <div class="boss-card-title">\u{1F4C1} Batch Save Preview</div>
+      <div class="boss-grid">
+        <div class="boss-grid-item"><span class="label">Mode</span><span class="value">${escapeHtml(mode)}</span></div>
+        <div class="boss-grid-item"><span class="label">Extension</span><span class="value">${escapeHtml(ext)}</span></div>
+        <div class="boss-grid-item"><span class="label">Filename</span><span class="value">${escapeHtml(filename)}</span></div>
+        <div class="boss-grid-item"><span class="label">Simple mode</span><span class="value">${state.simple_mode ? "ON" : "OFF"}</span></div>
+        <div class="boss-grid-item"><span class="label">Custom key</span><span class="value">${escapeHtml(state.custom_key || "(none)")}</span></div>
+        <div class="boss-grid-item"><span class="label">Category folder</span><span class="value">${escapeHtml(state.category_folder || "(none)")}</span></div>
+        <div class="boss-grid-item"><span class="label">Override path</span><span class="value" style="font-size:11px">${escapeHtml(state.folder_path || "(default)")}</span></div>
+        <div class="boss-grid-item"><span class="label">Reset counter</span><span class="value">${state.reset_counter ? "\u274C" : "\u274C"}</span></div>
       </div>
-      <div class="boss-bs-section-label">Text preview</div>
-      <div class="boss-bs-preview-text">${escapeHtml(textPreview)}</div>
+      <div class="boss-label">Text Preview</div>
+      <div class="boss-prompt-box">${escapeHtml(textPreview)}</div>
     </div>
   `;
 }
@@ -440,24 +213,24 @@ class BatchSaveEditor {
       this.modal = null;
     }
     const modal = document.createElement("div");
-    modal.className = "boss-bs-modal";
+    modal.className = "boss-modal";
 
     const bar = document.createElement("div");
-    bar.className = "boss-bs-bar";
-    bar.innerHTML = `<div class="boss-bs-bar-title">Batch Save Pro Editor</div>`;
+    bar.className = "boss-bar";
+    bar.innerHTML = `<div class="boss-bar-title">Batch Save Pro Editor</div>`;
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
-    closeBtn.className = "boss-bs-bar-x";
+    closeBtn.className = "boss-btn-close";
     closeBtn.textContent = "CLOSE";
     closeBtn.addEventListener("click", () => this.cancel());
     bar.appendChild(closeBtn);
     modal.appendChild(bar);
 
     const body = document.createElement("div");
-    body.className = "boss-bs-body";
+    body.className = "boss-body";
 
     const side = document.createElement("div");
-    side.className = "boss-bs-side";
+    side.className = "boss-side";
 
     // ── Text ────────────────────────────────────────────────────────────
     side.appendChild(this.buildTextSection());
@@ -525,7 +298,7 @@ class BatchSaveEditor {
     );
 
     const workspace = document.createElement("div");
-    workspace.className = "boss-bs-preview";
+    workspace.className = "boss-preview";
     this.previewEl = document.createElement("div");
     workspace.appendChild(this.previewEl);
     body.appendChild(side);
@@ -533,15 +306,15 @@ class BatchSaveEditor {
     modal.appendChild(body);
 
     const footer = document.createElement("div");
-    footer.className = "boss-bs-footer";
+    footer.className = "boss-footer";
     const saveBtn = document.createElement("button");
     saveBtn.type = "button";
-    saveBtn.className = "boss-bs-save";
+    saveBtn.className = "boss-btn-primary";
     saveBtn.textContent = "Apply";
     saveBtn.addEventListener("click", () => this.save());
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
-    cancelBtn.className = "boss-bs-cancel";
+    cancelBtn.className = "boss-btn-ghost";
     cancelBtn.textContent = "Cancel";
     cancelBtn.addEventListener("click", () => this.cancel());
     footer.appendChild(saveBtn);
@@ -553,16 +326,16 @@ class BatchSaveEditor {
     this.refreshPreview();
   }
 
-  // ── Sub‑controls ──────────────────────────────────────────────────────
+  // ── Sub-controls ──────────────────────────────────────────────────────
 
   buildTextSection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-bs-section-label";
+    label.className = "boss-label";
     label.textContent = "Text to Save";
     wrap.appendChild(label);
     const textarea = document.createElement("textarea");
-    textarea.className = "boss-bs-textarea";
+    textarea.className = "boss-textarea";
     textarea.spellcheck = false;
     textarea.value = this.state.text;
     textarea.addEventListener("input", () => {
@@ -576,12 +349,12 @@ class BatchSaveEditor {
   buildFilenameSection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-bs-section-label";
+    label.className = "boss-label";
     label.textContent = "Base Filename";
     wrap.appendChild(label);
     const input = document.createElement("input");
     input.type = "text";
-    input.className = "boss-bs-input";
+    input.className = "boss-input";
     input.value = this.state.base_filename;
     input.addEventListener("input", () => {
       this.state.base_filename = input.value;
@@ -593,36 +366,29 @@ class BatchSaveEditor {
 
   buildSelectSection(title, key, options) {
     const wrap = document.createElement("div");
-    const label = document.createElement("span");
-    label.className = "boss-bs-section-label";
-    label.textContent = title;
-    wrap.appendChild(label);
-    const select = document.createElement("select");
-    select.className = "boss-bs-select";
-    for (const opt of options) {
-      const option = document.createElement("option");
-      option.value = opt;
-      option.textContent = opt;
-      if (this.state[key] === opt) option.selected = true;
-      select.appendChild(option);
-    }
-    select.addEventListener("change", () => {
-      this.state[key] = select.value;
-      this.refreshPreview();
+    const dropdown = new BossDropdown({
+      label: title,
+      options: options.map((o) => ({ value: o, label: o })),
+      value: this.state[key],
+      searchable: options.length > 5,
+      onChange: (value) => {
+        this.state[key] = value;
+        this.refreshPreview();
+      },
     });
-    wrap.appendChild(select);
+    wrap.appendChild(dropdown.element);
     return wrap;
   }
 
   buildInputSection(title, key, placeholder) {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-bs-section-label";
+    label.className = "boss-label";
     label.textContent = title;
     wrap.appendChild(label);
     const input = document.createElement("input");
     input.type = "text";
-    input.className = "boss-bs-input";
+    input.className = "boss-input";
     input.placeholder = placeholder || "";
     input.value = this.state[key];
     input.addEventListener("input", () => {
@@ -636,7 +402,7 @@ class BatchSaveEditor {
   buildCheckboxSection(title, key, tooltip) {
     const wrap = document.createElement("div");
     const label = document.createElement("label");
-    label.className = "boss-bs-check";
+    label.className = "boss-check";
     const input = document.createElement("input");
     input.type = "checkbox";
     input.checked = !!this.state[key];
@@ -649,8 +415,8 @@ class BatchSaveEditor {
     wrap.appendChild(label);
     if (tooltip) {
       const tip = document.createElement("div");
-      tip.style.color = "#888";
-      tip.style.fontSize = "11px";
+      tip.style.color = "var(--boss-text-muted)";
+      tip.style.fontSize = "var(--boss-font-size-sm)";
       tip.style.marginTop = "4px";
       tip.textContent = tooltip;
       wrap.appendChild(tip);
@@ -691,20 +457,20 @@ function setupBatchSaveNode(node) {
   }
 
   const root = document.createElement("div");
-  root.className = "boss-bs-root";
+  root.className = "boss-widget";
 
   const head = document.createElement("div");
-  head.className = "boss-bs-head";
+  head.className = "boss-widget-head";
   root.appendChild(head);
 
   const openBtn = document.createElement("button");
   openBtn.type = "button";
-  openBtn.className = "boss-bs-open";
+  openBtn.className = "boss-btn-open";
   openBtn.textContent = "Open Editor";
   root.appendChild(openBtn);
 
   const status = document.createElement("div");
-  status.className = "boss-bs-status";
+  status.className = "boss-status";
   root.appendChild(status);
 
   node.addDOMWidget("batch_ui", "boss_batch", root, {
@@ -724,7 +490,7 @@ function setupBatchSaveNode(node) {
 
   openBtn.addEventListener("click", async () => {
     try {
-      setStatus(node, "Loading…");
+      setStatus(node, "Loading\u2026");
       const editor = new BatchSaveEditor(node);
       await editor.open();
       setStatus(node, "");
@@ -752,12 +518,6 @@ app.graphToPrompt = async function (...args) {
       entry.inputs = entry.inputs || {};
       entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify(state);
 
-      // The checkbox is labeled "Will reset to 0001 on NEXT save" - a
-      // one-shot action, not a persistent setting. Nothing was ever
-      // turning it back off, so leaving it checked silently reset the
-      // counter on every subsequent save too. Auto-clear it here for the
-      // next run, same pattern as the seed-advance fix in the KSampler
-      // node.
       if (state.reset_counter) {
         const newState = { ...state, reset_counter: false };
         writeState(node, newState);
