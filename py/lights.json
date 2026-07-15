@@ -10,21 +10,35 @@
 
   "Dramatic & Cinematic": {
     "Rim Lighting": "strong rim lighting, glowing edge light, perfect subject separation, dramatic silhouette",
-    "Backlight Silhouette": "powerful backlight silhouette, glowing outline, dark subject, high contrast",
+    "Backlit Portrait": "strong backlight, glowing rim light, soft haze, visible subject detail, cinematic contrast",
+    "True Silhouette": "subject in near-black silhouette, powerful backlight, bright glowing outline, minimal visible detail, high contrast",
     "Low Key": "low key lighting, deep shadows, minimal fill, moody mysterious atmosphere",
     "Chiaroscuro": "chiaroscuro, extreme light/dark contrast, rembrandt lighting, dramatic volume",
     "Side Lighting": "harsh side lighting, half face in shadow, sculptural, high drama",
     "Volumetric God Rays": "volumetric god rays, crepuscular rays, light shafts through dust or fog, ethereal"
   },
-
-  "High-End Rendering": {
-    "Global Illumination": "global illumination, realistic bounced light, natural ambient fill",
-    "Ray Traced GI + Reflections": "ray traced global illumination, perfect reflections, photorealistic lighting",
-    "Subsurface Scattering": "subsurface scattering, translucent skin, realistic ears and nose glow",
-    "Lumen RT": "lumen real-time global illumination, nanite, unreal engine 5 quality",
-    "Path Traced": "full path tracing, reference quality lighting, maximum realism"
+  "Universal Lighting": {
+    "Soft Front Light": "soft frontal lighting, even illumination, gentle shadows, clear facial features",
+    "Soft Side Light": "soft side lighting, gradual shadow falloff, natural depth, visible detail",
+    "Overhead Softbox": "large soft overhead light, soft shadows, clean even illumination",
+    "Warm Key Cool Fill": "warm key light, cool subtle fill light, cinematic color contrast, balanced exposure",
+    "Cool Key Warm Fill": "cool key light, warm subtle fill light, cinematic color contrast, balanced exposure",
+    "High-Key Bright": "high-key lighting, bright soft illumination, minimal shadows, clean airy atmosphere",
+    "Low-Key Moody": "low-key lighting, controlled deep shadows, selective illumination, moody atmosphere",
+    "Soft Rim Light": "subtle rim light, gentle edge separation, visible subject detail, soft cinematic contrast",
+    "Hard Rim Light": "strong rim light, bright edge separation, dark background, dramatic contrast",
+    "Practical Light": "practical lighting from visible lamps and fixtures, natural falloff, realistic interior atmosphere",
+    "Motivated Window Light": "window light as the main light source, soft natural shadows, realistic interior lighting",
+    "Bounce Light": "soft bounced light, gentle ambient fill, natural shadow detail, realistic illumination",
+    "Diffused Daylight": "diffused natural daylight, soft even shadows, neutral color, realistic outdoor lighting",
+    "Cloudy Daylight": "overcast daylight, broad soft illumination, low contrast, natural colors",
+    "Golden Sunset": "warm low-angle sunset light, long soft shadows, golden highlights, natural atmosphere",
+    "Night Streetlight": "nighttime streetlight illumination, warm pools of light, deep blue shadows, realistic night atmosphere",
+    "Rainy Night Reflections": "rainy nighttime lighting, reflected street lights, wet surface highlights, atmospheric contrast",
+    "Fireplace Glow": "warm fireplace glow, flickering orange light, soft moving shadows, cozy atmosphere",
+    "Screen Light": "cool light from a screen, soft blue illumination on face, dark surrounding room",
+    "Neon Accent Light": "colored neon accent light, controlled glow, reflective highlights, dark ambient background"
   },
-
   "Atmospheric Masters": {
     "Volumetric Fog + God Rays": "thick volumetric fog, dramatic god rays cutting through, cinematic masterpiece",
     "Dust Motes in Sunbeams": "visible dust particles floating in strong sunbeams, atmospheric depth",
@@ -67,13 +81,5 @@
     "Harsh Midday Sun": "harsh overhead sunlight, deep shadows, high contrast, dramatic",
     "Moonlight Silver": "cool silver moonlight, nocturnal mystery, soft gentle glow",
     "Firelight Warm": "warm firelight, flickering orange glow, cozy intimate shadows"
-  },
-
-  "Camera & Lens (Real Ones That Work)": {
-    "85mm Portrait": "shot on 85mm lens, shallow depth of field, beautiful bokeh, cinematic",
-    "50mm Natural": "shot on 50mm prime lens, natural perspective, filmic look",
-    "35mm Storytelling": "shot on 35mm lens, environmental portrait, immersive wide feel",
-    "Arri Alexa Look": "Arri Alexa 65, cinematic color science, filmic tones, hollywood quality",
-    "8K Film Scan": "shot on 70mm IMAX, scanned at 8K, ultra detailed, reference quality"
   }
 }
