@@ -19,17 +19,9 @@
 // delimiter.
 
 import { app } from "/scripts/app.js";
+import { BossDropdown } from "../boss_theme/index.js";
 
-// ── Brand + constants ──────────────────────────────────────────────────────
-//
-// A pink-violet brand for this node so the three 3-collection rebuilds
-// are visually distinct (scene=green, master=gold gradient, character=
-// pink/violet). Title colour keeps #ff66cc continuity with the v3.2
-// pink brand this node has used since the original.
-const BRAND = "#a855f7"; // violet-500 — distinct from green/gold siblings
-const BRAND_LIGHT = "#c084fc"; // violet-400 for gradients
-const BRAND_GLOW = "rgba(168, 85, 247, 0.3)";
-
+// ── Constants ──────────────────────────────────────────────────────────────
 const STATE_PROP = "characterState";
 const HIDDEN_INPUT_NAME = "CharacterState";
 
@@ -71,159 +63,53 @@ const COLLECTION_LABELS = {
 };
 
 // ── CSS (injected once, idempotent) ────────────────────────────────────────
-//
-// Same primitives as scene_maker_pro. Scoped to `boss-char-css` so the
-// style block has its own id and we can iterate without colliding.
 function injectCSS() {
   if (document.getElementById("boss-char-css")) return;
   const css = `
-    /* On-node body */
-    .boss-char-root {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 10px;
-      background: #131415;
-      border-radius: 6px;
-      color: #eee;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-      font-size: 12px;
+    /* ── Component-specific overrides ────────────────────────────── */
+
+    /* Header value variants */
+    .boss-widget-head .value.none { color: var(--boss-text-muted); font-style: italic; }
+    .boss-widget-head .value.random { color: var(--boss-brand); }
+    .boss-widget-head .sep { color: var(--boss-text-faint); margin: 0 6px; }
+
+    /* Preview centering */
+    .boss-side + .boss-preview {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      align-items: center;
+      justify-content: center;
     }
-    .boss-char-head {
-      font-size: 12px;
-      color: #eee;
-      line-height: 1.5;
-      min-height: 18px;
-    }
-    .boss-char-head .label { color: #999; }
-    .boss-char-head .value { color: #fff; font-weight: 600; }
-    .boss-char-head .value.none { color: #888; font-style: italic; }
-    .boss-char-head .value.random { color: ${BRAND}; }
-    .boss-char-head .sep { color: #555; margin: 0 6px; }
-    .boss-char-open {
-      background: linear-gradient(90deg, ${BRAND}, ${BRAND_LIGHT});
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: filter 0.15s, transform 0.05s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .boss-char-open:hover { filter: brightness(1.1); }
-    .boss-char-open:active { transform: translateY(1px); }
-    .boss-char-status {
-      font-size: 11px;
-      color: #999;
-      text-align: center;
-      min-height: 14px;
-    }
-    .boss-char-status.is-error { color: #ff8080; }
 
-    /* Fullscreen editor modal */
-    .boss-char-modal {
-      position: fixed; inset: 0;
-      background: #131415;
-      color: #eee;
-      z-index: 2000;
-      display: flex; flex-direction: column;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-    }
-    .boss-char-bar {
-      height: 56px;
-      background: linear-gradient(90deg, #171718, #1f1827);
-      border-bottom: 1px solid #3a3d40;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-char-bar-title {
-      font-size: 14px; font-weight: 600; letter-spacing: 1px;
-      text-transform: uppercase;
-      background: linear-gradient(90deg, ${BRAND_LIGHT}, ${BRAND});
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .boss-char-bar-x {
-      background: transparent;
-      border: 1px solid #3a3d40;
-      color: #eee;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .boss-char-bar-x:hover { background: #3a3d40; }
+    /* Side panel width override */
+    .boss-char-side-custom { width: 320px; }
 
-    /* Body: left controls | right preview */
-    .boss-char-body {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-      min-height: 0;
-    }
-    .boss-char-side {
-      width: 320px;
-      background: #171718;
-      border-right: 1px solid #3a3d40;
-      padding: 18px;
-      display: flex; flex-direction: column; gap: 14px;
-      flex-shrink: 0;
-      overflow-y: auto;
-    }
-    .boss-char-section-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #999;
-      letter-spacing: 1px;
-      display: block;
-      margin-bottom: 6px;
-    }
-    .boss-char-input {
-      width: 100%;
-      padding: 9px 12px;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      color: #fff;
-      border-radius: 6px;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    .boss-char-input:focus { border-color: ${BRAND}; }
-
-    /* Per-collection list (search + scrollable entries) */
+    /* Per-collection list */
     .boss-char-list-wrap { display: flex; flex-direction: column; gap: 6px; }
     .boss-char-list {
       max-height: 130px;
       overflow-y: auto;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      border-radius: 6px;
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border-input);
+      border-radius: var(--boss-radius-md);
     }
     .boss-char-list-item {
       padding: 6px 12px;
       font-size: 13px;
+      color: var(--boss-text);
       cursor: pointer;
-      border-bottom: 1px solid #232527;
+      border-bottom: 1px solid var(--boss-border);
       display: flex; align-items: center; gap: 8px;
     }
     .boss-char-list-item:last-child { border-bottom: none; }
-    .boss-char-list-item:hover { background: #1c1e20; }
+    .boss-char-list-item:hover { background: var(--boss-bg-hover); }
     .boss-char-list-item.selected {
-      background: rgba(168,85,247,0.18);
-      color: #fff;
-      box-shadow: inset 3px 0 0 ${BRAND};
+      background: var(--boss-bg-active);
+      color: var(--boss-text-bright);
+      box-shadow: inset 3px 0 0 var(--boss-brand);
     }
     .boss-char-list-item .badge {
-      font-size: 10px; color: #999; padding: 2px 6px;
-      background: #232527; border-radius: 3px;
+      font-size: 10px; color: var(--boss-text-dim); padding: 2px 6px;
+      background: var(--boss-border); border-radius: 3px;
       flex-shrink: 0;
     }
     .boss-char-list-item .name {
@@ -235,101 +121,91 @@ function injectCSS() {
 
     /* Strength slider + linked number */
     .boss-char-strength { display: flex; align-items: center; gap: 10px; }
-    .boss-char-strength input[type=range] { flex: 1; accent-color: ${BRAND}; }
+    .boss-char-strength input[type=range] { flex: 1; accent-color: var(--boss-brand); }
     .boss-char-strength input[type=number] { width: 70px; flex-shrink: 0; }
 
     /* Seed pill + buttons */
-    .boss-char-pill {
+    .boss-pill {
       display: flex; gap: 0;
-      background: rgba(255,255,255,0.06);
-      border-radius: 7px;
+      background: var(--boss-bg-hover);
+      border-radius: var(--boss-radius-lg);
       padding: 3px;
     }
-    .boss-char-seg {
+    .boss-seg {
       flex: 1;
       text-align: center;
       padding: 6px;
       border: none;
       border-radius: 5px;
       background: transparent;
-      font-family: inherit; font-size: 12px;
-      color: rgba(255,255,255,0.55);
+      font-family: inherit; font-size: var(--boss-font-size);
+      color: var(--boss-text-muted);
       cursor: pointer; user-select: none; outline: none;
-      transition: background 0.08s, color 0.08s;
+      transition: background var(--boss-transition-fast), color var(--boss-transition-fast);
     }
-    .boss-char-seg:hover:not(.active) { color: rgba(255,255,255,0.85); }
-    .boss-char-seg.active { background: ${BRAND}; color: #fff; font-weight: 500; }
-    .boss-char-seg:focus-visible { outline: 2px solid ${BRAND}; outline-offset: -2px; }
+    .boss-seg:hover:not(.active) { color: var(--boss-text); }
+    .boss-seg.active { background: var(--boss-brand); color: #fff; font-weight: 500; }
+    .boss-seg:focus-visible { outline: 2px solid var(--boss-brand); outline-offset: -2px; }
 
-    .boss-char-btn {
+    .boss-btn {
       box-sizing: border-box;
       padding: 7px 10px;
-      border-radius: 6px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.85);
-      font-family: inherit; font-size: 12px;
+      border-radius: var(--boss-radius-md);
+      background: var(--boss-bg-hover);
+      border: 1px solid var(--boss-border-strong);
+      color: var(--boss-text);
+      font-family: inherit; font-size: var(--boss-font-size);
       cursor: pointer; user-select: none;
       text-align: center;
-      transition: background 0.08s, border-color 0.08s, color 0.08s;
+      transition: background var(--boss-transition-fast), border-color var(--boss-transition-fast), color var(--boss-transition-fast);
     }
-    .boss-char-btn:hover { background: ${BRAND}; border-color: ${BRAND}; color: #fff; }
-    .boss-char-btn:disabled { opacity: 0.4; cursor: default; }
-    .boss-char-btn:disabled:hover {
-      background: rgba(255,255,255,0.05);
-      border-color: rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.85);
+    .boss-btn:hover { background: var(--boss-brand); border-color: var(--boss-brand); color: #fff; }
+    .boss-btn:disabled { opacity: 0.4; cursor: default; }
+    .boss-btn:disabled:hover {
+      background: var(--boss-bg-hover);
+      border-color: var(--boss-border-strong);
+      color: var(--boss-text);
     }
-    .boss-char-btn.is-flashing,
-    .boss-char-btn.is-flashing:hover {
+    .boss-btn.is-flashing,
+    .boss-btn.is-flashing:hover {
       background: #3ec371; border-color: #3ec371; color: #fff;
     }
-    .boss-char-seed-row { display: flex; gap: 6px; }
-    .boss-char-seed-row .boss-char-btn { flex: 1; }
-    .boss-char-seed-row .boss-char-btn.is-copy { flex: 0 0 auto; min-width: 56px; }
-    .boss-char-seed-num {
+    .boss-seed-row { display: flex; gap: 6px; }
+    .boss-seed-row .boss-btn { flex: 1; }
+    .boss-seed-row .boss-btn.is-copy { flex: 0 0 auto; min-width: 56px; }
+    .boss-seed-num {
       width: 100%; box-sizing: border-box;
       height: 36px;
-      background: #171819;
-      border: 1px solid #3a3d40;
-      border-radius: 6px;
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border-input);
+      border-radius: var(--boss-radius-md);
       padding: 6px 10px;
-      color: #f2f2f2;
-      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      color: var(--boss-text-bright);
+      font-family: var(--boss-font-mono);
       font-size: 15px;
       text-align: center;
       outline: none;
     }
-    .boss-char-seed-num:focus { border-color: ${BRAND}; }
-    .boss-char-seed-last {
-      font-size: 11px; line-height: 1.5;
-      color: rgba(255,255,255,0.55);
+    .boss-seed-num:focus { border-color: var(--boss-brand); }
+    .boss-seed-last {
+      font-size: var(--boss-font-size-sm); line-height: 1.5;
+      color: var(--boss-text-muted);
       text-align: center;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* Right preview panel — three side-by-side cards + dark monospace final prompt */
-    .boss-char-preview {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-      box-sizing: border-box;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-    }
-    .boss-char-card {
+    /* Preview mini-cards + card */
+    .boss-card {
       padding: 16px;
       background: #2a2a2a;
       border-radius: 12px;
-      border: 1px solid #444;
-      font-family: system-ui, sans-serif;
+      border: 1px solid var(--boss-border-strong);
       color: #fff;
       max-width: 760px;
       width: 100%;
       box-shadow: 0 0 40px rgba(255, 102, 204, 0.3);
     }
-    .boss-char-card-title {
+    .boss-card-title {
       font-size: 1.4em;
       font-weight: bold;
       text-align: center;
@@ -367,63 +243,29 @@ function injectCSS() {
       overflow-wrap: anywhere;
     }
     .boss-char-mini .w {
-      color: #aaa;
+      color: var(--boss-text-muted);
       font-size: 0.8em;
     }
-    .boss-char-mini.none .v { color: #666; font-style: italic; }
+    .boss-char-mini.none .v { color: var(--boss-text-faint); font-style: italic; }
     .boss-char-meta {
-      color: #888;
+      color: var(--boss-text-muted);
       font-size: 0.8em;
       margin-bottom: 8px;
       text-align: center;
     }
     .boss-char-output {
-      background: #1a1a1a;
+      background: var(--boss-bg-code);
       padding: 12px;
-      border-radius: 8px;
-      font-family: "Courier New", ui-monospace, monospace;
+      border-radius: var(--boss-radius-lg);
+      font-family: var(--boss-font-mono);
       font-size: 0.95em;
       line-height: 1.6;
       word-break: break-all;
-      border: 1px solid #333;
+      border: 1px solid var(--boss-border);
       white-space: pre-wrap;
     }
     .boss-char-output .arrow { color: #ff66cc; font-weight: bold; }
-    .boss-char-output.empty { color: #666; font-style: italic; }
-
-    /* Footer with Save/Cancel pinned bottom-left */
-    .boss-char-footer {
-      height: 56px;
-      background: #171718;
-      border-top: 1px solid #3a3d40;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-char-save {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 2px 6px ${BRAND_GLOW};
-    }
-    .boss-char-save:hover { background: ${BRAND_LIGHT}; }
-    .boss-char-cancel {
-      background: transparent;
-      color: #eee;
-      border: 1px solid #3a3d40;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .boss-char-cancel:hover { background: #3a3d40; }
+    .boss-char-output.empty { color: var(--boss-text-faint); font-style: italic; }
   `;
   const style = document.createElement("style");
   style.id = "boss-char-css";
@@ -595,7 +437,7 @@ function renderHeader(node) {
 function setStatus(node, text, isError = false) {
   const root = node._bossCharRoot;
   if (!root) return;
-  const s = root.querySelector(".boss-char-status");
+  const s = root.querySelector(".boss-status");
   if (!s) return;
   s.textContent = text || "";
   s.classList.toggle("is-error", !!isError);
@@ -648,20 +490,20 @@ function setupCharNode(node) {
   }
 
   const root = document.createElement("div");
-  root.className = "boss-char-root";
+  root.className = "boss-widget";
 
   const head = document.createElement("div");
-  head.className = "boss-char-head";
+  head.className = "boss-widget-head";
   root.appendChild(head);
 
   const openBtn = document.createElement("button");
   openBtn.type = "button";
-  openBtn.className = "boss-char-open";
+  openBtn.className = "boss-btn-open";
   openBtn.textContent = "🧝 Open Editor";
   root.appendChild(openBtn);
 
   const status = document.createElement("div");
-  status.className = "boss-char-status";
+  status.className = "boss-status";
   root.appendChild(status);
 
   node.addDOMWidget("char_ui", "boss_char", root, {
@@ -901,15 +743,15 @@ class CharEditor {
       this.modal = null;
     }
     const modal = document.createElement("div");
-    modal.className = "boss-char-modal";
+    modal.className = "boss-modal";
 
     // Top bar
     const bar = document.createElement("div");
-    bar.className = "boss-char-bar";
-    bar.innerHTML = `<div class="boss-char-bar-title">Ultimate Character Builder Pro Editor</div>`;
+    bar.className = "boss-bar";
+    bar.innerHTML = `<div class="boss-bar-title">Ultimate Character Builder Pro Editor</div>`;
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
-    closeBtn.className = "boss-char-bar-x";
+    closeBtn.className = "boss-btn-close";
     closeBtn.textContent = "CLOSE";
     closeBtn.addEventListener("click", () => this.cancel());
     bar.appendChild(closeBtn);
@@ -917,11 +759,11 @@ class CharEditor {
 
     // Body
     const body = document.createElement("div");
-    body.className = "boss-char-body";
+    body.className = "boss-body";
 
     // Left controls
     const side = document.createElement("div");
-    side.className = "boss-char-side";
+    side.className = "boss-side boss-char-side-custom";
 
     side.appendChild(
       this.buildListSection({
@@ -1017,24 +859,24 @@ class CharEditor {
 
     // Right preview
     const previewWrap = document.createElement("div");
-    previewWrap.className = "boss-char-preview";
+    previewWrap.className = "boss-preview";
     const card = document.createElement("div");
-    card.className = "boss-char-card";
+    card.className = "boss-card";
     previewWrap.appendChild(card);
     body.appendChild(previewWrap);
     modal.appendChild(body);
 
     // Footer
     const footer = document.createElement("div");
-    footer.className = "boss-char-footer";
+    footer.className = "boss-footer";
     const saveBtn = document.createElement("button");
     saveBtn.type = "button";
-    saveBtn.className = "boss-char-save";
+    saveBtn.className = "boss-btn-primary";
     saveBtn.textContent = "Save";
     saveBtn.addEventListener("click", () => this.save());
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
-    cancelBtn.className = "boss-char-cancel";
+    cancelBtn.className = "boss-btn-ghost";
     cancelBtn.textContent = "Cancel";
     cancelBtn.addEventListener("click", () => this.cancel());
     footer.appendChild(saveBtn);
@@ -1065,13 +907,13 @@ class CharEditor {
     wrap.className = "boss-char-list-wrap";
 
     const lbl = document.createElement("span");
-    lbl.className = "boss-char-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = title;
     wrap.appendChild(lbl);
 
     const search = document.createElement("input");
     search.type = "text";
-    search.className = "boss-char-input";
+    search.className = "boss-input";
     search.placeholder = `Search ${title.toLowerCase()}…`;
     wrap.appendChild(search);
 
@@ -1174,29 +1016,22 @@ class CharEditor {
 
   // ── Category dropdown ─────────────────────────────────────────────────
   buildCategorySection({ title, stateKey, cats, which }) {
-    const wrap = document.createElement("div");
-    const lbl = document.createElement("span");
-    lbl.className = "boss-char-section-label";
-    lbl.textContent = title;
-    wrap.appendChild(lbl);
-
-    const sel = document.createElement("select");
-    sel.className = "boss-char-input";
     const opts = [ALL_CATEGORIES, ...Object.keys(cats || {}).sort()];
-    for (const c of opts) {
-      const o = document.createElement("option");
-      o.value = c;
-      o.textContent = c;
-      if (c === this.state[stateKey]) o.selected = true;
-      sel.appendChild(o);
-    }
-    sel.addEventListener("change", (e) => {
-      this.state[stateKey] = e.target.value;
-      this.refreshList(which);
-      this.refreshPreview();
+    const options = opts.map((c) => ({ value: c, label: c }));
+
+    const dropdown = new BossDropdown({
+      label: title,
+      options,
+      value: this.state[stateKey],
+      searchable: opts.length > 6,
+      onChange: (value) => {
+        this.state[stateKey] = value;
+        this.refreshList(which);
+        this.refreshPreview();
+      },
     });
-    wrap.appendChild(sel);
-    return wrap;
+
+    return dropdown.element;
   }
 
   // ── Strength slider + linked number ─────────────────────────────────
@@ -1205,7 +1040,7 @@ class CharEditor {
     const { min, max, default: def } = strengthBoundsFor(which);
 
     const lbl = document.createElement("span");
-    lbl.className = "boss-char-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = `${title}: ${this.state[stateKey].toFixed(2)}`;
     wrap.appendChild(lbl);
 
@@ -1219,7 +1054,7 @@ class CharEditor {
     slider.value = String(this.state[stateKey]);
     const num = document.createElement("input");
     num.type = "number";
-    num.className = "boss-char-input";
+    num.className = "boss-input";
     num.min = String(min);
     num.max = String(max);
     num.step = String(STRENGTH_STEP);
@@ -1244,13 +1079,13 @@ class CharEditor {
   buildDelimiterSection() {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-char-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Delimiter";
     wrap.appendChild(lbl);
 
     const inp = document.createElement("input");
     inp.type = "text";
-    inp.className = "boss-char-input";
+    inp.className = "boss-input";
     inp.value = this.state.delimiter;
     inp.addEventListener("change", (e) => {
       this.state.delimiter = e.target.value;
@@ -1265,13 +1100,13 @@ class CharEditor {
     const wrap = document.createElement("div");
 
     const lbl = document.createElement("span");
-    lbl.className = "boss-char-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Seed";
     wrap.appendChild(lbl);
 
     const num = document.createElement("input");
     num.type = "text";
-    num.className = "boss-char-seed-num";
+    num.className = "boss-seed-num";
     num.value = String(this.state.seed);
     num.spellcheck = false;
     num.autocomplete = "off";
@@ -1297,9 +1132,9 @@ class CharEditor {
     wrap.appendChild(num);
 
     const pill = document.createElement("div");
-    pill.className = "boss-char-pill";
+    pill.className = "boss-pill";
     const syncPill = () => {
-      pill.querySelectorAll(".boss-char-seg").forEach((s) => {
+      pill.querySelectorAll(".boss-seg").forEach((s) => {
         s.classList.toggle("active", s.dataset.mode === this.state.seedMode);
       });
     };
@@ -1310,7 +1145,7 @@ class CharEditor {
       const seg = document.createElement("button");
       seg.type = "button";
       seg.className =
-        "boss-char-seg" + (this.state.seedMode === m ? " active" : "");
+        "boss-seg" + (this.state.seedMode === m ? " active" : "");
       seg.textContent = label;
       seg.dataset.mode = m;
       seg.addEventListener("click", () => {
@@ -1326,7 +1161,7 @@ class CharEditor {
 
     const newBtn = document.createElement("button");
     newBtn.type = "button";
-    newBtn.className = "boss-char-btn";
+    newBtn.className = "boss-btn";
     newBtn.textContent = "New fixed random";
     newBtn.addEventListener("click", () => {
       this.state.seed = rollSeed();
@@ -1339,11 +1174,11 @@ class CharEditor {
     wrap.appendChild(newBtn);
 
     const row = document.createElement("div");
-    row.className = "boss-char-seed-row";
+    row.className = "boss-seed-row";
 
     const useLast = document.createElement("button");
     useLast.type = "button";
-    useLast.className = "boss-char-btn";
+    useLast.className = "boss-btn";
     useLast.textContent = "Use last seed";
     useLast.disabled = this.lastSeed == null;
     useLast.addEventListener("click", () => {
@@ -1358,7 +1193,7 @@ class CharEditor {
 
     const copyBtn = document.createElement("button");
     copyBtn.type = "button";
-    copyBtn.className = "boss-char-btn is-copy";
+    copyBtn.className = "boss-btn is-copy";
     copyBtn.textContent = "Copy";
     copyBtn.addEventListener("click", () => {
       const text = String(clampSeed(this.state.seed));
@@ -1401,7 +1236,7 @@ class CharEditor {
     wrap.appendChild(row);
 
     this._lastRunEl = document.createElement("div");
-    this._lastRunEl.className = "boss-char-seed-last";
+    this._lastRunEl.className = "boss-seed-last";
     wrap.appendChild(this._lastRunEl);
     this.refreshLastRun();
     syncPill();
