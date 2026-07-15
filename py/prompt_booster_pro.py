@@ -24,6 +24,10 @@ from datetime import datetime
 from pathlib import Path
 
 from utils.constants import STRENGTH_MIN, STRENGTH_MAX, STRENGTH_DEFAULT, STRENGTH_STEP, WEIGHT_FORMAT_KEYS, WEIGHT_FORMAT_LABELS, WEIGHT_FORMAT_DEFAULT
+
+# Positive format adds BREAK option
+POSITIVE_FORMAT_KEYS = ["comfyui", "parentheses", "multiply", "break", "none"]
+POSITIVE_FORMAT_LABELS = {**WEIGHT_FORMAT_LABELS, "break": "BREAK"}
 from utils.prompt_utils import apply_weight
 from utils.logging_utils import make_logger
 from utils.json_utils import sanitize_entries
@@ -163,7 +167,8 @@ def _data_payload() -> dict:
             "level":  POSITIVE_LEVEL_DEFAULT if POSITIVE_LEVEL_DEFAULT in _QUALITY.items else (sorted(_QUALITY.items.keys())[0] if _QUALITY.items else ""),
         },
         "negativeDefault": {"preset": default_preset, "level": default_level},
-        "weightFormats": [{"key": k, "label": WEIGHT_FORMAT_LABELS[k]} for k in WEIGHT_FORMAT_KEYS],
+        "positiveFormats": [{"key": k, "label": POSITIVE_FORMAT_LABELS.get(k, k.title())} for k in POSITIVE_FORMAT_KEYS],
+        "weightFormats": [{"key": k, "label": WEIGHT_FORMAT_LABELS.get(k, k.title())} for k in WEIGHT_FORMAT_KEYS],
         "weightFormatDefault": WEIGHT_FORMAT_DEFAULT,
         "strengthRange": {
             "min": STRENGTH_MIN, "max": STRENGTH_MAX, "step": STRENGTH_STEP,
@@ -232,9 +237,13 @@ class PromptBoosterPRO:
                     "step": STRENGTH_STEP,
                     "tooltip": "Attention weight for the negative fragment. 1.0 = no change.",
                 }),
-                "weight_format": (WEIGHT_FORMAT_KEYS, {
+                "positive_weight_format": (POSITIVE_FORMAT_KEYS, {
                     "default": WEIGHT_FORMAT_DEFAULT,
-                    "tooltip": "How to apply the strength value: comfyui, parentheses, multiply, or none.",
+                    "tooltip": "How to apply positive_strength: comfyui, parentheses, multiply, BREAK, or none. Independent of the negative format.",
+                }),
+                "negative_weight_format": (WEIGHT_FORMAT_KEYS, {
+                    "default": WEIGHT_FORMAT_DEFAULT,
+                    "tooltip": "How to apply negative_strength: comfyui, parentheses, multiply, or none. Independent of the positive format.",
                 }),
             },
             "optional": {
@@ -262,7 +271,7 @@ class PromptBoosterPRO:
         "Weighted negative prompt (preset/level base + custom append).",
     )
     FUNCTION = "boost"
-    CATEGORY = "🌟 Pro Tools/Prompting"
+    CATEGORY = "👑 Boss Nodes/⚡ Prompting"
 
     @classmethod
     def IS_CHANGED(cls, BoosterState: str, **kwargs):
@@ -271,18 +280,43 @@ class PromptBoosterPRO:
     def boost(self, enable=True,
               positive_level="", positive_strength=STRENGTH_DEFAULT,
               negative_preset="", negative_level="", negative_strength=STRENGTH_DEFAULT,
-              weight_format=WEIGHT_FORMAT_DEFAULT,
+              positive_weight_format=WEIGHT_FORMAT_DEFAULT,
+              negative_weight_format=WEIGHT_FORMAT_DEFAULT,
               positive_custom="", negative_custom="",
               BoosterState="{}"):
 
+        # The JS editor keeps the "real" values in BoosterState (node.properties)
+        # and never touches the individual hidden widgets after the first draw,
+        # so BoosterState is the source of truth whenever it's present. The
+        # plain kwargs remain the fallback for API/script callers that drive
+        # this node without the JS editor at all.
+        try:
+            state = json.loads(BoosterState) if BoosterState else {}
+        except (json.JSONDecodeError, TypeError):
+            state = {}
+
+        enable = state.get("enable", enable)
         if not enable:
             return ("", "")
+
+        positive_level = state.get("positiveLevel") or positive_level
+        positive_strength = state.get("positiveStrength", positive_strength)
+        positive_custom = state.get("positiveCustom", positive_custom)
+        positive_weight_format = state.get("positiveWeightFormat") or positive_weight_format
+
+        negative_preset = state.get("negativePreset") or negative_preset
+        negative_level = state.get("negativeLevel") or negative_level
+        negative_strength = state.get("negativeStrength", negative_strength)
+        negative_custom = state.get("negativeCustom", negative_custom)
+        negative_weight_format = state.get("negativeWeightFormat") or negative_weight_format
 
         pos_text = _resolve_positive(positive_level, positive_custom)
         neg_text = _resolve_negative(negative_preset, negative_level, negative_custom)
 
-        pos_final = apply_weight(pos_text, float(positive_strength), weight_format)
-        neg_final = apply_weight(neg_text, float(negative_strength), weight_format)
+        # Positive and negative each carry their own independent weight format —
+        # no more sharing a single "weight_format" control.
+        pos_final = apply_weight(pos_text, float(positive_strength), positive_weight_format)
+        neg_final = apply_weight(neg_text, float(negative_strength), negative_weight_format)
 
         return (pos_final, neg_final)
 
