@@ -1,0 +1,618 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   Boss Nodes — Shared Theme (based on Danbooru Tag Builder Pro)
+   All Boss Node modals/editors reference these CSS variables and classes.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── Brand ─────────────────────────────────────────────────────────── */
+  --boss-brand: #8B5CF6;
+  --boss-brand-hover: #7C3AED;
+  --boss-brand-glow: rgba(139, 92, 246, 0.3);
+  --boss-brand-glow-strong: rgba(139, 92, 246, 0.45);
+
+  /* ── Surfaces ──────────────────────────────────────────────────────── */
+  --boss-bg-root: rgba(22, 22, 24, 0.55);
+  --boss-bg-modal: rgba(0, 0, 0, 0.55);
+  --boss-bg-bar: rgba(23, 23, 24, 0.8);
+  --boss-bg-side: rgba(23, 23, 24, 0.5);
+  --boss-bg-panel: rgba(23, 23, 24, 0.9);
+  --boss-bg-input: rgba(0, 0, 0, 0.3);
+  --boss-bg-section: rgba(255, 255, 255, 0.04);
+  --boss-bg-card: rgba(255, 255, 255, 0.04);
+  --boss-bg-code: rgba(0, 0, 0, 0.4);
+  --boss-bg-hover: rgba(255, 255, 255, 0.05);
+  --boss-bg-active: rgba(139, 92, 246, 0.15);
+
+  /* ── Text ──────────────────────────────────────────────────────────── */
+  --boss-text: #eee;
+  --boss-text-bright: #fff;
+  --boss-text-dim: #999;
+  --boss-text-muted: #888;
+  --boss-text-faint: #666;
+  --boss-text-code: #ccc;
+
+  /* ── Borders ───────────────────────────────────────────────────────── */
+  --boss-border: rgba(255, 255, 255, 0.06);
+  --boss-border-input: rgba(255, 255, 255, 0.08);
+  --boss-border-strong: rgba(255, 255, 255, 0.12);
+  --boss-border-accent: var(--boss-brand);
+
+  /* ── Blur ──────────────────────────────────────────────────────────── */
+  --boss-blur-root: blur(22px);
+  --boss-blur-modal: blur(12px);
+  --boss-blur-bar: blur(12px);
+  --boss-blur-panel: blur(12px);
+  --boss-blur-dropdown: blur(18px);
+  --boss-blur-card: blur(8px);
+
+  /* ── Radius ────────────────────────────────────────────────────────── */
+  --boss-radius-xs: 4px;
+  --boss-radius-sm: 6px;
+  --boss-radius-md: 8px;
+  --boss-radius-lg: 10px;
+  --boss-radius-xl: 12px;
+  --boss-radius-2xl: 16px;
+  --boss-radius-3xl: 18px;
+
+  /* ── Shadows ───────────────────────────────────────────────────────── */
+  --boss-shadow-root: 0 8px 32px rgba(0, 0, 0, 0.35);
+  --boss-shadow-dropdown: 0 8px 32px rgba(0, 0, 0, 0.6);
+  --boss-shadow-card: 0 8px 32px rgba(0, 0, 0, 0.2);
+
+  /* ── Typography ────────────────────────────────────────────────────── */
+  --boss-font: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  --boss-font-mono: ui-monospace, "Cascadia Code", "Fira Code", monospace;
+  --boss-font-size: 12px;
+  --boss-font-size-sm: 11px;
+  --boss-font-size-xs: 10px;
+  --boss-font-size-lg: 13px;
+  --boss-font-size-title: 14px;
+
+  /* ── Spacing ───────────────────────────────────────────────────────── */
+  --boss-gap: 8px;
+  --boss-gap-sm: 4px;
+  --boss-gap-lg: 12px;
+  --boss-gap-xl: 16px;
+  --boss-gap-2xl: 18px;
+  --boss-gap-3xl: 24px;
+
+  /* ── Transitions ───────────────────────────────────────────────────── */
+  --boss-transition-fast: 0.1s ease;
+  --boss-transition: 0.15s ease;
+  --boss-transition-slow: 0.2s ease;
+  --boss-transition-expand: 0.35s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SHARED COMPONENT CLASSES
+   Nodes use these instead of defining their own styles.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Root widget (on-node card) ───────────────────────────────────────── */
+.boss-widget {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px;
+  background: var(--boss-bg-root);
+  backdrop-filter: var(--boss-blur-root);
+  -webkit-backdrop-filter: var(--boss-blur-root);
+  border: 1px solid var(--boss-border);
+  border-radius: var(--boss-radius-2xl);
+  color: var(--boss-text);
+  font-family: var(--boss-font);
+  font-size: var(--boss-font-size);
+  display: flex;
+  flex-direction: column;
+  gap: var(--boss-gap);
+  box-shadow: var(--boss-shadow-root);
+}
+
+/* ── Widget header ────────────────────────────────────────────────────── */
+.boss-widget-head {
+  font-size: var(--boss-font-size);
+  color: var(--boss-text);
+  line-height: 1.5;
+  min-height: 18px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+}
+.boss-widget-head .label { color: var(--boss-text-dim); }
+.boss-widget-head .value { color: var(--boss-text-bright); font-weight: 600; }
+
+/* ── Open Editor button ───────────────────────────────────────────────── */
+.boss-btn-open {
+  background: var(--boss-brand);
+  color: #fff;
+  border: none;
+  border-radius: var(--boss-radius-lg);
+  padding: 8px 12px;
+  font-size: var(--boss-font-size);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--boss-transition), transform var(--boss-transition-fast), box-shadow var(--boss-transition-slow);
+  box-shadow: 0 0 20px var(--boss-brand-glow);
+}
+.boss-btn-open:hover {
+  background: var(--boss-brand-hover);
+  box-shadow: 0 0 30px var(--boss-brand-glow);
+}
+.boss-btn-open:active { transform: scale(0.97); }
+
+/* ── Status text ──────────────────────────────────────────────────────── */
+.boss-status {
+  font-size: var(--boss-font-size-sm);
+  color: var(--boss-text-dim);
+  text-align: center;
+  min-height: 14px;
+}
+.boss-status.is-error { color: #ff8080; }
+.boss-status.is-success { color: #4ade80; }
+
+/* ── Modal overlay ────────────────────────────────────────────────────── */
+.boss-modal {
+  position: fixed; inset: 0;
+  background: var(--boss-bg-modal);
+  backdrop-filter: var(--boss-blur-modal);
+  -webkit-backdrop-filter: var(--boss-blur-modal);
+  z-index: 2000;
+  display: flex; flex-direction: column;
+  font-family: var(--boss-font);
+}
+.boss-modal::before {
+  content: "";
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 80%, rgba(139,92,246,0.06) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 80% 20%, rgba(99,102,241,0.04) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+.boss-modal > * { position: relative; z-index: 1; }
+
+/* ── Modal header bar ─────────────────────────────────────────────────── */
+.boss-bar {
+  height: 56px;
+  background: var(--boss-bg-bar);
+  backdrop-filter: var(--boss-blur-bar);
+  -webkit-backdrop-filter: var(--boss-blur-bar);
+  border-bottom: 1px solid var(--boss-border);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 var(--boss-gap-3xl);
+  flex-shrink: 0;
+}
+.boss-bar-title {
+  font-size: var(--boss-font-size-title);
+  font-weight: 600;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #c084fc, #818cf8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.boss-bar-actions { display: flex; align-items: center; gap: var(--boss-gap); }
+
+/* ── Close button (header) ────────────────────────────────────────────── */
+.boss-btn-close {
+  background: transparent;
+  border: 1px solid var(--boss-border-strong);
+  color: var(--boss-text);
+  padding: 6px 14px;
+  border-radius: var(--boss-radius-md);
+  font-size: var(--boss-font-size);
+  cursor: pointer;
+  transition: background var(--boss-transition-fast);
+}
+.boss-btn-close:hover { background: var(--boss-bg-hover); }
+
+/* ── Body layout ──────────────────────────────────────────────────────── */
+.boss-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* ── Sidebar ──────────────────────────────────────────────────────────── */
+.boss-side {
+  width: 440px;
+  min-width: 300px;
+  background: var(--boss-bg-side);
+  backdrop-filter: var(--boss-blur-panel);
+  -webkit-backdrop-filter: var(--boss-blur-panel);
+  border-right: 1px solid var(--boss-border);
+  padding: var(--boss-gap-2xl);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 100%;
+  gap: var(--boss-gap);
+  position: relative;
+}
+.boss-side::-webkit-scrollbar { width: 4px; }
+.boss-side::-webkit-scrollbar-thumb { background: var(--boss-brand); border-radius: 4px; }
+
+/* ── Preview area ─────────────────────────────────────────────────────── */
+.boss-preview {
+  flex: 1;
+  padding: var(--boss-gap-3xl);
+  overflow-y: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--boss-gap-lg);
+}
+
+/* ── Card ─────────────────────────────────────────────────────────────── */
+.boss-card {
+  background: var(--boss-bg-card);
+  backdrop-filter: var(--boss-blur-card);
+  -webkit-backdrop-filter: var(--boss-blur-card);
+  border: 1px solid var(--boss-border);
+  border-radius: var(--boss-radius-3xl);
+  padding: var(--boss-gap-2xl);
+  color: var(--boss-text-bright);
+  box-shadow: var(--boss-shadow-card);
+}
+.boss-card-title {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin-bottom: var(--boss-gap-lg);
+  color: var(--boss-brand);
+}
+
+/* ── Footer ───────────────────────────────────────────────────────────── */
+.boss-footer {
+  height: 56px;
+  background: var(--boss-bg-side);
+  backdrop-filter: var(--boss-blur-panel);
+  -webkit-backdrop-filter: var(--boss-blur-panel);
+  border-top: 1px solid var(--boss-border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 var(--boss-gap-3xl);
+  flex-shrink: 0;
+  justify-content: flex-end;
+}
+
+/* ── Section label ────────────────────────────────────────────────────── */
+.boss-label {
+  font-size: var(--boss-font-size-xs);
+  text-transform: uppercase;
+  color: var(--boss-text-dim);
+  letter-spacing: 1px;
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+.boss-label-accent {
+  color: var(--boss-brand);
+  font-size: var(--boss-font-size);
+  font-weight: 700;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  text-shadow: 0 0 12px var(--boss-brand-glow);
+}
+
+/* ── Inputs ───────────────────────────────────────────────────────────── */
+.boss-input,
+.boss-select,
+.boss-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--boss-bg-input);
+  border: 1px solid var(--boss-border-input);
+  color: var(--boss-text-bright);
+  border-radius: var(--boss-radius-md);
+  font-size: var(--boss-font-size-lg);
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color var(--boss-transition-slow), box-shadow var(--boss-transition-slow);
+}
+.boss-input:focus,
+.boss-select:focus,
+.boss-textarea:focus {
+  border-color: var(--boss-brand);
+  box-shadow: 0 0 0 2px var(--boss-brand-glow);
+}
+.boss-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23999'%3E%3Cpath d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+.boss-textarea {
+  resize: vertical;
+  min-height: 50px;
+  font-family: var(--boss-font-mono);
+  font-size: var(--boss-font-size);
+  line-height: 1.5;
+}
+
+/* ── Checkbox ─────────────────────────────────────────────────────────── */
+.boss-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--boss-text);
+  font-size: var(--boss-font-size-lg);
+  cursor: pointer;
+  user-select: none;
+}
+.boss-check input {
+  width: 16px; height: 16px;
+  accent-color: var(--boss-brand);
+  border-radius: var(--boss-radius-xs);
+}
+
+/* ── Buttons ──────────────────────────────────────────────────────────── */
+.boss-btn {
+  background: var(--boss-brand);
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  border-radius: var(--boss-radius-md);
+  font-size: var(--boss-font-size);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--boss-transition-fast), box-shadow var(--boss-transition-slow);
+}
+.boss-btn:hover {
+  background: var(--boss-brand-hover);
+  box-shadow: 0 0 20px var(--boss-brand-glow);
+}
+.boss-btn-danger { background: #e53e3e; }
+.boss-btn-danger:hover { background: #c53030; }
+
+.boss-btn-primary {
+  background: var(--boss-brand);
+  color: #fff;
+  border: none;
+  padding: 9px 22px;
+  border-radius: var(--boss-radius-lg);
+  font-size: var(--boss-font-size-lg);
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 0 30px var(--boss-brand-glow);
+  transition: background var(--boss-transition-fast);
+}
+.boss-btn-primary:hover { background: var(--boss-brand-hover); }
+
+.boss-btn-ghost {
+  background: transparent;
+  color: var(--boss-text);
+  border: 1px solid var(--boss-border-strong);
+  padding: 9px 22px;
+  border-radius: var(--boss-radius-lg);
+  font-size: var(--boss-font-size-lg);
+  cursor: pointer;
+  transition: background var(--boss-transition-fast);
+}
+.boss-btn-ghost:hover { background: var(--boss-bg-hover); }
+
+/* ── Prompt / code box ────────────────────────────────────────────────── */
+.boss-prompt-box {
+  background: var(--boss-bg-code);
+  padding: 12px;
+  border-radius: var(--boss-radius-lg);
+  font-family: var(--boss-font-mono);
+  font-size: var(--boss-font-size-lg);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border: 1px solid var(--boss-border);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* ── Grid layout (preview cards) ──────────────────────────────────────── */
+.boss-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--boss-gap) var(--boss-gap-lg);
+  margin-bottom: var(--boss-gap-lg);
+}
+.boss-grid-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: var(--boss-radius-md);
+  background: var(--boss-bg-section);
+  border: 1px solid var(--boss-border);
+}
+.boss-grid-item .label { color: var(--boss-text-muted); font-weight: 500; font-size: var(--boss-font-size); }
+.boss-grid-item .value { color: var(--boss-text-bright); font-weight: 600; font-family: var(--boss-font-mono); font-size: var(--boss-font-size); }
+
+/* ── Scrollbar (global) ───────────────────────────────────────────────── */
+.boss-modal ::-webkit-scrollbar { width: 6px; }
+.boss-modal ::-webkit-scrollbar-track { background: transparent; }
+.boss-modal ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+.boss-modal ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+/* ── Empty state ──────────────────────────────────────────────────────── */
+.boss-empty {
+  color: var(--boss-text-dim);
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}
+
+/* ── BossDropdown component ────────────────────────────────────────────── */
+.boss-dropdown {
+  position: relative;
+  width: 100%;
+  background: var(--boss-bg-input);
+  border-radius: var(--boss-radius-md);
+  border: 1px solid var(--boss-border-input);
+  transition: border-color var(--boss-transition-slow), box-shadow var(--boss-transition-slow);
+  font-family: inherit;
+  box-sizing: border-box;
+}
+.boss-dropdown:focus-within {
+  border-color: var(--boss-brand);
+  box-shadow: 0 0 20px var(--boss-brand-glow);
+}
+.boss-dropdown .dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  cursor: pointer;
+  user-select: none;
+  color: var(--boss-text);
+  font-size: var(--boss-font-size);
+  min-height: 32px;
+  gap: 8px;
+}
+.boss-dropdown .dropdown-header .dd-label {
+  color: var(--boss-text-dim);
+  font-size: var(--boss-font-size-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.boss-dropdown .dropdown-header .dd-value {
+  flex: 1;
+  text-align: right;
+  font-weight: 500;
+  color: var(--boss-text-bright);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.boss-dropdown .dropdown-header .dd-arrow {
+  font-size: 10px;
+  transition: transform var(--boss-transition-slow);
+  color: var(--boss-text-muted);
+}
+.boss-dropdown .dropdown-header .dd-arrow.open {
+  transform: rotate(180deg);
+}
+.boss-dropdown .dropdown-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: var(--boss-bg-panel);
+  backdrop-filter: var(--boss-blur-dropdown);
+  -webkit-backdrop-filter: var(--boss-blur-dropdown);
+  border: 1px solid var(--boss-border-input);
+  border-radius: var(--boss-radius-md);
+  box-shadow: var(--boss-shadow-dropdown);
+  max-height: 260px;
+  overflow: hidden;
+  display: none;
+  flex-direction: column;
+  z-index: 100;
+  transition: opacity var(--boss-transition), transform var(--boss-transition);
+  opacity: 0;
+  transform: translateY(-4px) scale(0.98);
+  pointer-events: none;
+}
+.boss-dropdown .dropdown-menu.open {
+  display: flex;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+.boss-dropdown .dropdown-menu .dd-search {
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--boss-border);
+  flex-shrink: 0;
+}
+.boss-dropdown .dropdown-menu .dd-search input {
+  width: 100%;
+  padding: 4px 8px;
+  background: var(--boss-bg-input);
+  border: 1px solid var(--boss-border-input);
+  border-radius: var(--boss-radius-sm);
+  color: var(--boss-text-bright);
+  font-size: var(--boss-font-size);
+  outline: none;
+  box-sizing: border-box;
+}
+.boss-dropdown .dropdown-menu .dd-search input:focus {
+  border-color: var(--boss-brand);
+}
+.boss-dropdown .dropdown-menu .dd-list {
+  overflow-y: auto;
+  padding: 4px 0;
+  flex: 1;
+}
+.boss-dropdown .dropdown-menu .dd-list::-webkit-scrollbar { width: 4px; }
+.boss-dropdown .dropdown-menu .dd-list::-webkit-scrollbar-thumb { background: var(--boss-brand); border-radius: 4px; }
+.boss-dropdown .dropdown-menu .dd-item {
+  padding: 6px 12px;
+  cursor: pointer;
+  color: var(--boss-text);
+  font-size: var(--boss-font-size);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background var(--boss-transition-fast), color var(--boss-transition-fast);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.boss-dropdown .dropdown-menu .dd-item:hover {
+  background: var(--boss-bg-hover);
+}
+.boss-dropdown .dropdown-menu .dd-item.highlighted {
+  background: rgba(139, 92, 246, 0.2);
+  color: var(--boss-text-bright);
+}
+.boss-dropdown .dropdown-menu .dd-item.selected {
+  background: var(--boss-bg-active);
+  color: var(--boss-text-bright);
+  font-weight: 600;
+}
+.boss-dropdown .dropdown-menu .dd-item .dd-icon {
+  font-size: 14px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.boss-dropdown .dropdown-menu .dd-item .dd-check {
+  margin-left: auto;
+  color: var(--boss-brand);
+  font-weight: 700;
+}
+.boss-dropdown .dropdown-menu .dd-category {
+  padding: 6px 12px 2px 12px;
+  font-size: var(--boss-font-size-xs);
+  text-transform: uppercase;
+  color: var(--boss-text-muted);
+  letter-spacing: 0.5px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  margin-top: 2px;
+}
+.boss-dropdown .dropdown-menu .dd-category:first-of-type {
+  border-top: none;
+}
+.boss-dropdown .dropdown-menu .dd-empty {
+  padding: 12px;
+  color: var(--boss-text-muted);
+  font-style: italic;
+  text-align: center;
+  font-size: var(--boss-font-size);
+}
+
+/* ── Responsive: stack sidebar below 1200px ───────────────────────────── */
+@media (max-width: 1200px) {
+  .boss-body { flex-direction: column; }
+  .boss-side {
+    width: 100%;
+    max-height: 50vh;
+    border-right: none;
+    border-bottom: 1px solid var(--boss-border);
+    padding-bottom: 12px;
+  }
+  .boss-preview { height: auto; min-height: 300px; }
+}
