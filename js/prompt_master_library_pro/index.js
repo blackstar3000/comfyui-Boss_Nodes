@@ -15,10 +15,9 @@
 //   - In-editor Favorites section with HTTP-backed save/load/delete.
 
 import { app } from "/scripts/app.js";
+import { BossDropdown } from "../boss_theme/index.js";
 
-// ── Brand + constants (mirror Python exactly) ──────────────────────────────
-const BRAND = "#8B5CF6";
-const BRAND_GLOW = "rgba(139, 92, 246, 0.3)";
+// ── Constants (mirror Python exactly) ──────────────────────────────────────
 
 const STATE_PROP = "masterState";
 const HIDDEN_INPUT_NAME = "MasterState";
@@ -54,182 +53,55 @@ const COLLECTION_ACCENTS = {
   style: { color: "#34d399", bg: "#0c3329", bgLight: "#031711" }, // green
 };
 const COLLECTION_LABELS = { light: "LIGHT", theme: "THEME", style: "STYLE" };
-const NEGATIVE_ACCENT = { color: "#f87171", bg: "#3d0e0e", bgLight: "#1a0404" }; // red
 
 // ── CSS (injected once, idempotent) ────────────────────────────────────────
 function injectCSS() {
   if (document.getElementById("boss-master-css")) return;
   const css = `
-    /* On-node body */
-    .boss-ms-root {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 10px;
-      background: #131415;
-      border-radius: 6px;
-      color: #eee;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-      font-size: 12px;
+    /* ── Component-specific overrides ────────────────────────────── */
+
+    /* Header value variants */
+    .boss-widget-head .value.none { color: var(--boss-text-muted); font-style: italic; }
+    .boss-widget-head .value.random { color: var(--boss-brand); }
+    .boss-widget-head .sep { color: var(--boss-text-faint); margin: 0 6px; }
+
+    /* Preview centering */
+    .boss-side + .boss-preview {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      align-items: center;
+      justify-content: center;
     }
-    .boss-ms-head {
-      font-size: 12px;
-      color: #eee;
-      line-height: 1.5;
-      min-height: 18px;
-    }
-    .boss-ms-head .label { color: #999; }
-    .boss-ms-head .value { color: #fff; font-weight: 600; }
-    .boss-ms-head .value.none { color: #888; font-style: italic; }
-    .boss-ms-head .value.random { color: ${BRAND}; }
-    .boss-ms-head .sep { color: #555; margin: 0 6px; }
-    .boss-ms-open {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.05s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .boss-ms-open:hover { background: #7C3AED; }
-    .boss-ms-open:active { transform: translateY(1px); }
-    .boss-ms-status {
-      font-size: 11px;
-      color: #999;
-      text-align: center;
-      min-height: 14px;
-    }
-    .boss-ms-status.is-error { color: #ff8080; }
 
-    /* Fullscreen editor modal */
-    .boss-ms-modal {
-      position: fixed; inset: 0;
-      background: #131415;
-      color: #eee;
-      z-index: 2000;
-      display: flex; flex-direction: column;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-    }
-    .boss-ms-bar {
-      height: 56px;
-      background: #171718;
-      border-bottom: 1px solid #3a3d40;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-ms-bar-title { font-size: 14px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-    .boss-ms-bar-x {
-      background: transparent;
-      border: 1px solid #3a3d40;
-      color: #eee;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .boss-ms-bar-x:hover { background: #3a3d40; }
+    /* Side panel width override */
+    .boss-ms-side-custom { width: 380px; }
 
-    /* Body: left controls | right preview */
-    .boss-ms-body {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-      min-height: 0;
-    }
-    .boss-ms-side {
-      width: 380px;
-      background: #171718;
-      border-right: 1px solid #3a3d40;
-      padding: 18px;
-      display: flex; flex-direction: column; gap: 14px;
-      flex-shrink: 0;
-      overflow-y: auto;
-    }
-    .boss-ms-section-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #999;
-      letter-spacing: 1px;
-      display: block;
-      margin-bottom: 6px;
-    }
-    .boss-ms-input {
-      width: 100%;
-      padding: 9px 12px;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      color: #fff;
-      border-radius: 6px;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    .boss-ms-input:focus { border-color: ${BRAND}; }
-
-    .boss-ms-textarea {
-      width: 100%;
-      padding: 9px 12px;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      color: #fff;
-      border-radius: 6px;
-      font-size: 12px;
-      outline: none;
-      box-sizing: border-box;
-      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
-      resize: vertical;
-      min-height: 60px;
-    }
-    .boss-ms-textarea:focus { border-color: ${BRAND}; }
-
-    .boss-ms-select {
-      width: 100%;
-      padding: 9px 12px;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      color: #fff;
-      border-radius: 6px;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    .boss-ms-select:focus { border-color: ${BRAND}; }
-
-    /* Per-collection list (search + scrollable entries) */
+    /* Per-collection list */
     .boss-ms-list-wrap { display: flex; flex-direction: column; gap: 6px; }
     .boss-ms-list {
       max-height: 150px;
       overflow-y: auto;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      border-radius: 6px;
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border-input);
+      border-radius: var(--boss-radius-md);
     }
     .boss-ms-list-item {
       padding: 6px 12px;
       font-size: 13px;
+      color: var(--boss-text);
       cursor: pointer;
-      border-bottom: 1px solid #232527;
+      border-bottom: 1px solid var(--boss-border);
       display: flex; align-items: center; gap: 8px;
     }
     .boss-ms-list-item:last-child { border-bottom: none; }
-    .boss-ms-list-item:hover { background: #1c1e20; }
+    .boss-ms-list-item:hover { background: var(--boss-bg-hover); }
     .boss-ms-list-item.selected {
-      background: rgba(139,92,246,0.18);
-      color: #fff;
-      box-shadow: inset 3px 0 0 ${BRAND};
+      background: var(--boss-bg-active);
+      color: var(--boss-text-bright);
+      box-shadow: inset 3px 0 0 var(--boss-brand);
     }
     .boss-ms-list-item .badge {
-      font-size: 10px; color: #999; padding: 2px 6px;
-      background: #232527; border-radius: 3px;
+      font-size: 10px; color: var(--boss-text-dim); padding: 2px 6px;
+      background: var(--boss-border); border-radius: 3px;
       flex-shrink: 0;
     }
     .boss-ms-list-item .name {
@@ -241,144 +113,136 @@ function injectCSS() {
 
     /* Strength slider + linked number */
     .boss-ms-strength { display: flex; align-items: center; gap: 10px; }
-    .boss-ms-strength input[type=range] { flex: 1; accent-color: ${BRAND}; }
+    .boss-ms-strength input[type=range] { flex: 1; accent-color: var(--boss-brand); }
     .boss-ms-strength input[type=number] { width: 70px; flex-shrink: 0; }
 
     /* Random/Fixed pill */
-    .boss-ms-pill {
+    .boss-pill {
       display: flex; gap: 0;
-      background: rgba(255,255,255,0.06);
-      border-radius: 7px;
+      background: var(--boss-bg-hover);
+      border-radius: var(--boss-radius-lg);
       padding: 3px;
     }
-    .boss-ms-seg {
+    .boss-seg {
       flex: 1;
       text-align: center;
       padding: 6px;
       border: none;
       border-radius: 5px;
       background: transparent;
-      font-family: inherit; font-size: 12px;
-      color: rgba(255,255,255,0.55);
+      font-family: inherit; font-size: var(--boss-font-size);
+      color: var(--boss-text-muted);
       cursor: pointer; user-select: none; outline: none;
-      transition: background 0.08s, color 0.08s;
+      transition: background var(--boss-transition-fast), color var(--boss-transition-fast);
     }
-    .boss-ms-seg:hover:not(.active) { color: rgba(255,255,255,0.85); }
-    .boss-ms-seg.active { background: ${BRAND}; color: #fff; font-weight: 500; }
-    .boss-ms-seg:focus-visible { outline: 2px solid ${BRAND}; outline-offset: -2px; }
+    .boss-seg:hover:not(.active) { color: var(--boss-text); }
+    .boss-seg.active { background: var(--boss-brand); color: #fff; font-weight: 500; }
+    .boss-seg:focus-visible { outline: 2px solid var(--boss-brand); outline-offset: -2px; }
 
-    .boss-ms-btn {
+    .boss-btn {
       box-sizing: border-box;
       padding: 7px 10px;
-      border-radius: 6px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.85);
-      font-family: inherit; font-size: 12px;
+      border-radius: var(--boss-radius-md);
+      background: var(--boss-bg-hover);
+      border: 1px solid var(--boss-border-strong);
+      color: var(--boss-text);
+      font-family: inherit; font-size: var(--boss-font-size);
       cursor: pointer; user-select: none;
       text-align: center;
-      transition: background 0.08s, border-color 0.08s, color 0.08s;
+      transition: background var(--boss-transition-fast), border-color var(--boss-transition-fast), color var(--boss-transition-fast);
     }
-    .boss-ms-btn:hover { background: ${BRAND}; border-color: ${BRAND}; color: #fff; }
-    .boss-ms-btn:disabled { opacity: 0.4; cursor: default; }
-    .boss-ms-btn:disabled:hover {
-      background: rgba(255,255,255,0.05);
-      border-color: rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.85);
+    .boss-btn:hover { background: var(--boss-brand); border-color: var(--boss-brand); color: #fff; }
+    .boss-btn:disabled { opacity: 0.4; cursor: default; }
+    .boss-btn:disabled:hover {
+      background: var(--boss-bg-hover);
+      border-color: var(--boss-border-strong);
+      color: var(--boss-text);
     }
-    .boss-ms-btn.is-danger:hover {
-      background: ${NEGATIVE_ACCENT.color}; border-color: ${NEGATIVE_ACCENT.color};
+    .boss-btn.is-danger:hover {
+      background: #f87171; border-color: #f87171;
     }
-    .boss-ms-btn.is-flashing,
-    .boss-ms-btn.is-flashing:hover {
+    .boss-btn.is-flashing,
+    .boss-btn.is-flashing:hover {
       background: #3ec371; border-color: #3ec371; color: #fff;
     }
-    .boss-ms-seed-row { display: flex; gap: 6px; }
-    .boss-ms-seed-row .boss-ms-btn { flex: 1; }
-    .boss-ms-seed-row .boss-ms-btn.is-copy { flex: 0 0 auto; min-width: 56px; }
-    .boss-ms-seed-num {
+    .boss-seed-row { display: flex; gap: 6px; }
+    .boss-seed-row .boss-btn { flex: 1; }
+    .boss-seed-row .boss-btn.is-copy { flex: 0 0 auto; min-width: 56px; }
+    .boss-seed-num {
       width: 100%; box-sizing: border-box;
       height: 36px;
-      background: #171819;
-      border: 1px solid #3a3d40;
-      border-radius: 6px;
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border-input);
+      border-radius: var(--boss-radius-md);
       padding: 6px 10px;
-      color: #f2f2f2;
-      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      color: var(--boss-text-bright);
+      font-family: var(--boss-font-mono);
       font-size: 15px;
       text-align: center;
       outline: none;
     }
-    .boss-ms-seed-num:focus { border-color: ${BRAND}; }
-    .boss-ms-seed-last {
-      font-size: 11px; line-height: 1.5;
-      color: rgba(255,255,255,0.55);
+    .boss-seed-num:focus { border-color: var(--boss-brand); }
+    .boss-seed-last {
+      font-size: var(--boss-font-size-sm); line-height: 1.5;
+      color: var(--boss-text-muted);
       text-align: center;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
     /* Inline favorite name row */
-    .boss-ms-fav-row { display: flex; gap: 6px; align-items: center; }
-    .boss-ms-fav-row .boss-ms-input { flex: 1; }
+    .boss-fav-row { display: flex; gap: 6px; align-items: center; }
+    .boss-fav-row .boss-input { flex: 1; }
 
-    /* Favorites list (vertical stack of saved combos) */
-    .boss-ms-fav-list {
+    /* Favorites list */
+    .boss-fav-list {
       max-height: 220px;
       overflow-y: auto;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      border-radius: 6px;
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border-input);
+      border-radius: var(--boss-radius-md);
       display: flex; flex-direction: column;
     }
-    .boss-ms-fav-item {
+    .boss-fav-item {
       padding: 10px 12px;
-      border-bottom: 1px solid #232527;
+      border-bottom: 1px solid var(--boss-border);
       display: flex; flex-direction: column; gap: 6px;
     }
-    .boss-ms-fav-item:last-child { border-bottom: none; }
-    .boss-ms-fav-item-head {
+    .boss-fav-item:last-child { border-bottom: none; }
+    .boss-fav-item-head {
       display: flex; align-items: center; gap: 8px;
     }
-    .boss-ms-fav-item-name {
+    .boss-fav-item-name {
       flex: 1;
       font-weight: 600;
       font-size: 13px;
-      color: ${BRAND};
+      color: var(--boss-brand);
       overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     }
-    .boss-ms-fav-item-btns { display: flex; gap: 6px; flex-shrink: 0; }
-    .boss-ms-fav-item-btns .boss-ms-btn { padding: 4px 10px; font-size: 11px; }
-    .boss-ms-fav-summary {
+    .boss-fav-item-btns { display: flex; gap: 6px; flex-shrink: 0; }
+    .boss-fav-item-btns .boss-btn { padding: 4px 10px; font-size: 11px; }
+    .boss-fav-summary {
       font-size: 11px;
-      color: #aaa;
+      color: var(--boss-text-muted);
       line-height: 1.5;
       word-break: break-word;
     }
-    .boss-ms-fav-summary .b { color: #888; }
-    .boss-ms-fav-empty {
+    .boss-fav-summary .b { color: var(--boss-text-dim); }
+    .boss-fav-empty {
       padding: 18px;
-      color: #777;
+      color: var(--boss-text-faint);
       text-align: center;
       font-size: 12px;
       font-style: italic;
     }
 
-    /* Right preview panel — 4 cards */
-    .boss-ms-preview {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-      box-sizing: border-box;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-    }
+    /* Preview mini-cards + negative card */
     .boss-ms-card {
       padding: 16px;
       background: #2a2a2a;
+      background: var(--boss-bg-card);
+      backdrop-filter: var(--boss-blur-card);
       border-radius: 12px;
-      border: 1px solid #444;
-      font-family: system-ui, sans-serif;
+      border: 1px solid var(--boss-border-strong);
       color: #fff;
       max-width: 800px;
       width: 100%;
@@ -422,20 +286,20 @@ function injectCSS() {
       overflow-wrap: anywhere;
     }
     .boss-ms-mini .w {
-      color: #aaa;
+      color: var(--boss-text-muted);
       font-size: 0.8em;
     }
-    .boss-ms-mini.none .v { color: #666; font-style: italic; }
+    .boss-ms-mini.none .v { color: var(--boss-text-faint); font-style: italic; }
 
     .boss-ms-negcard {
       padding: 12px;
       border-radius: 8px;
-      border-left: 3px solid ${NEGATIVE_ACCENT.color};
-      background: ${NEGATIVE_ACCENT.bg};
+      border-left: 3px solid #f87171;
+      background: #3d0e0e;
       margin-bottom: 12px;
     }
     .boss-ms-negcard .h {
-      color: ${NEGATIVE_ACCENT.color};
+      color: #f87171;
       font-size: 0.85em;
       font-weight: bold;
       letter-spacing: 1px;
@@ -445,68 +309,34 @@ function injectCSS() {
       font-size: 0.95em;
       word-break: break-word;
       overflow-wrap: anywhere;
-      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-family: var(--boss-font-mono);
       color: #ffb3b3;
     }
     .boss-ms-negcard .w {
-      color: #aaa;
+      color: var(--boss-text-muted);
       font-size: 0.8em;
       margin-top: 4px;
     }
     .boss-ms-meta {
-      color: #888;
+      color: var(--boss-text-muted);
       font-size: 0.8em;
       margin-bottom: 8px;
       text-align: center;
     }
     .boss-ms-output {
-      background: #1a1a1a;
+      background: var(--boss-bg-code);
       padding: 12px;
-      border-radius: 8px;
-      font-family: "Courier New", ui-monospace, monospace;
+      border-radius: var(--boss-radius-lg);
+      font-family: var(--boss-font-mono);
       font-size: 0.95em;
       line-height: 1.6;
       word-break: break-all;
-      border: 1px solid #333;
+      border: 1px solid var(--boss-border);
       white-space: pre-wrap;
       margin-top: 6px;
     }
-    .boss-ms-output .arrow { color: ${BRAND}; font-weight: bold; }
-    .boss-ms-output.empty { color: #666; font-style: italic; }
-
-    /* Footer with Save/Cancel pinned bottom-left */
-    .boss-ms-footer {
-      height: 56px;
-      background: #171718;
-      border-top: 1px solid #3a3d40;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-ms-save {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 2px 6px ${BRAND_GLOW};
-    }
-    .boss-ms-save:hover { background: #7C3AED; }
-    .boss-ms-cancel {
-      background: transparent;
-      color: #eee;
-      border: 1px solid #3a3d40;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .boss-ms-cancel:hover { background: #3a3d40; }
+    .boss-ms-output .arrow { color: var(--boss-brand); font-weight: bold; }
+    .boss-ms-output.empty { color: var(--boss-text-faint); font-style: italic; }
   `;
   const style = document.createElement("style");
   style.id = "boss-master-css";
@@ -655,7 +485,7 @@ function renderHeader(node) {
 function setStatus(node, text, isError = false) {
   const root = node._bossMsRoot;
   if (!root) return;
-  const s = root.querySelector(".boss-ms-status");
+  const s = root.querySelector(".boss-status");
   if (!s) return;
   s.textContent = text || "";
   s.classList.toggle("is-error", !!isError);
@@ -697,20 +527,20 @@ function setupMasterNode(node) {
   }
 
   const root = document.createElement("div");
-  root.className = "boss-ms-root";
+  root.className = "boss-widget";
 
   const head = document.createElement("div");
-  head.className = "boss-ms-head";
+  head.className = "boss-widget-head";
   root.appendChild(head);
 
   const openBtn = document.createElement("button");
   openBtn.type = "button";
-  openBtn.className = "boss-ms-open";
+  openBtn.className = "boss-btn-open";
   openBtn.textContent = "✨ Open Editor";
   root.appendChild(openBtn);
 
   const status = document.createElement("div");
-  status.className = "boss-ms-status";
+  status.className = "boss-status";
   root.appendChild(status);
 
   node.addDOMWidget("master_ui", "boss_master", root, {
@@ -1101,15 +931,15 @@ class MasterEditor {
       this.modal = null;
     }
     const modal = document.createElement("div");
-    modal.className = "boss-ms-modal";
+    modal.className = "boss-modal";
 
     // Top bar
     const bar = document.createElement("div");
-    bar.className = "boss-ms-bar";
-    bar.innerHTML = `<div class="boss-ms-bar-title">Prompt Master Library Pro Editor</div>`;
+    bar.className = "boss-bar";
+    bar.innerHTML = `<div class="boss-bar-title">Prompt Master Library Pro Editor</div>`;
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
-    closeBtn.className = "boss-ms-bar-x";
+    closeBtn.className = "boss-btn-close";
     closeBtn.textContent = "CLOSE";
     closeBtn.addEventListener("click", () => this.cancel());
     bar.appendChild(closeBtn);
@@ -1117,11 +947,11 @@ class MasterEditor {
 
     // Body
     const body = document.createElement("div");
-    body.className = "boss-ms-body";
+    body.className = "boss-body";
 
     // Left controls
     const side = document.createElement("div");
-    side.className = "boss-ms-side";
+    side.className = "boss-side boss-ms-side-custom";
 
     // 1. Light section
     side.appendChild(
@@ -1199,24 +1029,24 @@ class MasterEditor {
 
     // Right preview
     const previewWrap = document.createElement("div");
-    previewWrap.className = "boss-ms-preview";
+    previewWrap.className = "boss-preview";
     const card = document.createElement("div");
-    card.className = "boss-ms-card";
+    card.className = "boss-card boss-ms-card";
     previewWrap.appendChild(card);
     body.appendChild(previewWrap);
     modal.appendChild(body);
 
     // Footer
     const footer = document.createElement("div");
-    footer.className = "boss-ms-footer";
+    footer.className = "boss-footer";
     const saveBtn = document.createElement("button");
     saveBtn.type = "button";
-    saveBtn.className = "boss-ms-save";
+    saveBtn.className = "boss-btn-primary";
     saveBtn.textContent = "Save";
     saveBtn.addEventListener("click", () => this.save());
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
-    cancelBtn.className = "boss-ms-cancel";
+    cancelBtn.className = "boss-btn-ghost";
     cancelBtn.textContent = "Cancel";
     cancelBtn.addEventListener("click", () => this.cancel());
     footer.appendChild(saveBtn);
@@ -1240,13 +1070,13 @@ class MasterEditor {
     wrap.className = "boss-ms-list-wrap";
 
     const lbl = document.createElement("span");
-    lbl.className = "boss-ms-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = title;
     wrap.appendChild(lbl);
 
     const search = document.createElement("input");
     search.type = "text";
-    search.className = "boss-ms-input";
+    search.className = "boss-input";
     search.placeholder = `Search ${title.toLowerCase()}…`;
     wrap.appendChild(search);
 
@@ -1336,7 +1166,7 @@ class MasterEditor {
   buildStrengthSection({ title, stateKey }) {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-ms-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = `${title}: ${Number(this.state[stateKey]).toFixed(2)}`;
     wrap.appendChild(lbl);
 
@@ -1350,7 +1180,7 @@ class MasterEditor {
     slider.value = String(this.state[stateKey]);
     const num = document.createElement("input");
     num.type = "number";
-    num.className = "boss-ms-input";
+    num.className = "boss-input";
     num.min = String(STRENGTH_MIN);
     num.max = String(STRENGTH_MAX);
     num.step = String(STRENGTH_STEP);
@@ -1373,14 +1203,6 @@ class MasterEditor {
 
   // ── Weight format dropdown ──────────────────────────────────────────
   buildWeightFormatSection() {
-    const wrap = document.createElement("div");
-    const lbl = document.createElement("span");
-    lbl.className = "boss-ms-section-label";
-    lbl.textContent = "Weight Format";
-    wrap.appendChild(lbl);
-
-    const sel = document.createElement("select");
-    sel.className = "boss-ms-select";
     const formats =
       this.libs.weightFormats && this.libs.weightFormats.length
         ? this.libs.weightFormats
@@ -1388,32 +1210,37 @@ class MasterEditor {
             key: k,
             label: WEIGHT_FORMAT_LABELS[k],
           }));
-    for (const fmt of formats) {
-      const o = document.createElement("option");
-      o.value = fmt.key;
-      o.textContent = fmt.label || fmt.key;
-      if (fmt.key === this.state.weightFormat) o.selected = true;
-      sel.appendChild(o);
-    }
-    sel.addEventListener("change", (e) => {
-      this.state.weightFormat = e.target.value;
-      this.refreshPreview();
+
+    const options = formats.map((f) => ({
+      value: f.key,
+      label: f.label || f.key,
+    }));
+
+    const dropdown = new BossDropdown({
+      label: "Weight Format",
+      options,
+      value: this.state.weightFormat,
+      searchable: formats.length > 4,
+      onChange: (value) => {
+        this.state.weightFormat = value;
+        this.refreshPreview();
+      },
     });
-    wrap.appendChild(sel);
-    return wrap;
+
+    return dropdown.element;
   }
 
   // ── Separator (small text input) ────────────────────────────────────
   buildSeparatorSection() {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-ms-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Separator (ignored when Newlines ON)";
     wrap.appendChild(lbl);
 
     const inp = document.createElement("input");
     inp.type = "text";
-    inp.className = "boss-ms-input";
+    inp.className = "boss-input";
     inp.value = this.state.separator;
     inp.addEventListener("change", (e) => {
       this.state.separator = e.target.value;
@@ -1427,14 +1254,14 @@ class MasterEditor {
   buildNewlinesSection() {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-ms-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Fragment Separator";
     wrap.appendChild(lbl);
 
     const pill = document.createElement("div");
-    pill.className = "boss-ms-pill";
+    pill.className = "boss-pill";
     const syncPill = () => {
-      pill.querySelectorAll(".boss-ms-seg").forEach((s) => {
+      pill.querySelectorAll(".boss-seg").forEach((s) => {
         s.classList.toggle(
           "active",
           s.dataset.value === String(this.state.newlines),
@@ -1447,8 +1274,7 @@ class MasterEditor {
     ]) {
       const seg = document.createElement("button");
       seg.type = "button";
-      seg.className =
-        "boss-ms-seg" + (this.state.newlines === v ? " active" : "");
+      seg.className = "boss-seg" + (this.state.newlines === v ? " active" : "");
       seg.textContent = label;
       seg.dataset.value = String(v);
       seg.addEventListener("click", () => {
@@ -1468,7 +1294,7 @@ class MasterEditor {
   buildNegativeStrengthSection() {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-ms-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = `Negative Strength: ${Number(this.state.negativeStrength).toFixed(2)}`;
     wrap.appendChild(lbl);
 
@@ -1482,7 +1308,7 @@ class MasterEditor {
     slider.value = String(this.state.negativeStrength);
     const num = document.createElement("input");
     num.type = "number";
-    num.className = "boss-ms-input";
+    num.className = "boss-input";
     num.min = String(STRENGTH_MIN);
     num.max = String(STRENGTH_MAX);
     num.step = String(STRENGTH_STEP);
@@ -1510,12 +1336,12 @@ class MasterEditor {
   buildNegativeTextSection() {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-ms-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Extra Negatives (appended to auto-negative)";
     wrap.appendChild(lbl);
 
     const ta = document.createElement("textarea");
-    ta.className = "boss-ms-textarea";
+    ta.className = "boss-textarea";
     ta.placeholder = "Extra negatives: blurry, deformed, ugly...";
     ta.spellcheck = false;
     ta.value = this.state.negativeText || "";
@@ -1532,13 +1358,13 @@ class MasterEditor {
     const wrap = document.createElement("div");
 
     const lbl = document.createElement("span");
-    lbl.className = "boss-ms-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Seed";
     wrap.appendChild(lbl);
 
     const num = document.createElement("input");
     num.type = "text";
-    num.className = "boss-ms-seed-num";
+    num.className = "boss-seed-num";
     num.value = String(this.state.seed);
     num.spellcheck = false;
     num.autocomplete = "off";
@@ -1564,9 +1390,9 @@ class MasterEditor {
     wrap.appendChild(num);
 
     const pill = document.createElement("div");
-    pill.className = "boss-ms-pill";
+    pill.className = "boss-pill";
     const syncPill = () => {
-      pill.querySelectorAll(".boss-ms-seg").forEach((s) => {
+      pill.querySelectorAll(".boss-seg").forEach((s) => {
         s.classList.toggle("active", s.dataset.mode === this.state.seedMode);
       });
     };
@@ -1576,8 +1402,7 @@ class MasterEditor {
     ]) {
       const seg = document.createElement("button");
       seg.type = "button";
-      seg.className =
-        "boss-ms-seg" + (this.state.seedMode === m ? " active" : "");
+      seg.className = "boss-seg" + (this.state.seedMode === m ? " active" : "");
       seg.textContent = label;
       seg.dataset.mode = m;
       seg.addEventListener("click", () => {
@@ -1593,7 +1418,7 @@ class MasterEditor {
 
     const newBtn = document.createElement("button");
     newBtn.type = "button";
-    newBtn.className = "boss-ms-btn";
+    newBtn.className = "boss-btn";
     newBtn.textContent = "New fixed random";
     newBtn.addEventListener("click", () => {
       this.state.seed = rollSeed();
@@ -1606,11 +1431,11 @@ class MasterEditor {
     wrap.appendChild(newBtn);
 
     const row = document.createElement("div");
-    row.className = "boss-ms-seed-row";
+    row.className = "boss-seed-row";
 
     const useLast = document.createElement("button");
     useLast.type = "button";
-    useLast.className = "boss-ms-btn";
+    useLast.className = "boss-btn";
     useLast.textContent = "Use last seed";
     useLast.disabled = this.lastSeed == null;
     useLast.addEventListener("click", () => {
@@ -1625,7 +1450,7 @@ class MasterEditor {
 
     const copyBtn = document.createElement("button");
     copyBtn.type = "button";
-    copyBtn.className = "boss-ms-btn is-copy";
+    copyBtn.className = "boss-btn is-copy";
     copyBtn.textContent = "Copy";
     copyBtn.addEventListener("click", () => {
       const text = String(clampSeed(this.state.seed));
@@ -1668,7 +1493,7 @@ class MasterEditor {
     wrap.appendChild(row);
 
     this._lastRunEl = document.createElement("div");
-    this._lastRunEl.className = "boss-ms-seed-last";
+    this._lastRunEl.className = "boss-seed-last";
     wrap.appendChild(this._lastRunEl);
     this.refreshLastRun();
     syncPill();
@@ -1690,21 +1515,21 @@ class MasterEditor {
   buildFavoritesSection() {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-ms-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Favorites";
     wrap.appendChild(lbl);
 
     // Save-row: name + Save button + status
     const saveRow = document.createElement("div");
-    saveRow.className = "boss-ms-fav-row";
+    saveRow.className = "boss-fav-row";
     const nameInp = document.createElement("input");
     nameInp.type = "text";
-    nameInp.className = "boss-ms-input";
+    nameInp.className = "boss-input";
     nameInp.placeholder = "Name (e.g. Golden Anime)";
     nameInp.value = "My Combo";
     const saveBtn = document.createElement("button");
     saveBtn.type = "button";
-    saveBtn.className = "boss-ms-btn";
+    saveBtn.className = "boss-btn";
     saveBtn.textContent = "💾 Save";
     saveBtn.style.flex = "0 0 auto";
     saveBtn.style.minWidth = "78px";
@@ -1752,7 +1577,7 @@ class MasterEditor {
 
     // Favorites list
     const list = document.createElement("div");
-    list.className = "boss-ms-fav-list";
+    list.className = "boss-fav-list";
     wrap.appendChild(list);
     this._favListEl = list;
 
@@ -1766,28 +1591,28 @@ class MasterEditor {
     el.innerHTML = "";
     if (!this.favorites || !this.favorites.length) {
       const empty = document.createElement("div");
-      empty.className = "boss-ms-fav-empty";
+      empty.className = "boss-fav-empty";
       empty.textContent = "No saved combos yet — use the Save field above.";
       el.appendChild(empty);
       return;
     }
     for (const fav of this.favorites) {
       const item = document.createElement("div");
-      item.className = "boss-ms-fav-item";
+      item.className = "boss-fav-item";
 
       const head = document.createElement("div");
-      head.className = "boss-ms-fav-item-head";
+      head.className = "boss-fav-item-head";
       const nm = document.createElement("div");
-      nm.className = "boss-ms-fav-item-name";
+      nm.className = "boss-fav-item-name";
       nm.textContent = fav.name || "(unnamed)";
       nm.title = fav.name || "(unnamed)";
       head.appendChild(nm);
 
       const btns = document.createElement("div");
-      btns.className = "boss-ms-fav-item-btns";
+      btns.className = "boss-fav-item-btns";
       const loadBtn = document.createElement("button");
       loadBtn.type = "button";
-      loadBtn.className = "boss-ms-btn";
+      loadBtn.className = "boss-btn";
       loadBtn.textContent = "Load";
       loadBtn.addEventListener("click", () => {
         this.state.light = fav.light_choice || RANDOM_LIGHT;
@@ -1815,7 +1640,7 @@ class MasterEditor {
 
       const delBtn = document.createElement("button");
       delBtn.type = "button";
-      delBtn.className = "boss-ms-btn is-danger";
+      delBtn.className = "boss-btn is-danger";
       delBtn.textContent = "Delete";
       delBtn.addEventListener("click", async () => {
         if (!confirm(`Delete favorite '${fav.name}'?`)) return;
@@ -1835,7 +1660,7 @@ class MasterEditor {
       item.appendChild(head);
 
       const summary = document.createElement("div");
-      summary.className = "boss-ms-fav-summary";
+      summary.className = "boss-fav-summary";
       const light = fav.light_choice || RANDOM_LIGHT;
       const theme = fav.theme_choice || RANDOM_THEME;
       const style = fav.style_choice || RANDOM_STYLE;
@@ -1854,13 +1679,13 @@ class MasterEditor {
 
   rerenderStrengthLabels() {
     // Walk the side panel and update strength slider labels.
-    const side = this.modal?.querySelector(".boss-ms-side");
+    const side = this.modal?.querySelector(".boss-side");
     if (!side) return;
     // The simplest way is to find the three labels by their prefix and update.
     // We tagged them in buildStrengthSection() — re-tag by their current value.
     // (Safer: just trigger a full refresh by calling rebuildFromState().)
     // Here we just nudge the labels based on the current state.
-    const labels = side.querySelectorAll(".boss-ms-section-label");
+    const labels = side.querySelectorAll(".boss-label");
     for (const lbl of labels) {
       const t = lbl.textContent;
       if (t.startsWith("Light Strength:"))
