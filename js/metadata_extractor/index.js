@@ -3,102 +3,96 @@
 
 import { app } from "../../scripts/app.js";
 
-const CSS_ID = "boss-mx-styles";
-const CSS = `
-.boss-mx-panel {
-  background: #1a1a1f;
-  border: 1px solid #333;
-  border-radius: 6px;
-  padding: 8px 10px;
-  margin-top: 4px;
-  font-family: -apple-system, "Segoe UI", sans-serif;
-  font-size: 12px;
-  color: #ddd;
-  line-height: 1.5;
-}
-.boss-mx-panel .status { color: #4ade80; }
-.boss-mx-panel .status.is-empty { color: #999; }
-.boss-mx-panel .status.is-error { color: #f87171; }
-.boss-mx-panel .row { display: flex; justify-content: space-between; gap: 8px; }
-.boss-mx-panel .label { color: #999; }
-.boss-mx-open-btn {
-  margin-top: 6px;
-  width: 100%;
-  background: #7c3aed;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 5px 0;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-}
-.boss-mx-open-btn:hover { background: #6d28d9; }
-
-.boss-mx-modal-overlay {
-  position: fixed; inset: 0;
-  background: rgba(0,0,0,0.6);
-  z-index: 10000;
-  display: flex; align-items: center; justify-content: center;
-}
-.boss-mx-modal {
-  background: #16161a;
-  border: 1px solid #333;
-  border-radius: 10px;
-  width: min(760px, 92vw);
-  max-height: 86vh;
-  display: flex; flex-direction: column;
-  font-family: -apple-system, "Segoe UI", sans-serif;
-  color: #eee;
-  overflow: hidden;
-}
-.boss-mx-modal-bar {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 18px;
-  border-bottom: 1px solid #2a2a2f;
-  font-weight: 700;
-  color: #f97316;
-}
-.boss-mx-modal-bar button {
-  background: #2a2a2f; color: #ccc; border: none; border-radius: 4px;
-  padding: 6px 12px; cursor: pointer; font-size: 12px;
-}
-.boss-mx-modal-body { padding: 16px 18px; overflow-y: auto; }
-.boss-mx-field { margin-bottom: 14px; }
-.boss-mx-field-head {
-  display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 4px;
-}
-.boss-mx-field-head .label { color: #999; font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
-.boss-mx-copy-btn {
-  background: #2a2a2f; color: #ccc; border: none; border-radius: 4px;
-  padding: 3px 8px; font-size: 11px; cursor: pointer;
-}
-.boss-mx-copy-btn:hover { background: #3a3a40; }
-.boss-mx-copy-btn.copied { background: #16a34a; color: #fff; }
-.boss-mx-field-value {
-  background: #1a1a1f; border: 1px solid #2a2a2f; border-radius: 6px;
-  padding: 8px 10px; font-size: 13px; white-space: pre-wrap; word-break: break-word;
-  max-height: 160px; overflow-y: auto;
-}
-.boss-mx-field-value.empty { color: #666; font-style: italic; }
-.boss-mx-grid {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px;
-  margin-bottom: 14px;
-}
-.boss-mx-grid .item { display: flex; justify-content: space-between; font-size: 13px; }
-.boss-mx-grid .item .label { color: #999; }
-.boss-mx-raw-toggle {
-  background: none; border: none; color: #8b5cf6; cursor: pointer;
-  font-size: 12px; padding: 0; margin-top: 4px;
-}
-`;
+// ── CSS ──────────────────────────────────────────────────────────────────
 
 function injectCSS() {
-  if (document.getElementById(CSS_ID)) return;
+  if (document.getElementById("boss-mx-styles")) return;
+  const css = `
+    /* ── Component-specific overrides ────────────────────────────── */
+
+    /* Panel */
+    .boss-mx-panel {
+      background: var(--boss-bg-panel);
+      border: 1px solid var(--boss-border-strong);
+      border-radius: var(--boss-radius-md);
+      padding: 8px 10px;
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--boss-text);
+      line-height: 1.5;
+    }
+    .boss-mx-panel .status { color: #4ade80; }
+    .boss-mx-panel .status.is-empty { color: var(--boss-text-muted); }
+    .boss-mx-panel .status.is-error { color: #f87171; }
+    .boss-mx-panel .row { display: flex; justify-content: space-between; gap: 8px; }
+    .boss-mx-panel .label { color: var(--boss-text-muted); }
+
+    /* Open button */
+    .boss-mx-open-btn {
+      margin-top: 6px;
+      width: 100%;
+      background: var(--boss-brand);
+      color: #fff;
+      border: none;
+      border-radius: var(--boss-radius-sm);
+      padding: 5px 0;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .boss-mx-open-btn:hover { background: var(--boss-brand-hover); }
+
+    /* Modal bar */
+    .boss-mx-modal-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--boss-border);
+      font-weight: 700;
+      color: #f97316;
+    }
+    .boss-mx-modal-bar button {
+      background: var(--boss-bg-hover); color: var(--boss-text); border: none; border-radius: var(--boss-radius-sm);
+      padding: 6px 12px; cursor: pointer; font-size: 12px;
+    }
+    .boss-mx-modal-bar button:hover { background: var(--boss-bg-active); }
+
+    /* Fields */
+    .boss-mx-field { margin-bottom: 14px; }
+    .boss-mx-field-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 4px;
+    }
+    .boss-mx-field-head .label { color: var(--boss-text-muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .boss-mx-copy-btn {
+      background: var(--boss-bg-hover); color: var(--boss-text); border: none; border-radius: var(--boss-radius-sm);
+      padding: 3px 8px; font-size: 11px; cursor: pointer;
+    }
+    .boss-mx-copy-btn:hover { background: var(--boss-bg-active); }
+    .boss-mx-copy-btn.copied { background: #16a34a; color: #fff; }
+    .boss-mx-field-value {
+      background: var(--boss-bg-input); border: 1px solid var(--boss-border); border-radius: var(--boss-radius-md);
+      padding: 8px 10px; font-size: 13px; white-space: pre-wrap; word-break: break-word;
+      max-height: 160px; overflow-y: auto;
+    }
+    .boss-mx-field-value.empty { color: var(--boss-text-dim); font-style: italic; }
+
+    /* Grid */
+    .boss-mx-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px;
+      margin-bottom: 14px;
+    }
+    .boss-mx-grid .item { display: flex; justify-content: space-between; font-size: 13px; }
+    .boss-mx-grid .item .label { color: var(--boss-text-muted); }
+
+    /* Raw toggle */
+    .boss-mx-raw-toggle {
+      background: none; border: none; color: var(--boss-brand); cursor: pointer;
+      font-size: 12px; padding: 0; margin-top: 4px;
+    }
+  `;
   const style = document.createElement("style");
-  style.id = CSS_ID;
-  style.textContent = CSS;
+  style.id = "boss-mx-styles";
+  style.textContent = css;
   document.head.appendChild(style);
 }
 
@@ -197,10 +191,10 @@ function openModal(node, data) {
   });
 
   const modal = document.createElement("div");
-  modal.className = "boss-mx-modal";
+  modal.className = "boss-modal";
 
   const bar = document.createElement("div");
-  bar.className = "boss-mx-modal-bar";
+  bar.className = "boss-mx-modal-bar boss-bar";
   bar.innerHTML = `<span>🔍 Metadata Details</span>`;
   const closeBtn = document.createElement("button");
   closeBtn.textContent = "Close";
@@ -209,7 +203,7 @@ function openModal(node, data) {
   modal.appendChild(bar);
 
   const body = document.createElement("div");
-  body.className = "boss-mx-modal-body";
+  body.className = "boss-mx-modal-body boss-body";
 
   if (!data || !data.found) {
     const empty = document.createElement("div");
