@@ -1,8 +1,6 @@
 // Workflow Snapshotter Pro - DOM widget + editor modal
 import { app } from "/scripts/app.js";
-
-const BRAND = "#8B5CF6";
-const BRAND_GLOW = "rgba(139, 92, 246, 0.3)";
+import { BossDropdown } from "../boss_theme/index.js";
 
 const STATE_PROP = "snapshotterState";
 const HIDDEN_INPUT_NAME = "SnapshotterState";
@@ -14,161 +12,35 @@ const VISIBLE_NATIVE_WIDGETS = ["snapshot_name"];
 function injectCSS() {
   if (document.getElementById("boss-snapshotter-css")) return;
   const css = `
-    .boss-ss-root {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 10px;
-      background: #131415;
-      border-radius: 6px;
-      color: #eee;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .boss-ss-head {
-      font-size: 12px;
-      color: #eee;
-      line-height: 1.5;
-      min-height: 18px;
-    }
-    .boss-ss-head .label { color: #999; }
-    .boss-ss-head .value { color: #fff; font-weight: 600; }
-    .boss-ss-open {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.05s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .boss-ss-open:hover { background: #7C3AED; }
-    .boss-ss-open:active { transform: translateY(1px); }
-    .boss-ss-status {
-      font-size: 11px;
-      color: #999;
-      text-align: center;
-      min-height: 14px;
-    }
-    .boss-ss-status.is-error { color: #ff8080; }
-    .boss-ss-status.is-success { color: #4ade80; }
+    /* ── Component-specific overrides ────────────────────────────── */
 
-    .boss-ss-modal {
-      position: fixed; inset: 0;
-      background: #131415;
-      color: #eee;
-      z-index: 2000;
-      display: flex; flex-direction: column;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-    }
-    .boss-ss-bar {
-      height: 56px;
-      background: #171718;
-      border-bottom: 1px solid #3a3d40;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-ss-bar-title { font-size: 14px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-    .boss-ss-bar-x {
-      background: transparent;
-      border: 1px solid #3a3d40;
-      color: #eee;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .boss-ss-bar-x:hover { background: #3a3d40; }
+    /* Status variants */
+    .boss-status.is-success { color: #4ade80; }
 
-    .boss-ss-body {
-      flex: 1; display: flex; overflow: hidden; min-height: 0;
-    }
-    .boss-ss-side {
-      width: 380px;
-      background: #171718;
-      border-right: 1px solid #3a3d40;
-      padding: 18px;
-      display: flex; flex-direction: column; gap: 14px;
-      flex-shrink: 0;
-      overflow-y: auto;
-    }
-    .boss-ss-section-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #999;
-      letter-spacing: 1px;
-      display: block;
-      margin-bottom: 6px;
-    }
-    .boss-ss-input, .boss-ss-select, .boss-ss-textarea {
-      width: 100%;
-      padding: 9px 12px;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      color: #fff;
-      border-radius: 6px;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    .boss-ss-input:focus { border-color: ${BRAND}; }
+    /* Side panel width override */
+    .boss-ss-side-custom { width: 380px; }
+
+    /* Row layout */
     .boss-ss-row { display: flex; align-items: center; gap: 10px; }
-    .boss-ss-row .boss-ss-input { flex: 1; }
+    .boss-ss-row .boss-input { flex: 1; }
+
+    /* Action buttons */
     .boss-ss-btn {
-      background: ${BRAND};
+      background: var(--boss-brand);
       color: #fff;
       border: none;
       padding: 8px 16px;
-      border-radius: 6px;
+      border-radius: var(--boss-radius-md);
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
     }
-    .boss-ss-btn:hover { background: #7C3AED; }
+    .boss-ss-btn:hover { background: var(--boss-brand-hover); }
     .boss-ss-btn.danger { background: #e53e3e; }
     .boss-ss-btn.danger:hover { background: #c53030; }
     .boss-ss-btn:disabled { opacity: 0.5; cursor: default; }
 
-    .boss-ss-footer {
-      height: 56px;
-      background: #171718;
-      border-top: 1px solid #3a3d40;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-ss-save {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 2px 6px ${BRAND_GLOW};
-    }
-    .boss-ss-save:hover { background: #7C3AED; }
-    .boss-ss-cancel {
-      background: transparent;
-      color: #eee;
-      border: 1px solid #3a3d40;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .boss-ss-cancel:hover { background: #3a3d40; }
-
+    /* Preview panel */
     .boss-ss-preview {
       flex: 1;
       padding: 24px;
@@ -181,9 +53,9 @@ function injectCSS() {
     }
     .boss-ss-card {
       padding: 16px;
-      background: #2a2a2a;
+      background: var(--boss-bg-section);
       border-radius: 12px;
-      border: 1px solid #444;
+      border: 1px solid var(--boss-border-strong);
       width: 120%;
       box-shadow: 0 0 40px rgba(82, 78, 184, 0.3);
       color: #fff;
@@ -192,18 +64,22 @@ function injectCSS() {
       font-size: 1.2em;
       font-weight: bold;
       margin-bottom: 12px;
-      color: ${BRAND};
+      color: var(--boss-brand);
     }
+
+    /* Node items */
     .boss-ss-node-item {
       display: flex;
       justify-content: space-between;
       padding: 4px 8px;
-      border-bottom: 1px solid #333;
+      border-bottom: 1px solid var(--boss-border);
       font-size: 12px;
     }
-    .boss-ss-node-item .nid { color: #999; font-family: monospace; }
+    .boss-ss-node-item .nid { color: var(--boss-text-muted); font-family: monospace; }
     .boss-ss-node-item .ntype { color: #fff; }
-    .boss-ss-node-item .nval { color: #aaa; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .boss-ss-node-item .nval { color: var(--boss-text-dim); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Snapshot list */
     .boss-ss-snapshot-list {
       display: flex;
       flex-direction: column;
@@ -214,22 +90,22 @@ function injectCSS() {
       align-items: center;
       gap: 10px;
       padding: 8px 12px;
-      background: #1c1e20;
+      background: var(--boss-bg-hover);
       border-radius: 6px;
-      border-left: 3px solid #444;
+      border-left: 3px solid var(--boss-border-strong);
       cursor: pointer;
       transition: background 0.1s;
     }
-    .boss-ss-snapshot-item:hover { background: #282b2e; }
+    .boss-ss-snapshot-item:hover { background: var(--boss-bg-active); }
     .boss-ss-snapshot-item .name { flex: 1; font-weight: 600; color: #fff; }
-    .boss-ss-snapshot-item .meta { color: #999; font-size: 11px; }
+    .boss-ss-snapshot-item .meta { color: var(--boss-text-muted); font-size: 11px; }
     .boss-ss-snapshot-item .actions {
       display: flex;
       gap: 6px;
     }
     .boss-ss-snapshot-item .actions .boss-ss-btn { padding: 4px 10px; font-size: 11px; }
     .boss-ss-empty {
-      color: #999;
+      color: var(--boss-text-muted);
       font-style: italic;
       text-align: center;
       padding: 20px;
@@ -247,8 +123,8 @@ function injectCSS() {
       backdrop-filter: blur(4px);
     }
     .boss-ss-confirm-box {
-      background: #1a1a1c;
-      border: 1px solid #444;
+      background: var(--boss-bg-panel);
+      border: 1px solid var(--boss-border-strong);
       border-radius: 12px;
       padding: 24px;
       max-width: 800px;
@@ -267,7 +143,7 @@ function injectCSS() {
       margin-bottom: 4px;
     }
     .boss-ss-confirm-sub {
-      color: #aaa;
+      color: var(--boss-text-dim);
       font-size: 13px;
     }
     .boss-ss-confirm-controls {
@@ -275,34 +151,34 @@ function injectCSS() {
       align-items: center;
       gap: 16px;
       flex-wrap: wrap;
-      background: #131415;
+      background: var(--boss-bg-input);
       padding: 8px 12px;
       border-radius: 6px;
-      border: 1px solid #2a2a2c;
+      border: 1px solid var(--boss-border);
     }
     .boss-ss-confirm-controls .select-all {
       display: flex;
       align-items: center;
       gap: 6px;
-      color: #ddd;
+      color: var(--boss-text);
       font-size: 13px;
       cursor: pointer;
       user-select: none;
     }
-    .boss-ss-confirm-controls .select-all input { width: 16px; height: 16px; accent-color: ${BRAND}; }
+    .boss-ss-confirm-controls .select-all input { width: 16px; height: 16px; accent-color: var(--boss-brand); }
     .boss-ss-confirm-search {
       flex: 1;
       padding: 6px 10px;
-      background: #131415;
-      border: 1px solid #3a3d40;
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border-input);
       color: #fff;
       border-radius: 4px;
       font-size: 12px;
       outline: none;
     }
-    .boss-ss-confirm-search:focus { border-color: ${BRAND}; }
+    .boss-ss-confirm-search:focus { border-color: var(--boss-brand); }
     .boss-ss-confirm-summary {
-      color: #aaa;
+      color: var(--boss-text-dim);
       font-size: 12px;
       white-space: nowrap;
     }
@@ -316,23 +192,23 @@ function injectCSS() {
       padding-right: 4px;
     }
     .boss-ss-confirm-list::-webkit-scrollbar { width: 4px; }
-    .boss-ss-confirm-list::-webkit-scrollbar-track { background: #1a1a1c; }
-    .boss-ss-confirm-list::-webkit-scrollbar-thumb { background: ${BRAND}; border-radius: 2px; }
+    .boss-ss-confirm-list::-webkit-scrollbar-track { background: var(--boss-bg-panel); }
+    .boss-ss-confirm-list::-webkit-scrollbar-thumb { background: var(--boss-brand); border-radius: 2px; }
 
     .boss-ss-diff-node {
       display: flex;
       align-items: flex-start;
       gap: 8px;
       padding: 6px 8px;
-      background: #1c1e20;
+      background: var(--boss-bg-hover);
       border-radius: 4px;
-      border-left: 2px solid #444;
+      border-left: 2px solid var(--boss-border-strong);
       transition: background 0.1s;
     }
-    .boss-ss-diff-node:hover { background: #242628; }
+    .boss-ss-diff-node:hover { background: var(--boss-bg-active); }
     .boss-ss-diff-node .diff-checkbox {
       margin-top: 2px;
-      accent-color: ${BRAND};
+      accent-color: var(--boss-brand);
       flex-shrink: 0;
       width: 14px;
       height: 14px;
@@ -350,23 +226,23 @@ function injectCSS() {
       color: #eee;
       cursor: pointer;
     }
-    .boss-ss-diff-node .diff-header .node-id { color: #999; font-weight: normal; font-family: monospace; }
-    .boss-ss-diff-node .diff-header .node-type { color: ${BRAND}; }
-    .boss-ss-diff-node .diff-header .change-count { color: #aaa; font-weight: normal; font-size: 11px; }
+    .boss-ss-diff-node .diff-header .node-id { color: var(--boss-text-muted); font-weight: normal; font-family: monospace; }
+    .boss-ss-diff-node .diff-header .node-type { color: var(--boss-brand); }
+    .boss-ss-diff-node .diff-header .change-count { color: var(--boss-text-dim); font-weight: normal; font-size: 11px; }
     .boss-ss-diff-node .diff-details {
       margin-top: 4px;
       padding-left: 12px;
       font-size: 12px;
-      color: #ccc;
+      color: var(--boss-text);
       display: none;
     }
     .boss-ss-diff-node .diff-details.expanded { display: block; }
     .boss-ss-diff-node .diff-details .diff-change {
       padding: 2px 0;
-      border-bottom: 1px solid #2a2a2c;
+      border-bottom: 1px solid var(--boss-border);
     }
     .boss-ss-diff-node .diff-details .diff-change .diff-widget {
-      color: #ddd;
+      color: var(--boss-text);
     }
     .boss-ss-diff-node .diff-details .diff-change .diff-old {
       color: #f87171;
@@ -379,16 +255,16 @@ function injectCSS() {
       display: flex;
       gap: 10px;
       justify-content: flex-end;
-      border-top: 1px solid #2a2a2c;
+      border-top: 1px solid var(--boss-border);
       padding-top: 12px;
     }
     .boss-ss-confirm-btns .boss-ss-btn-restore-all {
       background: transparent;
-      border: 1px solid #666;
-      color: #ddd;
+      border: 1px solid var(--boss-border-strong);
+      color: var(--boss-text);
     }
     .boss-ss-confirm-btns .boss-ss-btn-restore-all:hover {
-      background: #3a3d40;
+      background: var(--boss-bg-hover);
     }
   `;
   const style = document.createElement("style");
@@ -486,10 +362,10 @@ function renderHeader(node) {
 function setStatus(node, text, type = "") {
   const root = node._bossSsRoot;
   if (!root) return;
-  const s = root.querySelector(".boss-ss-status");
+  const s = root.querySelector(".boss-status");
   if (!s) return;
   s.textContent = text || "";
-  s.className = "boss-ss-status";
+  s.className = "boss-status";
   if (type) s.classList.add(type);
 }
 
@@ -816,7 +692,7 @@ class SnapshotterEditor {
 
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
-    cancelBtn.className = "boss-ss-cancel";
+    cancelBtn.className = "boss-btn-ghost";
     cancelBtn.textContent = "Cancel";
     cancelBtn.addEventListener("click", () => {
       this.confirmOverlay.remove();
@@ -825,7 +701,7 @@ class SnapshotterEditor {
 
     const restoreSelectedBtn = document.createElement("button");
     restoreSelectedBtn.type = "button";
-    restoreSelectedBtn.className = "boss-ss-save";
+    restoreSelectedBtn.className = "boss-btn-primary";
     restoreSelectedBtn.textContent = "Restore Selected";
     restoreSelectedBtn.addEventListener("click", async () => {
       // Gather selected node IDs
@@ -1025,24 +901,24 @@ class SnapshotterEditor {
       this.modal = null;
     }
     const modal = document.createElement("div");
-    modal.className = "boss-ss-modal";
+    modal.className = "boss-modal";
 
     const bar = document.createElement("div");
-    bar.className = "boss-ss-bar";
-    bar.innerHTML = `<div class="boss-ss-bar-title">Workflow Snapshotter</div>`;
+    bar.className = "boss-bar";
+    bar.innerHTML = `<div class="boss-bar-title">Workflow Snapshotter</div>`;
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
-    closeBtn.className = "boss-ss-bar-x";
+    closeBtn.className = "boss-btn-close";
     closeBtn.textContent = "CLOSE";
     closeBtn.addEventListener("click", () => this.cancel());
     bar.appendChild(closeBtn);
     modal.appendChild(bar);
 
     const body = document.createElement("div");
-    body.className = "boss-ss-body";
+    body.className = "boss-body";
 
     const side = document.createElement("div");
-    side.className = "boss-ss-side";
+    side.className = "boss-side boss-ss-side-custom";
 
     side.appendChild(this.buildSaveSection());
     side.appendChild(this.buildListSection());
@@ -1056,15 +932,15 @@ class SnapshotterEditor {
     modal.appendChild(body);
 
     const footer = document.createElement("div");
-    footer.className = "boss-ss-footer";
+    footer.className = "boss-footer";
     const applyBtn = document.createElement("button");
     applyBtn.type = "button";
-    applyBtn.className = "boss-ss-save";
+    applyBtn.className = "boss-btn-primary";
     applyBtn.textContent = "Apply";
     applyBtn.addEventListener("click", () => this.save());
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
-    cancelBtn.className = "boss-ss-cancel";
+    cancelBtn.className = "boss-btn-ghost";
     cancelBtn.textContent = "Cancel";
     cancelBtn.addEventListener("click", () => this.cancel());
     footer.appendChild(applyBtn);
@@ -1080,7 +956,7 @@ class SnapshotterEditor {
   buildSaveSection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-ss-section-label";
+    label.className = "boss-label";
     label.textContent = "Save Current Workflow";
     wrap.appendChild(label);
 
@@ -1088,7 +964,7 @@ class SnapshotterEditor {
     row.className = "boss-ss-row";
     const nameInput = document.createElement("input");
     nameInput.type = "text";
-    nameInput.className = "boss-ss-input";
+    nameInput.className = "boss-input";
     nameInput.placeholder = "Snapshot name...";
     nameInput.value = this.state.snapshot_name || "";
     nameInput.addEventListener("input", () => {
@@ -1175,7 +1051,7 @@ class SnapshotterEditor {
   buildListSection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-ss-section-label";
+    label.className = "boss-label";
     label.textContent = "Saved Snapshots";
     wrap.appendChild(label);
 
@@ -1201,7 +1077,7 @@ class SnapshotterEditor {
       const div = document.createElement("div");
       div.className = "boss-ss-snapshot-item";
       if (this.selected === item.name) {
-        div.style.borderLeftColor = BRAND;
+        div.style.borderLeftColor = "var(--boss-brand)";
       }
       const nameSpan = document.createElement("span");
       nameSpan.className = "name";
@@ -1359,20 +1235,20 @@ function setupSnapshotterNode(node) {
   }
 
   const root = document.createElement("div");
-  root.className = "boss-ss-root";
+  root.className = "boss-widget";
 
   const head = document.createElement("div");
-  head.className = "boss-ss-head";
+  head.className = "boss-widget-head";
   root.appendChild(head);
 
   const openBtn = document.createElement("button");
   openBtn.type = "button";
-  openBtn.className = "boss-ss-open";
+  openBtn.className = "boss-btn-open";
   openBtn.textContent = "Open Editor";
   root.appendChild(openBtn);
 
   const status = document.createElement("div");
-  status.className = "boss-ss-status";
+  status.className = "boss-status";
   root.appendChild(status);
 
   node.addDOMWidget("snapshotter_ui", "boss_snapshotter", root, {
