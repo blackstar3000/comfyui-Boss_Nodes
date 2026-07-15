@@ -6,9 +6,7 @@
 // the graph is queued.
 
 import { app } from "/scripts/app.js";
-
-const BRAND = "#8B5CF6";
-const BRAND_GLOW = "rgba(139, 92, 246, 0.3)";
+import { BossDropdown } from "../boss_theme/index.js";
 
 const STATE_PROP = "artistState";
 const HIDDEN_INPUT_NAME = "ArtistState";
@@ -34,127 +32,25 @@ const VISIBLE_NATIVE_WIDGETS = [
 function injectCSS() {
   if (document.getElementById("boss-artist-css")) return;
   const css = `
-    .boss-art-root {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 10px;
-      background: #131415;
-      border-radius: 6px;
-      color: #eee;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .boss-art-head {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      line-height: 1.45;
-      min-height: 36px;
-    }
-    .boss-art-head .label { color: #999; }
-    .boss-art-head .value { color: #fff; font-weight: 600; }
-    .boss-art-head .value.none { color: #888; font-style: italic; }
-    .boss-art-head .value.random { color: ${BRAND}; }
-    .boss-art-open {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.05s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .boss-art-open:hover { background: #7C3AED; }
-    .boss-art-open:active { transform: translateY(1px); }
-    .boss-art-status {
-      font-size: 11px;
-      color: #999;
-      text-align: center;
-      min-height: 14px;
-    }
-    .boss-art-status.is-error { color: #ff8080; }
+    /* ── Component-specific overrides ────────────────────────────── */
 
-    .boss-art-modal {
-      position: fixed; inset: 0;
-      background: #131415;
-      color: #eee;
-      z-index: 2000;
-      display: flex; flex-direction: column;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-    }
-    .boss-art-bar {
-      height: 56px;
-      background: #171718;
-      border-bottom: 1px solid #3a3d40;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-art-bar-title {
-      font-size: 14px; font-weight: 600; letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-    .boss-art-bar-x {
-      background: transparent;
-      border: 1px solid #3a3d40;
-      color: #eee;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .boss-art-bar-x:hover { background: #3a3d40; }
-    .boss-art-body { flex: 1; display: flex; overflow: hidden; min-height: 0; }
-    .boss-art-side {
-      width: 320px;
-      background: #171718;
-      border-right: 1px solid #3a3d40;
-      padding: 20px;
-      display: flex; flex-direction: column; gap: 16px;
-      flex-shrink: 0;
-      overflow-y: auto;
-    }
-    .boss-art-workspace { flex: 1; overflow: hidden; }
-    .boss-art-list {
-      height: 100%;
-      overflow-y: auto;
-      padding: 20px;
-      box-sizing: border-box;
-    }
-    .boss-art-section-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #999;
-      letter-spacing: 1px;
-      display: block;
-      margin-bottom: 6px;
-    }
-    .boss-art-input, .boss-art-select {
-      width: 100%;
-      padding: 9px 12px;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      color: #fff;
-      border-radius: 6px;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    .boss-art-input:focus, .boss-art-select:focus { border-color: ${BRAND}; }
+    /* Header value variants */
+    .boss-widget-head .value.none { color: var(--boss-text-muted); font-style: italic; }
+    .boss-widget-head .value.random { color: var(--boss-brand); }
+
+    /* Side panel width override */
+    .boss-art-side-custom { width: 320px; }
+
+    /* Row layout */
     .boss-art-row { display: flex; align-items: center; gap: 10px; }
-    .boss-art-row .boss-art-input { flex: 1; }
+    .boss-art-row .boss-input { flex: 1; }
+
+    /* Tabs */
     .boss-art-tabs, .boss-art-pill {
       display: flex;
       gap: 0;
-      background: rgba(255,255,255,0.06);
-      border-radius: 7px;
+      background: var(--boss-bg-section);
+      border-radius: var(--boss-radius-md);
       padding: 3px;
     }
     .boss-art-tab, .boss-art-seg {
@@ -166,105 +62,87 @@ function injectCSS() {
       background: transparent;
       font-family: inherit;
       font-size: 12px;
-      color: rgba(255,255,255,0.58);
+      color: var(--boss-text-muted);
       cursor: pointer;
       user-select: none;
       outline: none;
     }
     .boss-art-tab:hover:not(.active), .boss-art-seg:hover:not(.active) {
-      color: rgba(255,255,255,0.86);
+      color: var(--boss-text-bright);
     }
     .boss-art-tab.active, .boss-art-seg.active {
-      background: ${BRAND};
+      background: var(--boss-brand);
       color: #fff;
       font-weight: 600;
     }
+
+    /* Checkbox */
     .boss-art-check {
       display: flex;
       align-items: center;
       gap: 9px;
-      color: #ddd;
+      color: var(--boss-text);
       font-size: 13px;
       cursor: pointer;
       user-select: none;
     }
-    .boss-art-check input { width: 16px; height: 16px; accent-color: ${BRAND}; }
+    .boss-art-check input { width: 16px; height: 16px; accent-color: var(--boss-brand); }
+
+    /* Count */
     .boss-art-count {
-      color: #aaa;
+      color: var(--boss-text-dim);
       font-size: 12px;
       text-align: center;
       min-height: 16px;
     }
+
+    /* Artist list */
+    .boss-art-workspace { flex: 1; overflow: hidden; }
+    .boss-art-list {
+      height: 100%;
+      overflow-y: auto;
+      padding: 20px;
+      box-sizing: border-box;
+    }
     .boss-art-item {
       display: flex; align-items: center; gap: 10px;
       padding: 10px 14px;
-      background: #242628;
-      border: 1px solid #3a3d40;
+      background: var(--boss-bg-hover);
+      border: 1px solid var(--boss-border-input);
       border-radius: 6px;
       font-size: 14px;
       margin-bottom: 6px;
       cursor: pointer;
     }
-    .boss-art-item:hover { background: #2d2f32; border-color: #555; }
+    .boss-art-item:hover { background: var(--boss-bg-active); border-color: var(--boss-border-strong); }
     .boss-art-item.selected {
-      border-color: ${BRAND};
-      background: rgba(139,92,246,0.10);
-      box-shadow: inset 0 0 0 1px ${BRAND};
+      border-color: var(--boss-brand);
+      background: var(--boss-bg-active);
+      box-shadow: inset 0 0 0 1px var(--boss-brand);
     }
     .boss-art-item .name {
       flex: 1;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
+      color: var(--boss-text-dim);
     }
     .boss-art-fav {
       background: none;
       border: none;
-      color: #555;
+      color: var(--boss-text-faint);
       cursor: pointer;
       font-size: 18px;
       padding: 0 6px;
       line-height: 1;
     }
-    .boss-art-fav.active { color: ${BRAND}; }
+    .boss-art-fav.active { color: var(--boss-brand); }
     .boss-art-empty {
-      color: #999;
+      color: var(--boss-text-muted);
       font-size: 13px;
       padding: 20px;
       text-align: center;
     }
-    .boss-art-footer {
-      height: 56px;
-      background: #171718;
-      border-top: 1px solid #3a3d40;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-art-save {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 2px 6px ${BRAND_GLOW};
-    }
-    .boss-art-save:hover { background: #7C3AED; }
-    .boss-art-cancel {
-      background: transparent;
-      color: #eee;
-      border: 1px solid #3a3d40;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .boss-art-cancel:hover { background: #3a3d40; }
   `;
   const style = document.createElement("style");
   style.id = "boss-artist-css";
@@ -294,7 +172,9 @@ function defaultStateFromWidgets(node) {
   const sortMode = widgetValue(node, "sort_mode", "A-Z");
   return {
     selectedNames,
-    maxArtists: clampMaxArtists(widgetValue(node, "max_artists", MAX_ARTISTS_DEFAULT)),
+    maxArtists: clampMaxArtists(
+      widgetValue(node, "max_artists", MAX_ARTISTS_DEFAULT),
+    ),
     randomize: !!widgetValue(node, "randomize", false),
     favoritesOnly: !!widgetValue(node, "favorites_only", false),
     outputMode: OUTPUT_MODES.includes(outputMode) ? outputMode : "Prompt",
@@ -317,12 +197,16 @@ function readState(node) {
         merged.maxArtists = clampMaxArtists(merged.maxArtists);
         merged.randomize = !!merged.randomize;
         merged.favoritesOnly = !!merged.favoritesOnly;
-        if (!OUTPUT_MODES.includes(merged.outputMode)) merged.outputMode = base.outputMode;
-        if (!SORT_MODES.includes(merged.sortMode)) merged.sortMode = base.sortMode;
+        if (!OUTPUT_MODES.includes(merged.outputMode))
+          merged.outputMode = base.outputMode;
+        if (!SORT_MODES.includes(merged.sortMode))
+          merged.sortMode = base.sortMode;
         merged.forceRefresh = !!merged.forceRefresh;
         return merged;
       }
-    } catch { /* fall through */ }
+    } catch {
+      /* fall through */
+    }
   }
   return base;
 }
@@ -334,7 +218,9 @@ function writeState(node, state) {
     maxArtists: clampMaxArtists(state.maxArtists),
     randomize: !!state.randomize,
     favoritesOnly: !!state.favoritesOnly,
-    outputMode: OUTPUT_MODES.includes(state.outputMode) ? state.outputMode : "Prompt",
+    outputMode: OUTPUT_MODES.includes(state.outputMode)
+      ? state.outputMode
+      : "Prompt",
     sortMode: SORT_MODES.includes(state.sortMode) ? state.sortMode : "A-Z",
     forceRefresh: !!state.forceRefresh,
   });
@@ -346,7 +232,11 @@ function setWidgetValue(node, name, value) {
   if (w.value !== value) {
     w.value = value;
     if (typeof w.callback === "function") {
-      try { w.callback(value); } catch { /* detached widget */ }
+      try {
+        w.callback(value);
+      } catch {
+        /* detached widget */
+      }
     }
   }
 }
@@ -356,8 +246,16 @@ function syncNativeWidgets(node, state) {
   setWidgetValue(node, "max_artists", clampMaxArtists(state.maxArtists));
   setWidgetValue(node, "randomize", !!state.randomize);
   setWidgetValue(node, "favorites_only", !!state.favoritesOnly);
-  setWidgetValue(node, "output_mode", OUTPUT_MODES.includes(state.outputMode) ? state.outputMode : "Prompt");
-  setWidgetValue(node, "sort_mode", SORT_MODES.includes(state.sortMode) ? state.sortMode : "A-Z");
+  setWidgetValue(
+    node,
+    "output_mode",
+    OUTPUT_MODES.includes(state.outputMode) ? state.outputMode : "Prompt",
+  );
+  setWidgetValue(
+    node,
+    "sort_mode",
+    SORT_MODES.includes(state.sortMode) ? state.sortMode : "A-Z",
+  );
   setWidgetValue(node, "force_refresh", !!state.forceRefresh);
 }
 
@@ -392,7 +290,10 @@ function renderHeader(node) {
     mainClass = "value random";
   } else if (state.selectedNames.length) {
     const visible = state.selectedNames.slice(0, 3).join(", ");
-    const extra = state.selectedNames.length > 3 ? ` +${state.selectedNames.length - 3}` : "";
+    const extra =
+      state.selectedNames.length > 3
+        ? ` +${state.selectedNames.length - 3}`
+        : "";
     mainText = visible + extra;
   } else {
     mainText = "no artists selected";
@@ -407,7 +308,7 @@ function renderHeader(node) {
 function setStatus(node, text, isError = false) {
   const root = node._bossArtRoot;
   if (!root) return;
-  const s = root.querySelector(".boss-art-status");
+  const s = root.querySelector(".boss-status");
   if (!s) return;
   s.textContent = text || "";
   s.classList.toggle("is-error", !!isError);
@@ -444,31 +345,36 @@ class ArtistEditor {
   }
 
   buildModal() {
-    if (this.modal) { this.modal.remove(); this.modal = null; }
+    if (this.modal) {
+      this.modal.remove();
+      this.modal = null;
+    }
     const modal = document.createElement("div");
-    modal.className = "boss-art-modal";
+    modal.className = "boss-modal";
 
     const bar = document.createElement("div");
-    bar.className = "boss-art-bar";
-    bar.innerHTML = `<div class="boss-art-bar-title">Artist Selector Editor</div>`;
+    bar.className = "boss-bar";
+    bar.innerHTML = `<div class="boss-bar-title">Artist Selector Editor</div>`;
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
-    closeBtn.className = "boss-art-bar-x";
+    closeBtn.className = "boss-btn-close";
     closeBtn.textContent = "CLOSE";
     closeBtn.addEventListener("click", () => this.cancel());
     bar.appendChild(closeBtn);
     modal.appendChild(bar);
 
     const body = document.createElement("div");
-    body.className = "boss-art-body";
+    body.className = "boss-body";
 
     const side = document.createElement("div");
-    side.className = "boss-art-side";
+    side.className = "boss-side boss-art-side-custom";
     side.appendChild(this.buildSearchSection());
     side.appendChild(this.buildTabsSection());
     side.appendChild(this.buildModeSection());
     side.appendChild(this.buildMaxSection());
-    side.appendChild(this.buildSelectSection("Output", "outputMode", OUTPUT_MODES));
+    side.appendChild(
+      this.buildSelectSection("Output", "outputMode", OUTPUT_MODES),
+    );
     side.appendChild(this.buildSelectSection("Sort", "sortMode", SORT_MODES));
     side.appendChild(this.buildForceRefreshSection());
     this.countEl = document.createElement("div");
@@ -487,15 +393,15 @@ class ArtistEditor {
     modal.appendChild(body);
 
     const footer = document.createElement("div");
-    footer.className = "boss-art-footer";
+    footer.className = "boss-footer";
     const saveBtn = document.createElement("button");
     saveBtn.type = "button";
-    saveBtn.className = "boss-art-save";
+    saveBtn.className = "boss-btn-primary";
     saveBtn.textContent = "Save";
     saveBtn.addEventListener("click", () => this.save());
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
-    cancelBtn.className = "boss-art-cancel";
+    cancelBtn.className = "boss-btn-ghost";
     cancelBtn.textContent = "Cancel";
     cancelBtn.addEventListener("click", () => this.cancel());
     footer.appendChild(saveBtn);
@@ -511,10 +417,10 @@ class ArtistEditor {
   buildSearchSection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-art-section-label";
+    label.className = "boss-label";
     label.textContent = "Search";
     const input = document.createElement("input");
-    input.className = "boss-art-input";
+    input.className = "boss-input";
     input.type = "text";
     input.placeholder = "Type to filter...";
     input.value = this.search;
@@ -531,7 +437,7 @@ class ArtistEditor {
   buildTabsSection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-art-section-label";
+    label.className = "boss-label";
     label.textContent = "Collection";
     const tabs = document.createElement("div");
     tabs.className = "boss-art-tabs";
@@ -542,7 +448,9 @@ class ArtistEditor {
       btn.textContent = name;
       btn.addEventListener("click", () => {
         this.tab = name;
-        tabs.querySelectorAll(".boss-art-tab").forEach((x) => x.classList.remove("active"));
+        tabs
+          .querySelectorAll(".boss-art-tab")
+          .forEach((x) => x.classList.remove("active"));
         btn.classList.add("active");
         this.refreshList();
       });
@@ -556,16 +464,22 @@ class ArtistEditor {
   buildModeSection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-art-section-label";
+    label.className = "boss-label";
     label.textContent = "Mode";
     const pill = document.createElement("div");
     pill.className = "boss-art-pill";
     const sync = () => {
       pill.querySelectorAll(".boss-art-seg").forEach((btn) => {
-        btn.classList.toggle("active", btn.dataset.mode === (this.state.randomize ? "random" : "manual"));
+        btn.classList.toggle(
+          "active",
+          btn.dataset.mode === (this.state.randomize ? "random" : "manual"),
+        );
       });
     };
-    for (const [mode, text] of [["manual", "Manual"], ["random", "Random"]]) {
+    for (const [mode, text] of [
+      ["manual", "Manual"],
+      ["random", "Random"],
+    ]) {
       const btn = document.createElement("button");
       btn.type = "button";
       btn.className = "boss-art-seg";
@@ -599,7 +513,7 @@ class ArtistEditor {
   buildMaxSection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-art-section-label";
+    label.className = "boss-label";
     label.textContent = "Max artists";
     const row = document.createElement("div");
     row.className = "boss-art-row";
@@ -611,7 +525,7 @@ class ArtistEditor {
     slider.value = String(this.state.maxArtists);
     const num = document.createElement("input");
     num.type = "number";
-    num.className = "boss-art-input";
+    num.className = "boss-input";
     num.min = String(MAX_ARTISTS_MIN);
     num.max = String(MAX_ARTISTS_MAX);
     num.step = "1";
@@ -634,23 +548,21 @@ class ArtistEditor {
   buildSelectSection(title, key, options) {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-art-section-label";
+    label.className = "boss-label";
     label.textContent = title;
-    const select = document.createElement("select");
-    select.className = "boss-art-select";
-    for (const option of options) {
-      const o = document.createElement("option");
-      o.value = option;
-      o.textContent = option;
-      if (this.state[key] === option) o.selected = true;
-      select.appendChild(o);
-    }
-    select.addEventListener("change", (e) => {
-      this.state[key] = e.target.value;
-      if (key === "sortMode") this.refreshList();
+
+    const dropdown = new BossDropdown({
+      options: options.map((o) => ({ value: o, label: o })),
+      value: this.state[key],
+      placeholder: `Select ${title.toLowerCase()}…`,
+      searchable: false,
+      onChange: (val) => {
+        this.state[key] = val;
+        if (key === "sortMode") this.refreshList();
+      },
     });
     wrap.appendChild(label);
-    wrap.appendChild(select);
+    wrap.appendChild(dropdown.element);
     return wrap;
   }
 
@@ -671,7 +583,10 @@ class ArtistEditor {
   }
 
   filteredList() {
-    const lib = (this.data.library && typeof this.data.library === "object") ? this.data.library : {};
+    const lib =
+      this.data.library && typeof this.data.library === "object"
+        ? this.data.library
+        : {};
     const favs = Array.isArray(this.data.favorites) ? this.data.favorites : [];
     const hist = Array.isArray(this.data.history) ? this.data.history : [];
     let list;
@@ -689,7 +604,7 @@ class ArtistEditor {
     } else if (this.state.sortMode === "Z-A") {
       list.sort((a, b) => b.localeCompare(a));
     } else if (this.state.sortMode === "Favorites") {
-      list.sort((a, b) => (favSet.has(b) - favSet.has(a)) || a.localeCompare(b));
+      list.sort((a, b) => favSet.has(b) - favSet.has(a) || a.localeCompare(b));
     } else if (this.state.sortMode === "Recent") {
       list.sort((a, b) => {
         const ai = hist.indexOf(a);
@@ -714,7 +629,9 @@ class ArtistEditor {
     if (!list.length) {
       const empty = document.createElement("div");
       empty.className = "boss-art-empty";
-      empty.textContent = this.search ? `No artists match "${this.search}".` : "No artists in this collection.";
+      empty.textContent = this.search
+        ? `No artists match "${this.search}".`
+        : "No artists in this collection.";
       this.listEl.appendChild(empty);
       this.refreshCount();
       return;
@@ -722,7 +639,8 @@ class ArtistEditor {
 
     for (const name of list) {
       const item = document.createElement("div");
-      item.className = "boss-art-item" + (selected.has(name) ? " selected" : "");
+      item.className =
+        "boss-art-item" + (selected.has(name) ? " selected" : "");
       const nameEl = document.createElement("span");
       nameEl.className = "name";
       nameEl.textContent = name;
@@ -731,9 +649,12 @@ class ArtistEditor {
 
       const favBtn = document.createElement("button");
       favBtn.type = "button";
-      favBtn.className = "boss-art-fav" + (favorites.has(name) ? " active" : "");
+      favBtn.className =
+        "boss-art-fav" + (favorites.has(name) ? " active" : "");
       favBtn.textContent = "*";
-      favBtn.title = favorites.has(name) ? "Remove from favorites" : "Add to favorites";
+      favBtn.title = favorites.has(name)
+        ? "Remove from favorites"
+        : "Add to favorites";
       favBtn.addEventListener("click", async (e) => {
         e.stopPropagation();
         try {
@@ -761,8 +682,14 @@ class ArtistEditor {
     if (!this.countEl) return;
     if (this.state.randomize) {
       const pool = this.state.favoritesOnly
-        ? (Array.isArray(this.data.favorites) ? this.data.favorites : [])
-        : Object.keys((this.data.library && typeof this.data.library === "object") ? this.data.library : {});
+        ? Array.isArray(this.data.favorites)
+          ? this.data.favorites
+          : []
+        : Object.keys(
+            this.data.library && typeof this.data.library === "object"
+              ? this.data.library
+              : {},
+          );
       this.countEl.textContent = `Random pool: ${pool.length} artists`;
     } else {
       this.countEl.textContent = `Selected: ${(this.state.selectedNames || []).length} / ${this.state.maxArtists}`;
@@ -778,10 +705,15 @@ class ArtistEditor {
     this.close();
   }
 
-  cancel() { this.close(); }
+  cancel() {
+    this.close();
+  }
 
   close() {
-    if (this.modal) { this.modal.remove(); this.modal = null; }
+    if (this.modal) {
+      this.modal.remove();
+      this.modal = null;
+    }
   }
 }
 
@@ -792,20 +724,20 @@ function setupArtistNode(node) {
   }
 
   const root = document.createElement("div");
-  root.className = "boss-art-root";
+  root.className = "boss-widget";
 
   const head = document.createElement("div");
-  head.className = "boss-art-head";
+  head.className = "boss-widget-head";
   root.appendChild(head);
 
   const openBtn = document.createElement("button");
   openBtn.type = "button";
-  openBtn.className = "boss-art-open";
+  openBtn.className = "boss-btn-open";
   openBtn.textContent = "Open Editor";
   root.appendChild(openBtn);
 
   const status = document.createElement("div");
-  status.className = "boss-art-status";
+  status.className = "boss-status";
   root.appendChild(status);
 
   node.addDOMWidget("artist_ui", "boss_artist", root, {
@@ -843,9 +775,14 @@ if (app && app.loadGraphData && !app._bossArtLoadWrapped) {
   app.loadGraphData = function (...args) {
     _bossArtLoadingGraph = true;
     let r;
-    try { r = _origLoad(...args); }
-    finally {
-      Promise.resolve(r).finally(() => setTimeout(() => { _bossArtLoadingGraph = false; }, 300));
+    try {
+      r = _origLoad(...args);
+    } finally {
+      Promise.resolve(r).finally(() =>
+        setTimeout(() => {
+          _bossArtLoadingGraph = false;
+        }, 300),
+      );
     }
     return r;
   };
@@ -880,7 +817,10 @@ function buildArtistNodeIndex() {
     const nodes = graph._nodes || graph.nodes || [];
     for (const n of nodes) {
       if (!n) continue;
-      if (n.comfyClass === "BossArtistSelector" || n.type === "BossArtistSelector") {
+      if (
+        n.comfyClass === "BossArtistSelector" ||
+        n.type === "BossArtistSelector"
+      ) {
         index.set(String(n.id), n);
       }
       const inner = n.subgraph || n.graph || n._graph;
@@ -911,15 +851,17 @@ app.graphToPrompt = async function (...args) {
       if (!entry || entry.class_type !== "BossArtistSelector") continue;
       if (!index) index = buildArtistNodeIndex();
       const node = findArtistNode(index, id);
-      const state = node ? readState(node) : {
-        selectedNames: [],
-        maxArtists: MAX_ARTISTS_DEFAULT,
-        randomize: false,
-        favoritesOnly: false,
-        outputMode: "Prompt",
-        sortMode: "A-Z",
-        forceRefresh: false,
-      };
+      const state = node
+        ? readState(node)
+        : {
+            selectedNames: [],
+            maxArtists: MAX_ARTISTS_DEFAULT,
+            randomize: false,
+            favoritesOnly: false,
+            outputMode: "Prompt",
+            sortMode: "A-Z",
+            forceRefresh: false,
+          };
       const injected = { ...state };
       entry.inputs = entry.inputs || {};
       entry.inputs[HIDDEN_INPUT_NAME] = JSON.stringify(injected);
