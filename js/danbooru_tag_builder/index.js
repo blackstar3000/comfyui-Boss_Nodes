@@ -2,6 +2,7 @@
 // Glassmorphism UI, searchable multi‑select, collapsible sections, full database.
 // FIXED: accordion overlaps, smooth transitions, auto‑scroll, sticky favorites, responsive.
 // NEW: BossDropdown component replaces all native <select> with glass‑styled, searchable dropdowns.
+// color: #fff;
 
 import { app } from "/scripts/app.js";
 
@@ -102,7 +103,10 @@ function injectCSS() {
     .boss-db-bar-title {
       font-size: 14px; font-weight: 600; letter-spacing: 1px;
       text-transform: uppercase;
-      color: #fff;
+      background: linear-gradient(135deg, #c084fc, #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       text-shadow: 0 0 30px ${BRAND_GLOW};
     }
     .boss-db-bar-x {
