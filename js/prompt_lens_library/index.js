@@ -12,11 +12,9 @@
 //   - All interactive UI is a DOM widget via addDOMWidget.
 
 import { app } from "/scripts/app.js";
+import { BossDropdown } from "../boss_theme/index.js";
 
-// ── Brand + constants (mirror Python exactly) ──────────────────────────────
-const BRAND = "#8B5CF6";
-const BRAND_GLOW = "rgba(139, 92, 246, 0.3)";
-
+// ── Constants (mirror Python exactly) ──────────────────────────────────────
 const STATE_PROP = "lensState";
 const HIDDEN_INPUT_NAME = "LensState";
 
@@ -49,225 +47,57 @@ function isRandomMode(mode) {
 function injectCSS() {
   if (document.getElementById("boss-lens-css")) return;
   const css = `
-    .boss-lens-root {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 10px;
-      background: #131415;
-      border-radius: 6px;
-      color: #eee;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-      font-size: 12px;
+    /* ── Component-specific overrides ────────────────────────────── */
+
+    /* Header value variants */
+    .boss-widget-head .value.random { color: var(--boss-brand); }
+    .boss-widget-head .sep { color: var(--boss-text-faint); margin: 0 6px; }
+
+    /* Preview centering */
+    .boss-side + .boss-preview {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      align-items: center;
+      justify-content: center;
     }
-    .boss-lens-head {
-      font-size: 12px;
-      color: #eee;
-      line-height: 1.5;
-      min-height: 18px;
-    }
-    .boss-lens-head .label { color: #999; }
-    .boss-lens-head .value { color: #fff; font-weight: 600; }
-    .boss-lens-head .value.random { color: ${BRAND}; }
-    .boss-lens-head .sep { color: #555; margin: 0 6px; }
-    .boss-lens-open {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.05s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .boss-lens-open:hover { background: #7C3AED; }
-    .boss-lens-open:active { transform: translateY(1px); }
-    .boss-lens-status {
-      font-size: 11px;
-      color: #999;
-      text-align: center;
-      min-height: 14px;
-    }
-    .boss-lens-status.is-error { color: #ff8080; }
 
-    .boss-lens-modal {
-      position: fixed; inset: 0;
-      background: #131415;
-      color: #eee;
-      z-index: 2000;
-      display: flex; flex-direction: column;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-    }
-    .boss-lens-bar {
-      height: 56px;
-      background: #171718;
-      border-bottom: 1px solid #3a3d40;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-lens-bar-title {
-      font-size: 14px; font-weight: 600;
-      letter-spacing: 1px; text-transform: uppercase;
-    }
-    .boss-lens-bar-x {
-      background: transparent;
-      border: 1px solid #3a3d40;
-      color: #eee;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .boss-lens-bar-x:hover { background: #3a3d40; }
+    /* Side panel width override */
+    .boss-lens-side-custom { width: 340px; }
 
-    .boss-lens-body {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-      min-height: 0;
-    }
-    .boss-lens-side {
-      width: 340px;
-      background: #171718;
-      border-right: 1px solid #3a3d40;
-      padding: 18px;
-      display: flex; flex-direction: column; gap: 14px;
-      flex-shrink: 0;
-      overflow-y: auto;
-    }
-    .boss-lens-section-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #999;
-      letter-spacing: 1px;
-      display: block;
-      margin-bottom: 6px;
-    }
-    .boss-lens-input {
-      width: 100%;
-      padding: 9px 12px;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      color: #fff;
-      border-radius: 6px;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    .boss-lens-input:focus { border-color: ${BRAND}; }
-    .boss-lens-input:disabled { opacity: 0.45; cursor: not-allowed; }
-
-    .boss-lens-list-wrap { display: flex; flex-direction: column; gap: 6px; }
+    /* List wrap disabled state */
     .boss-lens-list-wrap.is-disabled { opacity: 0.45; pointer-events: none; }
+
+    /* Per-collection list */
+    .boss-lens-list-wrap { display: flex; flex-direction: column; gap: 6px; }
     .boss-lens-list {
       max-height: 140px;
       overflow-y: auto;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      border-radius: 6px;
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border-input);
+      border-radius: var(--boss-radius-md);
     }
     .boss-lens-list-item {
       padding: 6px 12px;
       font-size: 13px;
+      color: var(--boss-text);
       cursor: pointer;
-      border-bottom: 1px solid #232527;
+      border-bottom: 1px solid var(--boss-border);
     }
     .boss-lens-list-item:last-child { border-bottom: none; }
-    .boss-lens-list-item:hover { background: #1c1e20; }
+    .boss-lens-list-item:hover { background: var(--boss-bg-hover); }
     .boss-lens-list-item.selected {
-      background: rgba(139,92,246,0.18);
-      color: #fff;
-      box-shadow: inset 3px 0 0 ${BRAND};
+      background: var(--boss-bg-active);
+      color: var(--boss-text-bright);
+      box-shadow: inset 3px 0 0 var(--boss-brand);
     }
 
+    /* Toggle */
     .boss-lens-toggle {
       display: flex; align-items: center; gap: 10px;
       cursor: pointer; user-select: none;
     }
-    .boss-lens-toggle input { accent-color: ${BRAND}; width: 16px; height: 16px; }
+    .boss-lens-toggle input { accent-color: var(--boss-brand); width: 16px; height: 16px; }
 
-    .boss-lens-pill {
-      display: flex; gap: 0;
-      background: rgba(255,255,255,0.06);
-      border-radius: 7px;
-      padding: 3px;
-    }
-    .boss-lens-seg {
-      flex: 1;
-      text-align: center;
-      padding: 6px;
-      border: none;
-      border-radius: 5px;
-      background: transparent;
-      font-family: inherit; font-size: 12px;
-      color: rgba(255,255,255,0.55);
-      cursor: pointer; user-select: none; outline: none;
-    }
-    .boss-lens-seg.active { background: ${BRAND}; color: #fff; font-weight: 500; }
-
-    .boss-lens-btn {
-      box-sizing: border-box;
-      padding: 7px 10px;
-      border-radius: 6px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.85);
-      font-family: inherit; font-size: 12px;
-      cursor: pointer; text-align: center;
-    }
-    .boss-lens-btn:hover { background: ${BRAND}; border-color: ${BRAND}; color: #fff; }
-    .boss-lens-btn:disabled { opacity: 0.4; cursor: default; }
-    .boss-lens-seed-row { display: flex; gap: 6px; }
-    .boss-lens-seed-num {
-      width: 100%; box-sizing: border-box;
-      height: 36px;
-      background: #171819;
-      border: 1px solid #3a3d40;
-      border-radius: 6px;
-      padding: 6px 10px;
-      color: #f2f2f2;
-      font-family: ui-monospace, Consolas, monospace;
-      font-size: 15px;
-      text-align: center;
-      outline: none;
-    }
-    .boss-lens-seed-num:focus { border-color: ${BRAND}; }
-    .boss-lens-seed-last {
-      font-size: 11px; color: rgba(255,255,255,0.55);
-      text-align: center;
-    }
-
-    .boss-lens-preview {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-    }
-    .boss-lens-card {
-      padding: 16px;
-      background: #2a2a2a;
-      border-radius: 12px;
-      border: 1px solid #444;
-      color: #fff;
-      max-width: 760px;
-      width: 100%;
-      box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
-    }
-    .boss-lens-card-title {
-      font-size: 1.2em;
-      color: #ffd700;
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 14px;
-    }
+    /* Preview mini-cards */
     .boss-lens-gear {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -275,13 +105,13 @@ function injectCSS() {
       margin-bottom: 12px;
     }
     .boss-lens-mini {
-      background: #1e1e1e;
+      background: var(--boss-bg-section);
       padding: 10px;
       border-radius: 8px;
-      border-left: 3px solid var(--accent, ${BRAND});
+      border-left: 3px solid var(--accent, var(--boss-brand));
     }
     .boss-lens-mini .h {
-      color: var(--accent, ${BRAND});
+      color: var(--accent, var(--boss-brand));
       font-size: 0.85em;
       font-weight: bold;
       letter-spacing: 1px;
@@ -293,55 +123,22 @@ function injectCSS() {
       word-break: break-word;
     }
     .boss-lens-meta {
-      color: #888;
+      color: var(--boss-text-muted);
       font-size: 0.8em;
       margin-bottom: 8px;
     }
     .boss-lens-output {
-      background: #1a1a1a;
+      background: var(--boss-bg-code);
       padding: 12px;
-      border-radius: 8px;
-      font-family: "Courier New", ui-monospace, monospace;
+      border-radius: var(--boss-radius-lg);
+      font-family: var(--boss-font-mono);
       font-size: 0.95em;
       line-height: 1.6;
       word-break: break-all;
-      border: 1px solid #333;
+      border: 1px solid var(--boss-border);
       white-space: pre-wrap;
     }
     .boss-lens-output .arrow { color: #ff0066; font-weight: bold; }
-
-    .boss-lens-footer {
-      height: 56px;
-      background: #171718;
-      border-top: 1px solid #3a3d40;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-lens-save {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 2px 6px ${BRAND_GLOW};
-    }
-    .boss-lens-save:hover { background: #7C3AED; }
-    .boss-lens-cancel {
-      background: transparent;
-      color: #eee;
-      border: 1px solid #3a3d40;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .boss-lens-cancel:hover { background: #3a3d40; }
   `;
   const style = document.createElement("style");
   style.id = "boss-lens-css";
@@ -548,11 +345,11 @@ function buildPreviewHTML(state, lib) {
 
   const gearVal = (v, isRandom) =>
     isRandom
-      ? `<span style="color:${BRAND}">${escapeHtml(v)}</span>`
+      ? `<span style="color:var(--boss-brand)">${escapeHtml(v)}</span>`
       : escapeHtml(v);
 
   return `
-    <div class="boss-lens-card-title">📸 LENS LIBRARY PRO BOSS</div>
+    <div class="boss-card-title">📸 LENS LIBRARY PRO BOSS</div>
     <div class="boss-lens-gear">
       <div class="boss-lens-mini" style="--accent:#88ccff">
         <div class="h">BRAND</div>
@@ -600,7 +397,7 @@ function renderHeader(node) {
 function setStatus(node, text, isError = false) {
   const root = node._bossLensRoot;
   if (!root) return;
-  const s = root.querySelector(".boss-lens-status");
+  const s = root.querySelector(".boss-status");
   if (!s) return;
   s.textContent = text || "";
   s.classList.toggle("is-error", !!isError);
@@ -637,20 +434,20 @@ function setupLensNode(node) {
   }
 
   const root = document.createElement("div");
-  root.className = "boss-lens-root";
+  root.className = "boss-widget";
 
   const head = document.createElement("div");
-  head.className = "boss-lens-head";
+  head.className = "boss-widget-head";
   root.appendChild(head);
 
   const openBtn = document.createElement("button");
   openBtn.type = "button";
-  openBtn.className = "boss-lens-open";
+  openBtn.className = "boss-btn-open";
   openBtn.textContent = "📸 Open Editor";
   root.appendChild(openBtn);
 
   const status = document.createElement("div");
-  status.className = "boss-lens-status";
+  status.className = "boss-status";
   root.appendChild(status);
 
   node.addDOMWidget("lens_ui", "boss_lens", root, {
@@ -743,24 +540,24 @@ class LensEditor {
     }
 
     const modal = document.createElement("div");
-    modal.className = "boss-lens-modal";
+    modal.className = "boss-modal";
 
     const bar = document.createElement("div");
-    bar.className = "boss-lens-bar";
-    bar.innerHTML = `<div class="boss-lens-bar-title">Lens Library Editor</div>`;
+    bar.className = "boss-bar";
+    bar.innerHTML = `<div class="boss-bar-title">Lens Library Editor</div>`;
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
-    closeBtn.className = "boss-lens-bar-x";
+    closeBtn.className = "boss-btn-close";
     closeBtn.textContent = "CLOSE";
     closeBtn.addEventListener("click", () => this.cancel());
     bar.appendChild(closeBtn);
     modal.appendChild(bar);
 
     const body = document.createElement("div");
-    body.className = "boss-lens-body";
+    body.className = "boss-body";
 
     const side = document.createElement("div");
-    side.className = "boss-lens-side";
+    side.className = "boss-side boss-lens-side-custom";
 
     side.appendChild(this.buildModeSection());
     this._brandWrap = this.buildListSection(
@@ -790,23 +587,23 @@ class LensEditor {
     body.appendChild(side);
 
     const previewWrap = document.createElement("div");
-    previewWrap.className = "boss-lens-preview";
+    previewWrap.className = "boss-preview";
     const card = document.createElement("div");
-    card.className = "boss-lens-card";
+    card.className = "boss-card";
     previewWrap.appendChild(card);
     body.appendChild(previewWrap);
     modal.appendChild(body);
 
     const footer = document.createElement("div");
-    footer.className = "boss-lens-footer";
+    footer.className = "boss-footer";
     const saveBtn = document.createElement("button");
     saveBtn.type = "button";
-    saveBtn.className = "boss-lens-save";
+    saveBtn.className = "boss-btn-primary";
     saveBtn.textContent = "Save";
     saveBtn.addEventListener("click", () => this.save());
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
-    cancelBtn.className = "boss-lens-cancel";
+    cancelBtn.className = "boss-btn-ghost";
     cancelBtn.textContent = "Cancel";
     cancelBtn.addEventListener("click", () => this.cancel());
     footer.appendChild(saveBtn);
@@ -825,28 +622,24 @@ class LensEditor {
   }
 
   buildModeSection() {
-    const wrap = document.createElement("div");
-    const lbl = document.createElement("span");
-    lbl.className = "boss-lens-section-label";
-    lbl.textContent = "Mode";
-    wrap.appendChild(lbl);
+    const options = MODE_KEYS.map((m) => ({
+      value: m,
+      label: MODE_LABELS[m] || m,
+    }));
 
-    const sel = document.createElement("select");
-    sel.className = "boss-lens-input";
-    for (const m of MODE_KEYS) {
-      const o = document.createElement("option");
-      o.value = m;
-      o.textContent = MODE_LABELS[m] || m;
-      if (m === this.state.mode) o.selected = true;
-      sel.appendChild(o);
-    }
-    sel.addEventListener("change", (e) => {
-      this.state.mode = e.target.value;
-      this.updateGearDisabled();
-      this.refreshPreview();
+    const dropdown = new BossDropdown({
+      label: "Mode",
+      options,
+      value: this.state.mode,
+      searchable: false,
+      onChange: (value) => {
+        this.state.mode = value;
+        this.updateGearDisabled();
+        this.refreshPreview();
+      },
     });
-    wrap.appendChild(sel);
-    return wrap;
+
+    return dropdown.element;
   }
 
   buildListSection(title, stateKey, listVar, searchVar) {
@@ -854,13 +647,13 @@ class LensEditor {
     wrap.className = "boss-lens-list-wrap";
 
     const lbl = document.createElement("span");
-    lbl.className = "boss-lens-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = title;
     wrap.appendChild(lbl);
 
     const search = document.createElement("input");
     search.type = "text";
-    search.className = "boss-lens-input";
+    search.className = "boss-input";
     search.placeholder = `Search ${title.toLowerCase()}…`;
     wrap.appendChild(search);
 
@@ -1004,13 +797,13 @@ class LensEditor {
     const wrap = document.createElement("div");
 
     const lbl = document.createElement("span");
-    lbl.className = "boss-lens-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Seed (for random modes)";
     wrap.appendChild(lbl);
 
     const num = document.createElement("input");
     num.type = "text";
-    num.className = "boss-lens-seed-num";
+    num.className = "boss-seed-num";
     num.value = String(this.state.seed);
     num.spellcheck = false;
     num.autocomplete = "off";
@@ -1036,9 +829,9 @@ class LensEditor {
     wrap.appendChild(num);
 
     const pill = document.createElement("div");
-    pill.className = "boss-lens-pill";
+    pill.className = "boss-pill";
     const syncPill = () => {
-      pill.querySelectorAll(".boss-lens-seg").forEach((s) => {
+      pill.querySelectorAll(".boss-seg").forEach((s) => {
         s.classList.toggle("active", s.dataset.mode === this.state.seedMode);
       });
     };
@@ -1049,7 +842,7 @@ class LensEditor {
       const seg = document.createElement("button");
       seg.type = "button";
       seg.className =
-        "boss-lens-seg" + (this.state.seedMode === m ? " active" : "");
+        "boss-seg" + (this.state.seedMode === m ? " active" : "");
       seg.textContent = label;
       seg.dataset.mode = m;
       seg.addEventListener("click", () => {
@@ -1065,7 +858,7 @@ class LensEditor {
 
     const newBtn = document.createElement("button");
     newBtn.type = "button";
-    newBtn.className = "boss-lens-btn";
+    newBtn.className = "boss-btn";
     newBtn.textContent = "New fixed random";
     newBtn.style.marginTop = "6px";
     newBtn.addEventListener("click", () => {
@@ -1079,12 +872,12 @@ class LensEditor {
     wrap.appendChild(newBtn);
 
     const row = document.createElement("div");
-    row.className = "boss-lens-seed-row";
+    row.className = "boss-seed-row";
     row.style.marginTop = "6px";
 
     const useLast = document.createElement("button");
     useLast.type = "button";
-    useLast.className = "boss-lens-btn";
+    useLast.className = "boss-btn";
     useLast.textContent = "Use last seed";
     useLast.disabled = this.lastSeed == null;
     useLast.addEventListener("click", () => {
@@ -1099,7 +892,7 @@ class LensEditor {
 
     const copyBtn = document.createElement("button");
     copyBtn.type = "button";
-    copyBtn.className = "boss-lens-btn";
+    copyBtn.className = "boss-btn";
     copyBtn.textContent = "Copy";
     copyBtn.addEventListener("click", () => {
       const text = String(clampSeed(this.state.seed));
@@ -1113,7 +906,7 @@ class LensEditor {
     wrap.appendChild(row);
 
     this._lastRunEl = document.createElement("div");
-    this._lastRunEl.className = "boss-lens-seed-last";
+    this._lastRunEl.className = "boss-seed-last";
     this._lastRunEl.style.marginTop = "6px";
     wrap.appendChild(this._lastRunEl);
     this.refreshLastRun();
