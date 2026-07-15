@@ -1,0 +1,426 @@
+// Boss Nodes — Shared Theme
+// Loads theme.css and exports JS constants matching the CSS variables.
+// This file MUST load before any other Boss Node extension.
+
+import { app } from "/scripts/app.js";
+
+// ── Inject theme.css ──────────────────────────────────────────────────────
+
+async function loadThemeCSS() {
+  if (document.getElementById("boss-theme-css")) return;
+  try {
+    const resp = await fetch(
+      "/extensions/comfyui-Boss_Nodes/boss_theme/theme.css",
+    );
+    if (!resp.ok) return;
+    const css = await resp.text();
+    const style = document.createElement("style");
+    style.id = "boss-theme-css";
+    style.textContent = css;
+    document.head.appendChild(style);
+  } catch (e) {
+    console.warn("[BossTheme] Failed to load theme.css:", e);
+  }
+}
+
+loadThemeCSS();
+
+// ── JS-side theme constants (mirror CSS variables) ────────────────────────
+
+export const BOSS = {
+  // Brand
+  brand: "#8B5CF6",
+  brandHover: "#7C3AED",
+  brandGlow: "rgba(139, 92, 246, 0.3)",
+  brandGlowStrong: "rgba(139, 92, 246, 0.45)",
+
+  // Surfaces
+  bgRoot: "rgba(22, 22, 24, 0.55)",
+  bgModal: "rgba(0, 0, 0, 0.55)",
+  bgBar: "rgba(23, 23, 24, 0.8)",
+  bgSide: "rgba(23, 23, 24, 0.5)",
+  bgPanel: "rgba(23, 23, 24, 0.9)",
+  bgInput: "rgba(0, 0, 0, 0.3)",
+  bgSection: "rgba(255, 255, 255, 0.04)",
+  bgHover: "rgba(255, 255, 255, 0.05)",
+  bgActive: "rgba(139, 92, 246, 0.15)",
+
+  // Text
+  text: "#eee",
+  textBright: "#fff",
+  textDim: "#999",
+  textMuted: "#888",
+  textFaint: "#666",
+
+  // Borders
+  border: "rgba(255, 255, 255, 0.06)",
+  borderInput: "rgba(255, 255, 255, 0.08)",
+  borderStrong: "rgba(255, 255, 255, 0.12)",
+
+  // Typography
+  font: 'ui-sans-serif, system-ui, "Segoe UI", sans-serif',
+  fontMono: 'ui-monospace, "Cascadia Code", "Fira Code", monospace',
+};
+
+// ── BossDropdown Component ──────────────────────────────────────────────────
+// Replaces native <select> with glassmorphism-styled searchable dropdown.
+
+export class BossDropdown {
+  /**
+   * @param {Object} config
+   * @param {string} config.label - Label displayed in header
+   * @param {Array<string|Object>} config.options - Option strings or {value, label, icon}
+   * @param {string} config.value - Currently selected value
+   * @param {string} config.placeholder - Placeholder when no selection
+   * @param {boolean} config.searchable - Enable search input (default: true)
+   * @param {Function} config.onChange - Callback when selection changes (value, option)
+   * @param {Object} config.categoryMap - Optional { category: [value1, value2] } for category headers
+   */
+  constructor(config) {
+    this.config = config;
+    this.options = config.options || [];
+    this.value = config.value || "";
+    this.placeholder = config.placeholder || "Select…";
+    this.searchable = config.searchable !== false;
+    this.onChange = config.onChange || (() => {});
+    this.categoryMap = config.categoryMap || {};
+    this.isOpen = false;
+    this.highlightedIndex = -1;
+    this.filteredIndices = [];
+    this.searchTerm = "";
+    this.element = null;
+    this.menu = null;
+    this.listEl = null;
+    this.searchInput = null;
+    this._create();
+  }
+
+  _create() {
+    const container = document.createElement("div");
+    container.className = "boss-dropdown";
+
+    const header = document.createElement("div");
+    header.className = "dropdown-header";
+    const labelSpan = document.createElement("span");
+    labelSpan.className = "dd-label";
+    labelSpan.textContent = this.config.label || "";
+    const valueSpan = document.createElement("span");
+    valueSpan.className = "dd-value";
+    valueSpan.textContent = this._getDisplayValue(this.value);
+    const arrowSpan = document.createElement("span");
+    arrowSpan.className = "dd-arrow";
+    arrowSpan.textContent = "▼";
+    header.appendChild(labelSpan);
+    header.appendChild(valueSpan);
+    header.appendChild(arrowSpan);
+    container.appendChild(header);
+
+    const menu = document.createElement("div");
+    menu.className = "dropdown-menu";
+    if (this.searchable) {
+      const searchWrap = document.createElement("div");
+      searchWrap.className = "dd-search";
+      const input = document.createElement("input");
+      input.type = "text";
+      input.placeholder = "Search…";
+      input.autocomplete = "off";
+      searchWrap.appendChild(input);
+      menu.appendChild(searchWrap);
+      this.searchInput = input;
+    }
+    const list = document.createElement("div");
+    list.className = "dd-list";
+    menu.appendChild(list);
+    this.listEl = list;
+    container.appendChild(menu);
+
+    header.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.toggle();
+    });
+
+    this._onDocClick = (e) => {
+      if (this.isOpen && !container.contains(e.target)) {
+        this.close();
+      }
+    };
+    document.addEventListener("click", this._onDocClick);
+
+    container.addEventListener("keydown", (e) => {
+      if (!this.isOpen) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          this.open();
+        }
+        return;
+      }
+      switch (e.key) {
+        case "ArrowDown":
+          e.preventDefault();
+          this._highlightNext();
+          break;
+        case "ArrowUp":
+          e.preventDefault();
+          this._highlightPrev();
+          break;
+        case "Enter":
+          e.preventDefault();
+          this._selectHighlighted();
+          break;
+        case "Escape":
+          e.preventDefault();
+          this.close();
+          break;
+        case "Tab":
+          this.close();
+          break;
+        default:
+          if (
+            this.searchInput &&
+            !e.ctrlKey &&
+            !e.metaKey &&
+            e.key.length === 1 &&
+            e.target !== this.searchInput
+          ) {
+            this.searchInput.focus();
+          }
+          break;
+      }
+    });
+
+    if (this.searchInput) {
+      this.searchInput.addEventListener("input", (e) => {
+        this.searchTerm = e.target.value;
+        this._filterAndRender();
+      });
+      this.searchInput.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          this.close();
+          e.stopPropagation();
+        }
+        if (e.key === "ArrowDown") {
+          e.preventDefault();
+          this._highlightNext();
+        }
+        if (e.key === "ArrowUp") {
+          e.preventDefault();
+          this._highlightPrev();
+        }
+        if (e.key === "Enter") {
+          e.preventDefault();
+          this._selectHighlighted();
+        }
+      });
+    }
+
+    this.element = container;
+    this.menu = menu;
+    this.header = header;
+    this.valueSpan = valueSpan;
+    this.arrowSpan = arrowSpan;
+    this._filterAndRender();
+  }
+
+  _getDisplayValue(value) {
+    const opt = this.options.find((o) =>
+      typeof o === "string" ? o === value : o.value === value,
+    );
+    if (opt) return typeof opt === "string" ? opt : opt.label || opt.value;
+    return value || this.placeholder;
+  }
+
+  _filterAndRender() {
+    const term = this.searchTerm.toLowerCase();
+    const filtered = [];
+    for (let i = 0; i < this.options.length; i++) {
+      const opt = this.options[i];
+      const label = typeof opt === "string" ? opt : opt.label || opt.value;
+      if (label.toLowerCase().includes(term)) filtered.push(i);
+    }
+    this.filteredIndices = filtered;
+    this._renderList();
+    this.highlightedIndex = -1;
+  }
+
+  _renderList() {
+    const list = this.listEl;
+    list.innerHTML = "";
+    if (this.filteredIndices.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "dd-empty";
+      empty.textContent = "No results found";
+      list.appendChild(empty);
+      return;
+    }
+    const categories = {};
+    for (const idx of this.filteredIndices) {
+      const opt = this.options[idx];
+      const label = typeof opt === "string" ? opt : opt.label || opt.value;
+      let cat = null;
+      for (const [catName, catValues] of Object.entries(this.categoryMap)) {
+        if (catValues.includes(label) || catValues.includes(opt.value)) {
+          cat = catName;
+          break;
+        }
+      }
+      if (!cat) cat = "All";
+      if (!categories[cat]) categories[cat] = [];
+      categories[cat].push(idx);
+    }
+    const catOrder = ["Favorites", "Recent", "All"];
+    const otherCats = Object.keys(categories)
+      .filter((c) => !catOrder.includes(c))
+      .sort();
+    const orderedCats = [
+      ...catOrder.filter((c) => categories[c]),
+      ...otherCats,
+    ];
+    for (const cat of orderedCats) {
+      if (cat !== "All" || orderedCats.length > 1) {
+        const catDiv = document.createElement("div");
+        catDiv.className = "dd-category";
+        catDiv.textContent = cat;
+        list.appendChild(catDiv);
+      }
+      for (const idx of categories[cat]) {
+        const opt = this.options[idx];
+        const label = typeof opt === "string" ? opt : opt.label || opt.value;
+        const value = typeof opt === "string" ? opt : opt.value;
+        const icon = typeof opt === "object" && opt.icon ? opt.icon : null;
+        const div = document.createElement("div");
+        div.className = "dd-item" + (value === this.value ? " selected" : "");
+        div.dataset.index = idx;
+        div.dataset.value = value;
+        if (icon) {
+          const iconSpan = document.createElement("span");
+          iconSpan.className = "dd-icon";
+          iconSpan.textContent = icon;
+          div.appendChild(iconSpan);
+        }
+        const labelSpan = document.createElement("span");
+        labelSpan.textContent = label;
+        div.appendChild(labelSpan);
+        if (value === this.value) {
+          const checkSpan = document.createElement("span");
+          checkSpan.className = "dd-check";
+          checkSpan.textContent = "✓";
+          div.appendChild(checkSpan);
+        }
+        div.addEventListener("click", () => this._selectValue(value, opt));
+        div.addEventListener("mouseenter", () => {
+          this._clearHighlight();
+          div.classList.add("highlighted");
+        });
+        div.addEventListener("mouseleave", () => {
+          div.classList.remove("highlighted");
+        });
+        list.appendChild(div);
+      }
+    }
+  }
+
+  _clearHighlight() {
+    this.listEl
+      .querySelectorAll(".dd-item.highlighted")
+      .forEach((el) => el.classList.remove("highlighted"));
+  }
+
+  _highlightNext() {
+    const items = this.listEl.querySelectorAll(".dd-item");
+    if (items.length === 0) return;
+    let next = this.highlightedIndex + 1;
+    if (next >= items.length) next = 0;
+    this._clearHighlight();
+    this.highlightedIndex = next;
+    items[next].classList.add("highlighted");
+    items[next].scrollIntoView({ block: "nearest" });
+  }
+
+  _highlightPrev() {
+    const items = this.listEl.querySelectorAll(".dd-item");
+    if (items.length === 0) return;
+    let prev = this.highlightedIndex - 1;
+    if (prev < 0) prev = items.length - 1;
+    this._clearHighlight();
+    this.highlightedIndex = prev;
+    items[prev].classList.add("highlighted");
+    items[prev].scrollIntoView({ block: "nearest" });
+  }
+
+  _selectHighlighted() {
+    const items = this.listEl.querySelectorAll(".dd-item");
+    if (this.highlightedIndex >= 0 && this.highlightedIndex < items.length) {
+      const el = items[this.highlightedIndex];
+      this._selectValue(el.dataset.value, this.options[parseInt(el.dataset.index)]);
+    }
+  }
+
+  _selectValue(value, opt) {
+    if (value === this.value) {
+      this.close();
+      return;
+    }
+    this.value = value;
+    this.valueSpan.textContent = this._getDisplayValue(value);
+    this.onChange(value, opt);
+    this._filterAndRender();
+    this.close();
+  }
+
+  open() {
+    if (this.isOpen) return;
+    this.isOpen = true;
+    this.menu.classList.add("open");
+    this.arrowSpan.classList.add("open");
+    if (this.searchInput) {
+      setTimeout(() => this.searchInput.focus(), 50);
+    }
+    this._filterAndRender();
+  }
+
+  close() {
+    if (!this.isOpen) return;
+    this.isOpen = false;
+    this.menu.classList.remove("open");
+    this.arrowSpan.classList.remove("open");
+    if (this.searchInput) {
+      this.searchInput.value = "";
+      this.searchTerm = "";
+    }
+    this._clearHighlight();
+  }
+
+  toggle() {
+    this.isOpen ? this.close() : this.open();
+  }
+
+  setValue(value) {
+    if (this.value !== value) {
+      this.value = value;
+      this.valueSpan.textContent = this._getDisplayValue(value);
+      this._filterAndRender();
+    }
+  }
+
+  setOptions(options) {
+    this.options = options;
+    this._filterAndRender();
+  }
+
+  destroy() {
+    this.close();
+    document.removeEventListener("click", this._onDocClick);
+    if (this.element && this.element.parentNode) {
+      this.element.parentNode.removeChild(this.element);
+    }
+  }
+}
+
+// ── Extension registration ────────────────────────────────────────────────
+
+app.registerExtension({
+  name: "BossNodes.Theme",
+  async setup() {
+    // Theme CSS is loaded on import; nothing else needed here.
+  },
+});
