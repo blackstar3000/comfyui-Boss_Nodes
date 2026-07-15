@@ -100,7 +100,7 @@ class NegativeBoosterPRO:
     RETURN_TYPES = ("STRING",)
     RETURN_NAMES = ("negative_prompt",)
     FUNCTION = "protect"
-    CATEGORY = "🌟 Pro Tools/Prompting"
+    CATEGORY = "👑 Boss Nodes/⚡ Prompting"
     OUTPUT_NODE = True
 
     # ===================================================================
