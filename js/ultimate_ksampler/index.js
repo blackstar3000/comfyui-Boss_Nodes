@@ -2,9 +2,7 @@
 // Mirrors the Prompt Master Library Pro style with a rich preview card.
 
 import { app } from "/scripts/app.js";
-
-const BRAND = "#8B5CF6";
-const BRAND_GLOW = "rgba(139, 92, 246, 0.3)";
+import { BossDropdown } from "../boss_theme/index.js";
 
 const STATE_PROP = "ksamplerState";
 const HIDDEN_INPUT_NAME = "KSamplerState";
@@ -94,122 +92,55 @@ const VISIBLE_NATIVE_WIDGETS = [
 function injectCSS() {
   if (document.getElementById("boss-ksampler-css")) return;
   const css = `
-    .boss-ks-root {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 10px;
-      background: #131415;
-      border-radius: 6px;
-      color: #eee;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .boss-ks-head {
+    /* ── Component-specific overrides ────────────────────────────── */
+
+    /* Header multi-line layout */
+    .boss-widget-head {
       display: flex;
       flex-direction: column;
       gap: 3px;
       line-height: 1.45;
       min-height: 36px;
     }
-    .boss-ks-head .label { color: #999; }
-    .boss-ks-head .value { color: #fff; font-weight: 600; }
-    .boss-ks-head .value.override { color: ${BRAND}; }
-    .boss-ks-open {
-      background: ${BRAND};
+    .boss-widget-head .label { color: var(--boss-text-muted); }
+    .boss-widget-head .value { color: #fff; font-weight: 600; }
+    .boss-widget-head .value.override { color: var(--boss-brand); }
+
+    /* Side panel width override */
+    .boss-ks-side-custom { width: 340px; }
+
+    /* Row layout */
+    .boss-ks-row { display: flex; align-items: center; gap: 10px; }
+    .boss-ks-row .boss-input { flex: 1; }
+
+    /* Checkbox */
+    .boss-ks-check {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--boss-text);
+      font-size: 13px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .boss-ks-check input { width: 16px; height: 16px; accent-color: var(--boss-brand); }
+
+    /* Action buttons */
+    .boss-ks-button {
+      background: var(--boss-brand);
       color: #fff;
       border: none;
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 12px;
+      padding: 8px 16px;
+      border-radius: var(--boss-radius-md);
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
-      transition: background 0.15s, transform 0.05s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    .boss-ks-open:hover { background: #7C3AED; }
-    .boss-ks-open:active { transform: translateY(1px); }
-    .boss-ks-status {
-      font-size: 11px;
-      color: #999;
-      text-align: center;
-      min-height: 14px;
-    }
-    .boss-ks-status.is-error { color: #ff8080; }
+    .boss-ks-button:hover { background: var(--boss-brand-hover); }
+    .boss-ks-button.danger { background: #e53e3e; }
+    .boss-ks-button.danger:hover { background: #c53030; }
 
-    .boss-ks-modal {
-      position: fixed; inset: 0;
-      background: #131415;
-      color: #eee;
-      z-index: 2000;
-      display: flex; flex-direction: column;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-    }
-    .boss-ks-bar {
-      height: 56px;
-      background: #171718;
-      border-bottom: 1px solid #3a3d40;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-ks-bar-title {
-      font-size: 14px; font-weight: 600; letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-    .boss-ks-bar-x {
-      background: transparent;
-      border: 1px solid #3a3d40;
-      color: #eee;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .boss-ks-bar-x:hover { background: #3a3d40; }
-    .boss-ks-body {
-      flex: 1; display: flex; overflow: hidden; min-height: 0;
-    }
-    .boss-ks-side {
-      width: 340px;
-      background: #171718;
-      border-right: 1px solid #3a3d40;
-      padding: 20px;
-      display: flex; flex-direction: column; gap: 16px;
-      flex-shrink: 0;
-      overflow-y: auto;
-    }
-    .boss-ks-workspace {
-      flex: 1; overflow: hidden;
-      padding: 24px;
-      box-sizing: border-box;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-    }
-    .boss-ks-card {
-      padding: 20px;
-      background: #2a2a2a00;
-      border-radius: 12px;
-      border: 1px solid #444;
-      max-width: 600px;
-      width: 100%;
-      box-shadow: 0 0 40px rgba(82, 78, 184, 0.3);
-      color: #fff;
-    }
-    .boss-ks-card-title {
-      font-size: 1.4em;
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 16px;
-      letter-spacing: 1px;
-      background: linear-gradient(#ffd700, #ff6b6b);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
+    /* Preview settings grid */
     .boss-ks-settings-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -221,109 +152,41 @@ function injectCSS() {
       justify-content: space-between;
       padding: 6px 8px;
       border-radius: 4px;
-      background: rgba(255,255,255,0.04);
+      background: var(--boss-bg-section);
     }
-    .boss-ks-setting .label {
-      color: #999;
-      font-weight: 500;
-    }
+    .boss-ks-setting .label { color: var(--boss-text-muted); font-weight: 500; }
     .boss-ks-setting .value {
       color: #fff;
       font-weight: 600;
-      font-family: ui-monospace, monospace;
+      font-family: var(--boss-font-mono);
       font-size: 0.95em;
     }
-    .boss-ks-setting .value.override { color: ${BRAND}; }
+    .boss-ks-setting .value.override { color: var(--boss-brand); }
+
+    /* Summary box */
     .boss-ks-fav-summary {
-      background: rgba(139,92,246,0.12);
+      background: var(--boss-bg-active);
       padding: 10px 12px;
-      border-radius: 6px;
-      border-left: 3px solid ${BRAND};
+      border-radius: var(--boss-radius-md);
+      border-left: 3px solid var(--boss-brand);
       font-size: 13px;
-      color: #ddd;
+      color: var(--boss-text);
       text-align: center;
     }
-    .boss-ks-fav-summary strong { color: ${BRAND}; }
+    .boss-ks-fav-summary strong { color: var(--boss-brand); }
 
-    /* Reuse existing left-panel styles from earlier */
-    .boss-ks-section-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #999;
+    /* Card title gradient */
+    .boss-ks-card-title {
+      font-size: 1.4em;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 16px;
       letter-spacing: 1px;
-      display: block;
-      margin-bottom: 6px;
+      background: linear-gradient(#ffd700, #ff6b6b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
-    .boss-ks-input, .boss-ks-select {
-      width: 100%;
-      padding: 9px 12px;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      color: #fff;
-      border-radius: 6px;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    .boss-ks-input:focus, .boss-ks-select:focus { border-color: ${BRAND}; }
-    .boss-ks-row { display: flex; align-items: center; gap: 10px; }
-    .boss-ks-row .boss-ks-input { flex: 1; }
-    .boss-ks-check {
-      display: flex;
-      align-items: center;
-      gap: 9px;
-      color: #ddd;
-      font-size: 13px;
-      cursor: pointer;
-      user-select: none;
-    }
-    .boss-ks-check input { width: 16px; height: 16px; accent-color: ${BRAND}; }
-    .boss-ks-button {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-    }
-    .boss-ks-button:hover { background: #7C3AED; }
-    .boss-ks-button.danger { background: #e53e3e; }
-    .boss-ks-button.danger:hover { background: #c53030; }
-    .boss-ks-footer {
-      height: 56px;
-      background: #171718;
-      border-top: 1px solid #3a3d40;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-ks-save {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 2px 6px ${BRAND_GLOW};
-    }
-    .boss-ks-save:hover { background: #7C3AED; }
-    .boss-ks-cancel {
-      background: transparent;
-      color: #eee;
-      border: 1px solid #3a3d40;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .boss-ks-cancel:hover { background: #3a3d40; }
   `;
   const style = document.createElement("style");
   style.id = "boss-ksampler-css";
@@ -491,7 +354,7 @@ function renderHeader(node) {
 function setStatus(node, text, isError = false) {
   const root = node._bossKsRoot;
   if (!root) return;
-  const s = root.querySelector(".boss-ks-status");
+  const s = root.querySelector(".boss-status");
   if (!s) return;
   s.textContent = text || "";
   s.classList.toggle("is-error", !!isError);
@@ -573,24 +436,24 @@ class KSamplerEditor {
       this.modal = null;
     }
     const modal = document.createElement("div");
-    modal.className = "boss-ks-modal";
+    modal.className = "boss-modal";
 
     const bar = document.createElement("div");
-    bar.className = "boss-ks-bar";
-    bar.innerHTML = `<div class="boss-ks-bar-title">KSampler Editor</div>`;
+    bar.className = "boss-bar";
+    bar.innerHTML = `<div class="boss-bar-title">KSampler Editor</div>`;
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
-    closeBtn.className = "boss-ks-bar-x";
+    closeBtn.className = "boss-btn-close";
     closeBtn.textContent = "CLOSE";
     closeBtn.addEventListener("click", () => this.cancel());
     bar.appendChild(closeBtn);
     modal.appendChild(bar);
 
     const body = document.createElement("div");
-    body.className = "boss-ks-body";
+    body.className = "boss-body";
 
     const side = document.createElement("div");
-    side.className = "boss-ks-side";
+    side.className = "boss-side boss-ks-side-custom";
     // Build controls (same as before)
     side.appendChild(this.buildPresetSection());
     side.appendChild(this.buildCfgPresetSection());
@@ -611,7 +474,7 @@ class KSamplerEditor {
     side.appendChild(this.buildFavoriteSaveSection());
 
     const workspace = document.createElement("div");
-    workspace.className = "boss-ks-workspace";
+    workspace.className = "boss-preview";
     // Preview card will be placed here
     this.previewEl = document.createElement("div");
     workspace.appendChild(this.previewEl);
@@ -620,15 +483,15 @@ class KSamplerEditor {
     modal.appendChild(body);
 
     const footer = document.createElement("div");
-    footer.className = "boss-ks-footer";
+    footer.className = "boss-footer";
     const saveBtn = document.createElement("button");
     saveBtn.type = "button";
-    saveBtn.className = "boss-ks-save";
+    saveBtn.className = "boss-btn-primary";
     saveBtn.textContent = "Apply";
     saveBtn.addEventListener("click", () => this.save());
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
-    cancelBtn.className = "boss-ks-cancel";
+    cancelBtn.className = "boss-btn-ghost";
     cancelBtn.textContent = "Cancel";
     cancelBtn.addEventListener("click", () => this.cancel());
     footer.appendChild(saveBtn);
@@ -645,70 +508,56 @@ class KSamplerEditor {
   buildPresetSection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-ks-section-label";
+    label.className = "boss-label";
     label.textContent = "Preset";
-    const select = document.createElement("select");
-    select.className = "boss-ks-select";
-    const builtinGroup = document.createElement("optgroup");
-    builtinGroup.label = "Built‑in";
-    for (const p of BUILTIN_PRESETS) {
-      const opt = document.createElement("option");
-      opt.value = p;
-      opt.textContent = p;
-      if (this.state.preset === p) opt.selected = true;
-      builtinGroup.appendChild(opt);
-    }
-    select.appendChild(builtinGroup);
-    const favGroup = document.createElement("optgroup");
-    favGroup.label = "Favorites";
+
+    const builtinOptions = BUILTIN_PRESETS.map((p) => ({ value: p, label: p }));
     const favNames = Object.keys(this.favorites);
-    if (favNames.length) {
-      for (const name of favNames) {
-        const opt = document.createElement("option");
-        opt.value = name;
-        opt.textContent = name;
-        if (this.state.preset === name) opt.selected = true;
-        favGroup.appendChild(opt);
-      }
-    } else {
-      const opt = document.createElement("option");
-      opt.value = "";
-      opt.textContent = "(none)";
-      opt.disabled = true;
-      favGroup.appendChild(opt);
-    }
-    select.appendChild(favGroup);
-    select.addEventListener("change", () => {
-      this.state.preset = select.value;
-      this.refreshPreview();
+    const favOptions = favNames.length
+      ? favNames.map((n) => ({ value: n, label: n }))
+      : [{ value: "(none)", label: "(none)", disabled: true }];
+
+    const allOptions = [
+      { type: "category", label: "Built‑in" },
+      ...builtinOptions,
+      { type: "category", label: "Favorites" },
+      ...favOptions,
+    ];
+
+    const dropdown = new BossDropdown({
+      options: allOptions,
+      value: this.state.preset,
+      placeholder: "Select preset…",
+      onChange: (val) => {
+        this.state.preset = val;
+        this.refreshPreview();
+      },
     });
     wrap.appendChild(label);
-    wrap.appendChild(select);
-    this.presetSelect = select;
+    wrap.appendChild(dropdown.element);
+    this.presetDropdown = dropdown;
     return wrap;
   }
 
   buildCfgPresetSection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-ks-section-label";
+    label.className = "boss-label";
     label.textContent = "CFG Preset";
-    const select = document.createElement("select");
-    select.className = "boss-ks-select";
-    for (const p of CFG_PRESETS) {
-      const opt = document.createElement("option");
-      opt.value = p;
-      opt.textContent = p;
-      if (this.state.cfg_preset === p) opt.selected = true;
-      select.appendChild(opt);
-    }
-    select.addEventListener("change", () => {
-      this.state.cfg_preset = select.value;
-      this.refreshPreview();
+
+    const dropdown = new BossDropdown({
+      options: CFG_PRESETS.map((p) => ({ value: p, label: p })),
+      value: this.state.cfg_preset,
+      placeholder: "Select CFG preset…",
+      searchable: false,
+      onChange: (val) => {
+        this.state.cfg_preset = val;
+        this.refreshPreview();
+      },
     });
     wrap.appendChild(label);
-    wrap.appendChild(select);
-    this.cfgPresetSelect = select;
+    wrap.appendChild(dropdown.element);
+    this.cfgPresetDropdown = dropdown;
     return wrap;
   }
 
@@ -734,36 +583,33 @@ class KSamplerEditor {
   buildSelectSection(title, key, options) {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-ks-section-label";
+    label.className = "boss-label";
     label.textContent = title;
-    const select = document.createElement("select");
-    select.className = "boss-ks-select";
-    for (const opt of options) {
-      const o = document.createElement("option");
-      o.value = opt;
-      o.textContent = opt;
-      if (this.state[key] === opt) o.selected = true;
-      select.appendChild(o);
-    }
-    select.addEventListener("change", () => {
-      this.state[key] = select.value;
-      this.refreshPreview();
+
+    const dropdown = new BossDropdown({
+      options: options.map((o) => ({ value: o, label: o })),
+      value: this.state[key],
+      placeholder: `Select ${title.toLowerCase()}…`,
+      onChange: (val) => {
+        this.state[key] = val;
+        this.refreshPreview();
+      },
     });
     wrap.appendChild(label);
-    wrap.appendChild(select);
+    wrap.appendChild(dropdown.element);
     return wrap;
   }
 
   buildNumberSection(title, key, min, max, step) {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-ks-section-label";
+    label.className = "boss-label";
     label.textContent = title;
     const row = document.createElement("div");
     row.className = "boss-ks-row";
     const input = document.createElement("input");
     input.type = "number";
-    input.className = "boss-ks-input";
+    input.className = "boss-input";
     input.min = min;
     input.max = max;
     input.step = step;
@@ -785,13 +631,13 @@ class KSamplerEditor {
   buildFavoriteSaveSection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-ks-section-label";
+    label.className = "boss-label";
     label.textContent = "Save as Favorite";
     const row = document.createElement("div");
     row.className = "boss-ks-row";
     const nameInput = document.createElement("input");
     nameInput.type = "text";
-    nameInput.className = "boss-ks-input";
+    nameInput.className = "boss-input";
     nameInput.placeholder = "Favorite name...";
     nameInput.value = this.state.favorite_name || "";
     nameInput.addEventListener("input", () => {
@@ -833,32 +679,25 @@ class KSamplerEditor {
     const delRow = document.createElement("div");
     delRow.style.marginTop = "6px";
     const delLabel = document.createElement("span");
-    delLabel.className = "boss-ks-section-label";
+    delLabel.className = "boss-label";
     delLabel.textContent = "Delete Favorite";
-    const delSelect = document.createElement("select");
-    delSelect.className = "boss-ks-select";
     const favNames = Object.keys(this.favorites);
-    if (favNames.length) {
-      for (const name of favNames) {
-        const opt = document.createElement("option");
-        opt.value = name;
-        opt.textContent = name;
-        delSelect.appendChild(opt);
-      }
-    } else {
-      const opt = document.createElement("option");
-      opt.value = "";
-      opt.textContent = "(none)";
-      opt.disabled = true;
-      delSelect.appendChild(opt);
-    }
+    const delOpts = favNames.length
+      ? favNames.map((n) => ({ value: n, label: n }))
+      : [{ value: "(none)", label: "(none)", disabled: true }];
+    const delDropdown = new BossDropdown({
+      options: delOpts,
+      value: "",
+      placeholder: "Select favorite…",
+      searchable: false,
+    });
     const delBtn = document.createElement("button");
     delBtn.type = "button";
     delBtn.className = "boss-ks-button danger";
     delBtn.textContent = "Delete";
     delBtn.addEventListener("click", async () => {
-      const name = delSelect.value;
-      if (!name) return;
+      const name = delDropdown.value;
+      if (!name || name === "(none)") return;
       if (!confirm(`Delete favorite "${name}"?`)) return;
       try {
         await this.deleteFavorite(name);
@@ -870,7 +709,7 @@ class KSamplerEditor {
     });
     const delRowInner = document.createElement("div");
     delRowInner.className = "boss-ks-row";
-    delRowInner.appendChild(delSelect);
+    delRowInner.appendChild(delDropdown.element);
     delRowInner.appendChild(delBtn);
     delRow.appendChild(delLabel);
     delRow.appendChild(delRowInner);
@@ -879,24 +718,23 @@ class KSamplerEditor {
   }
 
   refreshPresets() {
-    if (this.presetSelect) {
+    if (this.presetDropdown) {
       const current = this.state.preset;
-      const newSelect = this.buildPresetSection().querySelector("select");
-      this.presetSelect.parentNode.replaceChild(newSelect, this.presetSelect);
-      this.presetSelect = newSelect;
-      const opt = this.presetSelect.querySelector(`option[value="${current}"]`);
-      if (opt) opt.selected = true;
-      else {
-        const first = this.presetSelect.querySelector(
-          "optgroup[label='Built‑in'] option",
-        );
-        if (first) first.selected = true;
-        this.state.preset = first ? first.value : "Balanced";
-      }
-      this.presetSelect.addEventListener("change", () => {
-        this.state.preset = this.presetSelect.value;
-        this.refreshPreview();
-      });
+      const favNames = Object.keys(this.favorites);
+      const builtinOptions = BUILTIN_PRESETS.map((p) => ({ value: p, label: p }));
+      const favOptions = favNames.length
+        ? favNames.map((n) => ({ value: n, label: n }))
+        : [{ value: "(none)", label: "(none)", disabled: true }];
+
+      const allOptions = [
+        { type: "category", label: "Built‑in" },
+        ...builtinOptions,
+        { type: "category", label: "Favorites" },
+        ...favOptions,
+      ];
+
+      this.presetDropdown.setOptions(allOptions);
+      this.presetDropdown.setValue(current);
       this.refreshPreview();
     }
   }
@@ -934,20 +772,20 @@ function setupKSamplerNode(node) {
   }
 
   const root = document.createElement("div");
-  root.className = "boss-ks-root";
+  root.className = "boss-widget";
 
   const head = document.createElement("div");
-  head.className = "boss-ks-head";
+  head.className = "boss-widget-head";
   root.appendChild(head);
 
   const openBtn = document.createElement("button");
   openBtn.type = "button";
-  openBtn.className = "boss-ks-open";
+  openBtn.className = "boss-btn-open";
   openBtn.textContent = "Open Editor";
   root.appendChild(openBtn);
 
   const status = document.createElement("div");
-  status.className = "boss-ks-status";
+  status.className = "boss-status";
   root.appendChild(status);
 
   node.addDOMWidget("ksampler_ui", "boss_ks", root, {
