@@ -16,10 +16,9 @@
 // same primitives, just one more list-section / category / strength triplet.
 
 import { app } from "/scripts/app.js";
+import { BossDropdown } from "../boss_theme/index.js";
 
-// ── Brand + constants ──────────────────────────────────────────────────────
-const BRAND = "#8B5CF6";
-const BRAND_GLOW = "rgba(139, 92, 246, 0.3)";
+// ── Constants ──────────────────────────────────────────────────────────────
 
 const STATE_PROP = "sceneState";
 const HIDDEN_INPUT_NAME = "SceneState";
@@ -44,152 +43,50 @@ const COLLECTION_ACCENTS = {
 const COLLECTION_LABELS = { girl: "GIRL", male: "MALE", scene: "SCENE" };
 
 // ── CSS (injected once, idempotent) ────────────────────────────────────────
-//
-// Same brand palette + primitives as the camera/outfit editor. Renamed to
-// `boss-scene-css` so each extension has its own scoped style block.
 function injectCSS() {
   if (document.getElementById("boss-scene-css")) return;
   const css = `
-    /* On-node body */
-    .boss-scn-root {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 10px;
-      background: #131415;
-      border-radius: 6px;
-      color: #eee;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-      font-size: 12px;
+    /* ── Component-specific overrides ────────────────────────────── */
+
+    /* Header value variants */
+    .boss-widget-head .value.none { color: var(--boss-text-muted); font-style: italic; }
+    .boss-widget-head .value.random { color: var(--boss-brand); }
+    .boss-widget-head .sep { color: var(--boss-text-faint); margin: 0 6px; }
+
+    /* Preview centering */
+    .boss-side + .boss-preview {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      align-items: center;
+      justify-content: center;
     }
-    .boss-scn-head {
-      font-size: 12px;
-      color: #eee;
-      line-height: 1.5;
-      min-height: 18px;
-    }
-    .boss-scn-head .label { color: #999; }
-    .boss-scn-head .value { color: #fff; font-weight: 600; }
-    .boss-scn-head .value.none { color: #888; font-style: italic; }
-    .boss-scn-head .value.random { color: ${BRAND}; }
-    .boss-scn-head .sep { color: #555; margin: 0 6px; }
-    .boss-scn-open {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.05s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .boss-scn-open:hover { background: #7C3AED; }
-    .boss-scn-open:active { transform: translateY(1px); }
-    .boss-scn-status {
-      font-size: 11px;
-      color: #999;
-      text-align: center;
-      min-height: 14px;
-    }
-    .boss-scn-status.is-error { color: #ff8080; }
 
-    /* Fullscreen editor modal */
-    .boss-scn-modal {
-      position: fixed; inset: 0;
-      background: #131415;
-      color: #eee;
-      z-index: 2000;
-      display: flex; flex-direction: column;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-    }
-    .boss-scn-bar {
-      height: 56px;
-      background: #171718;
-      border-bottom: 1px solid #3a3d40;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-scn-bar-title { font-size: 14px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-    .boss-scn-bar-x {
-      background: transparent;
-      border: 1px solid #3a3d40;
-      color: #eee;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .boss-scn-bar-x:hover { background: #3a3d40; }
-
-    /* Body: left controls | right preview */
-    .boss-scn-body {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-      min-height: 0;
-    }
-    .boss-scn-side {
-      width: 320px;
-      background: #171718;
-      border-right: 1px solid #3a3d40;
-      padding: 18px;
-      display: flex; flex-direction: column; gap: 14px;
-      flex-shrink: 0;
-      overflow-y: auto;
-    }
-    .boss-scn-section-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #999;
-      letter-spacing: 1px;
-      display: block;
-      margin-bottom: 6px;
-    }
-    .boss-scn-input {
-      width: 100%;
-      padding: 9px 12px;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      color: #fff;
-      border-radius: 6px;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    .boss-scn-input:focus { border-color: ${BRAND}; }
-
-    /* Per-collection list (search + scrollable entries) */
+    /* Per-collection list */
     .boss-scn-list-wrap { display: flex; flex-direction: column; gap: 6px; }
     .boss-scn-list {
       max-height: 130px;
       overflow-y: auto;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      border-radius: 6px;
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border-input);
+      border-radius: var(--boss-radius-md);
     }
     .boss-scn-list-item {
       padding: 6px 12px;
       font-size: 13px;
+      color: var(--boss-text);
       cursor: pointer;
-      border-bottom: 1px solid #232527;
+      border-bottom: 1px solid var(--boss-border);
       display: flex; align-items: center; gap: 8px;
     }
     .boss-scn-list-item:last-child { border-bottom: none; }
-    .boss-scn-list-item:hover { background: #1c1e20; }
+    .boss-scn-list-item:hover { background: var(--boss-bg-hover); }
     .boss-scn-list-item.selected {
-      background: rgba(139,92,246,0.18);
-      color: #fff;
-      box-shadow: inset 3px 0 0 ${BRAND};
+      background: var(--boss-bg-active);
+      color: var(--boss-text-bright);
+      box-shadow: inset 3px 0 0 var(--boss-brand);
     }
     .boss-scn-list-item .badge {
-      font-size: 10px; color: #999; padding: 2px 6px;
-      background: #232527; border-radius: 3px;
+      font-size: 10px; color: var(--boss-text-dim); padding: 2px 6px;
+      background: var(--boss-border); border-radius: 3px;
       flex-shrink: 0;
     }
     .boss-scn-list-item .name {
@@ -201,14 +98,14 @@ function injectCSS() {
 
     /* Strength slider + linked number */
     .boss-scn-strength { display: flex; align-items: center; gap: 10px; }
-    .boss-scn-strength input[type=range] { flex: 1; accent-color: ${BRAND}; }
+    .boss-scn-strength input[type=range] { flex: 1; accent-color: var(--boss-brand); }
     .boss-scn-strength input[type=number] { width: 70px; flex-shrink: 0; }
 
     /* Seed pill + buttons */
     .boss-scn-pill {
       display: flex; gap: 0;
-      background: rgba(255,255,255,0.06);
-      border-radius: 7px;
+      background: var(--boss-bg-hover);
+      border-radius: var(--boss-radius-lg);
       padding: 3px;
     }
     .boss-scn-seg {
@@ -218,33 +115,33 @@ function injectCSS() {
       border: none;
       border-radius: 5px;
       background: transparent;
-      font-family: inherit; font-size: 12px;
-      color: rgba(255,255,255,0.55);
+      font-family: inherit; font-size: var(--boss-font-size);
+      color: var(--boss-text-muted);
       cursor: pointer; user-select: none; outline: none;
-      transition: background 0.08s, color 0.08s;
+      transition: background var(--boss-transition-fast), color var(--boss-transition-fast);
     }
-    .boss-scn-seg:hover:not(.active) { color: rgba(255,255,255,0.85); }
-    .boss-scn-seg.active { background: ${BRAND}; color: #fff; font-weight: 500; }
-    .boss-scn-seg:focus-visible { outline: 2px solid ${BRAND}; outline-offset: -2px; }
+    .boss-scn-seg:hover:not(.active) { color: var(--boss-text); }
+    .boss-scn-seg.active { background: var(--boss-brand); color: #fff; font-weight: 500; }
+    .boss-scn-seg:focus-visible { outline: 2px solid var(--boss-brand); outline-offset: -2px; }
 
     .boss-scn-btn {
       box-sizing: border-box;
       padding: 7px 10px;
-      border-radius: 6px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.85);
-      font-family: inherit; font-size: 12px;
+      border-radius: var(--boss-radius-md);
+      background: var(--boss-bg-hover);
+      border: 1px solid var(--boss-border-strong);
+      color: var(--boss-text);
+      font-family: inherit; font-size: var(--boss-font-size);
       cursor: pointer; user-select: none;
       text-align: center;
-      transition: background 0.08s, border-color 0.08s, color 0.08s;
+      transition: background var(--boss-transition-fast), border-color var(--boss-transition-fast), color var(--boss-transition-fast);
     }
-    .boss-scn-btn:hover { background: ${BRAND}; border-color: ${BRAND}; color: #fff; }
+    .boss-scn-btn:hover { background: var(--boss-brand); border-color: var(--boss-brand); color: #fff; }
     .boss-scn-btn:disabled { opacity: 0.4; cursor: default; }
     .boss-scn-btn:disabled:hover {
-      background: rgba(255,255,255,0.05);
-      border-color: rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.85);
+      background: var(--boss-bg-hover);
+      border-color: var(--boss-border-strong);
+      color: var(--boss-text);
     }
     .boss-scn-btn.is-flashing,
     .boss-scn-btn.is-flashing:hover {
@@ -256,40 +153,32 @@ function injectCSS() {
     .boss-scn-seed-num {
       width: 100%; box-sizing: border-box;
       height: 36px;
-      background: #171819;
-      border: 1px solid #3a3d40;
-      border-radius: 6px;
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border-input);
+      border-radius: var(--boss-radius-md);
       padding: 6px 10px;
-      color: #f2f2f2;
-      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      color: var(--boss-text-bright);
+      font-family: var(--boss-font-mono);
       font-size: 15px;
       text-align: center;
       outline: none;
     }
-    .boss-scn-seed-num:focus { border-color: ${BRAND}; }
+    .boss-scn-seed-num:focus { border-color: var(--boss-brand); }
     .boss-scn-seed-last {
-      font-size: 11px; line-height: 1.5;
-      color: rgba(255,255,255,0.55);
+      font-size: var(--boss-font-size-sm); line-height: 1.5;
+      color: var(--boss-text-muted);
       text-align: center;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* Right preview panel — three side-by-side cards + dark monospace final prompt */
-    .boss-scn-preview {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-      box-sizing: border-box;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-    }
+    /* Preview mini-cards */
     .boss-scn-card {
       padding: 16px;
       background: #2a2a2a;
+      background: var(--boss-bg-card);
+      backdrop-filter: var(--boss-blur-card);
       border-radius: 12px;
-      border: 1px solid #444;
-      font-family: system-ui, sans-serif;
+      border: 1px solid var(--boss-border-strong);
       color: #fff;
       max-width: 760px;
       width: 100%;
@@ -333,63 +222,29 @@ function injectCSS() {
       overflow-wrap: anywhere;
     }
     .boss-scn-mini .w {
-      color: #aaa;
+      color: var(--boss-text-muted);
       font-size: 0.8em;
     }
-    .boss-scn-mini.none .v { color: #666; font-style: italic; }
+    .boss-scn-mini.none .v { color: var(--boss-text-faint); font-style: italic; }
     .boss-scn-meta {
-      color: #888;
+      color: var(--boss-text-muted);
       font-size: 0.8em;
       margin-bottom: 8px;
       text-align: center;
     }
     .boss-scn-output {
-      background: #1a1a1a;
+      background: var(--boss-bg-code);
       padding: 12px;
-      border-radius: 8px;
-      font-family: "Courier New", ui-monospace, monospace;
+      border-radius: var(--boss-radius-lg);
+      font-family: var(--boss-font-mono);
       font-size: 0.95em;
       line-height: 1.6;
       word-break: break-all;
-      border: 1px solid #333;
+      border: 1px solid var(--boss-border);
       white-space: pre-wrap;
     }
     .boss-scn-output .arrow { color: #ff0066; font-weight: bold; }
-    .boss-scn-output.empty { color: #666; font-style: italic; }
-
-    /* Footer with Save/Cancel pinned bottom-left */
-    .boss-scn-footer {
-      height: 56px;
-      background: #171718;
-      border-top: 1px solid #3a3d40;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-scn-save {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 2px 6px ${BRAND_GLOW};
-    }
-    .boss-scn-save:hover { background: #7C3AED; }
-    .boss-scn-cancel {
-      background: transparent;
-      color: #eee;
-      border: 1px solid #3a3d40;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .boss-scn-cancel:hover { background: #3a3d40; }
+    .boss-scn-output.empty { color: var(--boss-text-faint); font-style: italic; }
   `;
   const style = document.createElement("style");
   style.id = "boss-scene-css";
@@ -525,7 +380,7 @@ function renderHeader(node) {
 function setStatus(node, text, isError = false) {
   const root = node._bossScnRoot;
   if (!root) return;
-  const s = root.querySelector(".boss-scn-status");
+  const s = root.querySelector(".boss-status");
   if (!s) return;
   s.textContent = text || "";
   s.classList.toggle("is-error", !!isError);
@@ -568,20 +423,20 @@ function setupSceneNode(node) {
   }
 
   const root = document.createElement("div");
-  root.className = "boss-scn-root";
+  root.className = "boss-widget";
 
   const head = document.createElement("div");
-  head.className = "boss-scn-head";
+  head.className = "boss-widget-head";
   root.appendChild(head);
 
   const openBtn = document.createElement("button");
   openBtn.type = "button";
-  openBtn.className = "boss-scn-open";
+  openBtn.className = "boss-btn-open";
   openBtn.textContent = "🎞️ Open Editor";
   root.appendChild(openBtn);
 
   const status = document.createElement("div");
-  status.className = "boss-scn-status";
+  status.className = "boss-status";
   root.appendChild(status);
 
   node.addDOMWidget("scene_ui", "boss_scene", root, {
@@ -821,15 +676,15 @@ class SceneEditor {
       this.modal = null;
     }
     const modal = document.createElement("div");
-    modal.className = "boss-scn-modal";
+    modal.className = "boss-modal";
 
     // Top bar
     const bar = document.createElement("div");
-    bar.className = "boss-scn-bar";
-    bar.innerHTML = `<div class="boss-scn-bar-title">Scene Maker Pro Editor</div>`;
+    bar.className = "boss-bar";
+    bar.innerHTML = `<div class="boss-bar-title">Scene Maker Pro Editor</div>`;
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
-    closeBtn.className = "boss-scn-bar-x";
+    closeBtn.className = "boss-btn-close";
     closeBtn.textContent = "CLOSE";
     closeBtn.addEventListener("click", () => this.cancel());
     bar.appendChild(closeBtn);
@@ -837,11 +692,11 @@ class SceneEditor {
 
     // Body
     const body = document.createElement("div");
-    body.className = "boss-scn-body";
+    body.className = "boss-body";
 
     // Left controls
     const side = document.createElement("div");
-    side.className = "boss-scn-side";
+    side.className = "boss-side";
 
     side.appendChild(
       this.buildListSection({
@@ -934,7 +789,7 @@ class SceneEditor {
 
     // Right preview
     const previewWrap = document.createElement("div");
-    previewWrap.className = "boss-scn-preview";
+    previewWrap.className = "boss-preview";
     const card = document.createElement("div");
     card.className = "boss-scn-card";
     previewWrap.appendChild(card);
@@ -943,15 +798,15 @@ class SceneEditor {
 
     // Footer
     const footer = document.createElement("div");
-    footer.className = "boss-scn-footer";
+    footer.className = "boss-footer";
     const saveBtn = document.createElement("button");
     saveBtn.type = "button";
-    saveBtn.className = "boss-scn-save";
+    saveBtn.className = "boss-btn-primary";
     saveBtn.textContent = "Save";
     saveBtn.addEventListener("click", () => this.save());
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
-    cancelBtn.className = "boss-scn-cancel";
+    cancelBtn.className = "boss-btn-ghost";
     cancelBtn.textContent = "Cancel";
     cancelBtn.addEventListener("click", () => this.cancel());
     footer.appendChild(saveBtn);
@@ -983,13 +838,13 @@ class SceneEditor {
     wrap.className = "boss-scn-list-wrap";
 
     const lbl = document.createElement("span");
-    lbl.className = "boss-scn-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = title;
     wrap.appendChild(lbl);
 
     const search = document.createElement("input");
     search.type = "text";
-    search.className = "boss-scn-input";
+    search.className = "boss-input";
     search.placeholder = `Search ${title.toLowerCase()}…`;
     wrap.appendChild(search);
 
@@ -1074,26 +929,23 @@ class SceneEditor {
   buildCategorySection({ title, stateKey, cats, which }) {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-scn-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = title;
     wrap.appendChild(lbl);
 
-    const sel = document.createElement("select");
-    sel.className = "boss-scn-input";
     const opts = [ALL_CATEGORIES, ...Object.keys(cats || {}).sort()];
-    for (const c of opts) {
-      const o = document.createElement("option");
-      o.value = c;
-      o.textContent = c;
-      if (c === this.state[stateKey]) o.selected = true;
-      sel.appendChild(o);
-    }
-    sel.addEventListener("change", (e) => {
-      this.state[stateKey] = e.target.value;
-      this.refreshList(which);
-      this.refreshPreview();
+    const dropdown = new BossDropdown({
+      label: "",
+      options: opts.map((c) => ({ value: c, label: c })),
+      value: this.state[stateKey],
+      searchable: opts.length > 8,
+      onChange: (value) => {
+        this.state[stateKey] = value;
+        this.refreshList(which);
+        this.refreshPreview();
+      },
     });
-    wrap.appendChild(sel);
+    wrap.appendChild(dropdown.element);
     return wrap;
   }
 
@@ -1101,7 +953,7 @@ class SceneEditor {
   buildStrengthSection({ title, stateKey }) {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-scn-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = `${title}: ${this.state[stateKey].toFixed(2)}`;
     wrap.appendChild(lbl);
 
@@ -1115,7 +967,7 @@ class SceneEditor {
     slider.value = String(this.state[stateKey]);
     const num = document.createElement("input");
     num.type = "number";
-    num.className = "boss-scn-input";
+    num.className = "boss-input";
     num.min = String(STRENGTH_MIN);
     num.max = String(STRENGTH_MAX);
     num.step = String(STRENGTH_STEP);
@@ -1140,13 +992,13 @@ class SceneEditor {
   buildDelimiterSection() {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-scn-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Delimiter";
     wrap.appendChild(lbl);
 
     const inp = document.createElement("input");
     inp.type = "text";
-    inp.className = "boss-scn-input";
+    inp.className = "boss-input";
     inp.value = this.state.delimiter;
     inp.addEventListener("change", (e) => {
       this.state.delimiter = e.target.value;
@@ -1161,7 +1013,7 @@ class SceneEditor {
     const wrap = document.createElement("div");
 
     const lbl = document.createElement("span");
-    lbl.className = "boss-scn-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Seed";
     wrap.appendChild(lbl);
 
