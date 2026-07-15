@@ -478,6 +478,13 @@
     "Steven Spielberg": "by steven spielberg, cinematic storytelling, emotional depth, dramatic lighting",
     "Christopher Nolan": "by christopher nolan, cinematic realism, complex narratives, dramatic lighting"
   },
+  "High-End Rendering": {
+    "Global Illumination": "global illumination, realistic bounced light, natural ambient fill",
+    "Ray Traced GI + Reflections": "ray traced global illumination, perfect reflections, photorealistic lighting",
+    "Subsurface Scattering": "subsurface scattering, translucent skin, realistic ears and nose glow",
+    "Lumen RT": "lumen real-time global illumination, nanite, unreal engine 5 quality",
+    "Path Traced": "full path tracing, reference quality lighting, maximum realism"
+  },
   "Pony / SDXL Anime": {
     "Anime (Pony Score 9)": "score_9, score_8_up, score_7_up, source_anime, absurdres, vibrant colors, clean shading",
     "Pony Diffusion V6": "pony diffusion v6 style, semi-realistic, detailed face, clean render",
