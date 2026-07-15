@@ -1,9 +1,6 @@
 // Smart Text CLIP Encode Pro – BOSS UI
 import { app } from "/scripts/app.js";
 
-const BRAND = "#8B5CF6";
-const BRAND_GLOW = "rgba(139, 92, 246, 0.3)";
-
 const STATE_PROP = "textState";
 const HIDDEN_INPUT_NAME = "TextState";
 
@@ -15,127 +12,31 @@ const VISIBLE_NATIVE_WIDGETS = ["positive_text", "negative_text", "module"];
 function injectCSS() {
   if (document.getElementById("boss-smart-text-css")) return;
   const css = `
-    .boss-st-root {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 10px;
-      background: rgba(22, 22, 24, 0.55);
-      backdrop-filter: blur(22px);
-      -webkit-backdrop-filter: blur(22px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 16px;
-      color: #eee;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-    }
-    .boss-st-head {
-      font-size: 11px;
-      color: #ccc;
-      line-height: 1.4;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 2px 12px;
-    }
-    .boss-st-head .label { color: #888; }
-    .boss-st-head .value { color: #fff; font-weight: 500; }
-    .boss-st-open {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 6px 12px;
-      font-size: 11px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s, box-shadow 0.2s;
-      box-shadow: 0 0 12px ${BRAND_GLOW};
-    }
-    .boss-st-open:hover { background: #7C3AED; box-shadow: 0 0 24px ${BRAND_GLOW}; }
-    .boss-st-status {
-      font-size: 10px;
-      color: #999;
-      text-align: center;
-      min-height: 14px;
-    }
-    .boss-st-status.is-error { color: #ff8080; }
-    .boss-st-status.is-success { color: #4ade80; }
+    /* ── Component-specific overrides ────────────────────────────── */
 
-    /* Modal */
-    .boss-st-modal {
-      position: fixed; inset: 0;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(12px);
-      z-index: 2000;
-      display: flex; flex-direction: column;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-    }
-    .boss-st-bar {
-      height: 56px;
-      background: rgba(23, 23, 24, 0.8);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(255,255,255,0.06);
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-st-bar-title {
-      font-size: 14px; font-weight: 600; letter-spacing: 1px;
-      text-transform: uppercase;
-      color: #fff;
-      text-shadow: 0 0 30px ${BRAND_GLOW};
-    }
-    .boss-st-bar-x {
-      background: transparent;
-      border: 1px solid rgba(255,255,255,0.12);
-      color: #eee;
-      padding: 6px 14px;
-      border-radius: 8px;
-      font-size: 12px;
-      cursor: pointer;
-      transition: background 0.1s;
-    }
-    .boss-st-bar-x:hover { background: rgba(255,255,255,0.08); }
+    /* Status variants */
+    .boss-status.is-success { color: #4ade80; }
 
-    .boss-st-body {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-      min-height: 0;
-    }
-    .boss-st-side {
-      width: 500px;
-      min-width: 300px;
-      background: rgba(23, 23, 24, 0.5);
-      backdrop-filter: blur(12px);
-      border-right: 1px solid rgba(255,255,255,0.06);
-      padding: 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      flex-shrink: 0;
-      overflow-y: auto;
-    }
-    .boss-st-side::-webkit-scrollbar { width: 4px; }
-    .boss-st-side::-webkit-scrollbar-thumb { background: ${BRAND}; border-radius: 4px; }
+    /* Side panel width override */
+    .boss-st-side-custom { width: 500px; min-width: 300px; }
 
+    /* Section labels */
     .boss-st-section-label {
       font-size: 11px;
       text-transform: uppercase;
-      color: #999;
+      color: var(--boss-text-muted);
       letter-spacing: 1px;
       margin-bottom: 2px;
     }
+
+    /* Textarea */
     .boss-st-textarea {
       width: 100%;
       padding: 8px 10px;
-      background: rgba(0,0,0,0.3);
-      border: 1px solid rgba(255,255,255,0.08);
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border);
       color: #fff;
-      border-radius: 8px;
+      border-radius: var(--boss-radius-md);
       font-size: 13px;
       outline: none;
       box-sizing: border-box;
@@ -144,107 +45,57 @@ function injectCSS() {
       min-height: 80px;
       transition: border-color 0.2s;
     }
-    .boss-st-textarea:focus { border-color: ${BRAND}; }
-    .boss-st-input {
-      width: 100%;
-      padding: 8px 10px;
-      background: rgba(0,0,0,0.3);
-      border: 1px solid rgba(255,255,255,0.08);
-      color: #fff;
-      border-radius: 8px;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
-      transition: border-color 0.2s;
-    }
-    .boss-st-input:focus { border-color: ${BRAND}; }
+    .boss-st-textarea:focus { border-color: var(--boss-brand); }
 
-    .boss-st-preview {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .boss-st-card {
-      background: rgba(255,255,255,0.04);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 18px;
-      padding: 18px;
-      color: #fff;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
-    }
-    .boss-st-card-title {
-      font-size: 1.2em;
-      font-weight: bold;
-      margin-bottom: 12px;
-      color: ${BRAND};
-    }
+    /* Prompt preview box */
     .boss-st-prompt-box {
       background: rgba(0,0,0,0.4);
       padding: 12px;
-      border-radius: 10px;
+      border-radius: var(--boss-radius-md);
       font-family: ui-monospace, monospace;
       font-size: 13px;
       line-height: 1.6;
       white-space: pre-wrap;
       word-break: break-word;
-      border: 1px solid rgba(255,255,255,0.04);
+      border: 1px solid var(--boss-border);
       max-height: 400px;
       overflow-y: auto;
     }
     .boss-st-token-count {
       font-size: 11px;
-      color: #999;
+      color: var(--boss-text-muted);
       margin-top: 6px;
       text-align: right;
     }
 
-    .boss-st-footer {
-      height: 56px;
-      background: rgba(23, 23, 24, 0.5);
-      backdrop-filter: blur(12px);
-      border-top: 1px solid rgba(255,255,255,0.06);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 24px;
-      flex-shrink: 0;
-      justify-content: flex-end;
-    }
-    .boss-st-save {
-      background: ${BRAND};
+    /* Info card */
+    .boss-st-info-card {
+      padding: 16px;
+      background: var(--boss-bg-section);
+      border-radius: 12px;
+      border: 1px solid var(--boss-border-strong);
+      width: 120%;
+      box-shadow: 0 0 40px rgba(82, 78, 184, 0.3);
       color: #fff;
-      border: none;
-      padding: 9px 22px;
-      border-radius: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 0 30px ${BRAND_GLOW};
-      transition: background 0.1s;
     }
-    .boss-st-save:hover { background: #7C3AED; }
-    .boss-st-cancel {
-      background: transparent;
-      color: #eee;
-      border: 1px solid rgba(255,255,255,0.15);
-      padding: 9px 22px;
-      border-radius: 10px;
-      font-size: 13px;
-      cursor: pointer;
-      transition: background 0.1s;
+    .boss-st-info-card .card-title {
+      font-size: 1.2em;
+      font-weight: bold;
+      margin-bottom: 12px;
+      color: var(--boss-brand);
     }
-    .boss-st-cancel:hover { background: rgba(255,255,255,0.05); }
 
-    .boss-st-empty {
-      color: #666;
-      font-style: italic;
-      padding: 10px;
+    /* Copy preview button */
+    .boss-st-copy-btn {
+      background: var(--boss-bg-hover);
+      color: var(--boss-text);
+      border: 1px solid var(--boss-border);
+      padding: 4px 12px;
+      border-radius: var(--boss-radius-sm);
+      font-size: 12px;
+      cursor: pointer;
     }
+    .boss-st-copy-btn:hover { background: var(--boss-bg-active); }
   `;
   const style = document.createElement("style");
   style.id = "boss-smart-text-css";
@@ -352,10 +203,10 @@ function renderHeader(node) {
 function setStatus(node, text, type = "") {
   const root = node._bossStRoot;
   if (!root) return;
-  const s = root.querySelector(".boss-st-status");
+  const s = root.querySelector(".boss-status");
   if (!s) return;
   s.textContent = text || "";
-  s.className = "boss-st-status";
+  s.className = "boss-status";
   if (type) s.classList.add(type);
 }
 
@@ -378,24 +229,24 @@ class SmartTextEditor {
       this.modal = null;
     }
     const modal = document.createElement("div");
-    modal.className = "boss-st-modal";
+    modal.className = "boss-modal";
 
     const bar = document.createElement("div");
-    bar.className = "boss-st-bar";
-    bar.innerHTML = `<div class="boss-st-bar-title">Smart Text CLIP Encode</div>`;
+    bar.className = "boss-bar";
+    bar.innerHTML = `<div class="boss-bar-title">Smart Text CLIP Encode</div>`;
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
-    closeBtn.className = "boss-st-bar-x";
+    closeBtn.className = "boss-btn-close";
     closeBtn.textContent = "CLOSE";
     closeBtn.addEventListener("click", () => this.cancel());
     bar.appendChild(closeBtn);
     modal.appendChild(bar);
 
     const body = document.createElement("div");
-    body.className = "boss-st-body";
+    body.className = "boss-body";
 
     const side = document.createElement("div");
-    side.className = "boss-st-side";
+    side.className = "boss-side boss-st-side-custom";
 
     // Positive
     const posWrap = document.createElement("div");
@@ -439,7 +290,7 @@ class SmartTextEditor {
     modWrap.appendChild(modLabel);
     const modInput = document.createElement("input");
     modInput.type = "text";
-    modInput.className = "boss-st-input";
+    modInput.className = "boss-input";
     modInput.value = this.state.module;
     modInput.addEventListener("input", () => {
       this.state.module = modInput.value;
@@ -466,10 +317,8 @@ class SmartTextEditor {
     previewContainer.appendChild(this.tokenCount);
     const copyBtn = document.createElement("button");
     copyBtn.type = "button";
-    copyBtn.className = "boss-st-save";
+    copyBtn.className = "boss-st-copy-btn";
     copyBtn.textContent = "📋 Copy Preview";
-    copyBtn.style.padding = "4px 12px";
-    copyBtn.style.fontSize = "12px";
     copyBtn.addEventListener("click", () => {
       const text = this.previewBox.textContent || "";
       navigator.clipboard
@@ -481,23 +330,23 @@ class SmartTextEditor {
     side.appendChild(previewContainer);
 
     const workspace = document.createElement("div");
-    workspace.className = "boss-st-preview";
+    workspace.className = "boss-preview";
     // Placeholder for future additional previews (not needed now)
-    workspace.innerHTML = `<div class="boss-st-card"><div class="boss-st-card-title">📝 Node Info</div><div style="color:#aaa;font-size:12px;">This node encodes both positive and negative prompts using the same CLIP model.<br><br>It also passes through MODEL and CLIP outputs for easy chaining.</div></div>`;
+    workspace.innerHTML = `<div class="boss-st-info-card"><div class="card-title">📝 Node Info</div><div style="color:#aaa;font-size:12px;">This node encodes both positive and negative prompts using the same CLIP model.<br><br>It also passes through MODEL and CLIP outputs for easy chaining.</div></div>`;
     body.appendChild(side);
     body.appendChild(workspace);
     modal.appendChild(body);
 
     const footer = document.createElement("div");
-    footer.className = "boss-st-footer";
+    footer.className = "boss-footer";
     const applyBtn = document.createElement("button");
     applyBtn.type = "button";
-    applyBtn.className = "boss-st-save";
+    applyBtn.className = "boss-btn-primary";
     applyBtn.textContent = "Apply";
     applyBtn.addEventListener("click", () => this.save());
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
-    cancelBtn.className = "boss-st-cancel";
+    cancelBtn.className = "boss-btn-ghost";
     cancelBtn.textContent = "Cancel";
     cancelBtn.addEventListener("click", () => this.cancel());
     footer.appendChild(applyBtn);
@@ -558,20 +407,20 @@ function setupSmartTextNode(node) {
   }
 
   const root = document.createElement("div");
-  root.className = "boss-st-root";
+  root.className = "boss-widget";
 
   const head = document.createElement("div");
-  head.className = "boss-st-head";
+  head.className = "boss-widget-head";
   root.appendChild(head);
 
   const openBtn = document.createElement("button");
   openBtn.type = "button";
-  openBtn.className = "boss-st-open";
+  openBtn.className = "boss-btn-open";
   openBtn.textContent = "Open Editor";
   root.appendChild(openBtn);
 
   const status = document.createElement("div");
-  status.className = "boss-st-status";
+  status.className = "boss-status";
   root.appendChild(status);
 
   node.addDOMWidget("smart_text_ui", "boss_smart_text", root, {
