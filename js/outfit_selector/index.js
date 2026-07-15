@@ -13,10 +13,9 @@
 //     editor modal with live preview) is a DOM widget via addDOMWidget.
 
 import { app } from "/scripts/app.js";
+import { BossDropdown } from "../boss_theme/index.js";
 
-// ── Brand + constants ──────────────────────────────────────────────────────
-const BRAND = "#8B5CF6";
-const BRAND_GLOW = "rgba(139, 92, 246, 0.3)";
+// ── Constants ──────────────────────────────────────────────────────────────
 
 const STATE_PROP = "outfitState";
 const HIDDEN_INPUT_NAME = "OutfitState";
@@ -34,151 +33,48 @@ const STRENGTH_STEP = 0.05;
 function injectCSS() {
   if (document.getElementById("boss-outfit-css")) return;
   const css = `
-    /* On-node body */
-    .boss-out-root {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 10px;
-      background: #131415;
-      border-radius: 6px;
-      color: #eee;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .boss-out-head {
-      font-size: 12px;
-      color: #eee;
-      line-height: 1.5;
-      min-height: 18px;
-    }
-    .boss-out-head .label { color: #999; }
-    .boss-out-head .value { color: #fff; font-weight: 600; }
-    .boss-out-head .value.none { color: #888; font-style: italic; }
-    .boss-out-head .value.random { color: ${BRAND}; }
-    .boss-out-open {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.05s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .boss-out-open:hover { background: #7C3AED; }
-    .boss-out-open:active { transform: translateY(1px); }
-    .boss-out-status {
-      font-size: 11px;
-      color: #999;
-      text-align: center;
-      min-height: 14px;
-    }
-    .boss-out-status.is-error { color: #ff8080; }
+    /* ── Component-specific overrides ────────────────────────────── */
 
-    /* Fullscreen editor modal */
-    .boss-out-modal {
-      position: fixed; inset: 0;
-      background: #131415;
-      color: #eee;
-      z-index: 2000;
-      display: flex; flex-direction: column;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-    }
-    .boss-out-bar {
-      height: 56px;
-      background: #171718;
-      border-bottom: 1px solid #3a3d40;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-out-bar-title {
-      font-size: 14px; font-weight: 600; letter-spacing: 1px;
-      text-transform: uppercase;
-    }
-    .boss-out-bar-x {
-      background: transparent;
-      border: 1px solid #3a3d40;
-      color: #eee;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .boss-out-bar-x:hover { background: #3a3d40; }
+    /* Header value variants */
+    .boss-widget-head .value.none { color: var(--boss-text-muted); font-style: italic; }
+    .boss-widget-head .value.random { color: var(--boss-brand); }
 
-    /* Body: left controls | right preview */
-    .boss-out-body {
-      flex: 1;
+    /* Preview centering override */
+    .boss-side + .boss-preview {
       display: flex;
-      overflow: hidden;
-      min-height: 0; /* allow children to shrink/scroll */
+      align-items: center;
+      justify-content: center;
     }
-    .boss-out-side {
-      width: 320px;
-      background: #171718;
-      border-right: 1px solid #3a3d40;
-      padding: 20px;
-      display: flex; flex-direction: column; gap: 18px;
-      flex-shrink: 0;
-      overflow-y: auto;
-    }
-    .boss-out-section-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #999;
-      letter-spacing: 1px;
-      display: block;
-      margin-bottom: 6px;
-    }
-    .boss-out-input {
-      width: 100%;
-      padding: 9px 12px;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      color: #fff;
-      border-radius: 6px;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    .boss-out-input:focus { border-color: ${BRAND}; }
 
     /* Outfit list (search + scrollable entries) */
     .boss-out-outfits-wrap {
       display: flex; flex-direction: column; gap: 6px;
-      /* Let the list grow inside the side panel scroll area. */
     }
     .boss-out-outfit-list {
       max-height: 220px;
       overflow-y: auto;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      border-radius: 6px;
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border-input);
+      border-radius: var(--boss-radius-md);
     }
     .boss-out-outfit-item {
       padding: 7px 12px;
       font-size: 13px;
+      color: var(--boss-text);
       cursor: pointer;
-      border-bottom: 1px solid #232527;
+      border-bottom: 1px solid var(--boss-border);
       display: flex; align-items: center; gap: 8px;
     }
     .boss-out-outfit-item:last-child { border-bottom: none; }
-    .boss-out-outfit-item:hover { background: #1c1e20; }
+    .boss-out-outfit-item:hover { background: var(--boss-bg-hover); }
     .boss-out-outfit-item.selected {
-      background: rgba(139,92,246,0.18);
-      color: #fff;
-      box-shadow: inset 3px 0 0 ${BRAND};
+      background: var(--boss-bg-active);
+      color: var(--boss-text-bright);
+      box-shadow: inset 3px 0 0 var(--boss-brand);
     }
     .boss-out-outfit-item .badge {
-      font-size: 10px; color: #999; padding: 2px 6px;
-      background: #232527; border-radius: 3px;
+      font-size: 10px; color: var(--boss-text-dim); padding: 2px 6px;
+      background: var(--boss-border); border-radius: 3px;
       flex-shrink: 0;
     }
     .boss-out-outfit-item .name { flex: 1; }
@@ -188,17 +84,17 @@ function injectCSS() {
       display: flex; align-items: center; gap: 10px;
     }
     .boss-out-strength input[type=range] {
-      flex: 1; accent-color: ${BRAND};
+      flex: 1; accent-color: var(--boss-brand);
     }
     .boss-out-strength input[type=number] {
       width: 70px; flex-shrink: 0;
     }
 
-    /* Seed pill + buttons (mirrors Pixaroma Seed) */
+    /* Seed pill + buttons */
     .boss-out-pill {
       display: flex; gap: 0;
-      background: rgba(255,255,255,0.06);
-      border-radius: 7px;
+      background: var(--boss-bg-hover);
+      border-radius: var(--boss-radius-lg);
       padding: 3px;
     }
     .boss-out-seg {
@@ -208,34 +104,34 @@ function injectCSS() {
       border: none;
       border-radius: 5px;
       background: transparent;
-      font-family: inherit; font-size: 12px;
-      color: rgba(255,255,255,0.55);
+      font-family: inherit; font-size: var(--boss-font-size);
+      color: var(--boss-text-muted);
       cursor: pointer; user-select: none;
       outline: none;
-      transition: background 0.08s, color 0.08s;
+      transition: background var(--boss-transition-fast), color var(--boss-transition-fast);
     }
-    .boss-out-seg:hover:not(.active) { color: rgba(255,255,255,0.85); }
-    .boss-out-seg.active { background: ${BRAND}; color: #fff; font-weight: 500; }
-    .boss-out-seg:focus-visible { outline: 2px solid ${BRAND}; outline-offset: -2px; }
+    .boss-out-seg:hover:not(.active) { color: var(--boss-text); }
+    .boss-out-seg.active { background: var(--boss-brand); color: #fff; font-weight: 500; }
+    .boss-out-seg:focus-visible { outline: 2px solid var(--boss-brand); outline-offset: -2px; }
 
     .boss-out-btn {
       box-sizing: border-box;
       padding: 7px 10px;
-      border-radius: 6px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.85);
-      font-family: inherit; font-size: 12px;
+      border-radius: var(--boss-radius-md);
+      background: var(--boss-bg-hover);
+      border: 1px solid var(--boss-border-strong);
+      color: var(--boss-text);
+      font-family: inherit; font-size: var(--boss-font-size);
       cursor: pointer; user-select: none;
       text-align: center;
-      transition: background 0.08s, border-color 0.08s, color 0.08s;
+      transition: background var(--boss-transition-fast), border-color var(--boss-transition-fast), color var(--boss-transition-fast);
     }
-    .boss-out-btn:hover { background: ${BRAND}; border-color: ${BRAND}; color: #fff; }
+    .boss-out-btn:hover { background: var(--boss-brand); border-color: var(--boss-brand); color: #fff; }
     .boss-out-btn:disabled { opacity: 0.4; cursor: default; }
     .boss-out-btn:disabled:hover {
-      background: rgba(255,255,255,0.05);
-      border-color: rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.85);
+      background: var(--boss-bg-hover);
+      border-color: var(--boss-border-strong);
+      color: var(--boss-text);
     }
     .boss-out-btn.is-flashing,
     .boss-out-btn.is-flashing:hover {
@@ -247,44 +143,34 @@ function injectCSS() {
     .boss-out-seed-num {
       width: 100%; box-sizing: border-box;
       height: 36px;
-      background: #171819;
-      border: 1px solid #3a3d40;
-      border-radius: 6px;
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border-input);
+      border-radius: var(--boss-radius-md);
       padding: 6px 10px;
-      color: #f2f2f2;
-      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      color: var(--boss-text-bright);
+      font-family: var(--boss-font-mono);
       font-size: 15px;
       text-align: center;
       outline: none;
     }
-    .boss-out-seed-num:focus { border-color: ${BRAND}; }
+    .boss-out-seed-num:focus { border-color: var(--boss-brand); }
     .boss-out-seed-last {
-      font-size: 11px; line-height: 1.5;
-      color: rgba(255,255,255,0.55);
+      font-size: var(--boss-font-size-sm); line-height: 1.5;
+      color: var(--boss-text-muted);
       text-align: center;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* Right preview panel */
-    .boss-out-preview {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-      box-sizing: border-box;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-    }
+    /* Card */
     .boss-out-card {
       padding: 24px;
       border-radius: 22px;
       background: linear-gradient(135deg, #1a0033, #001122);
-      font-family: system-ui, sans-serif;
       color: #fff;
       max-width: 720px;
       width: 100%;
       box-shadow: 0 0 40px rgba(255,255,255,0.05);
-      transition: border-color 0.15s, box-shadow 0.15s;
+      transition: border-color var(--boss-transition), box-shadow var(--boss-transition);
     }
     .boss-out-card-title {
       text-align: center;
@@ -297,14 +183,14 @@ function injectCSS() {
       font-size: 20px; margin-top: 8px;
       color: #ffd700; font-weight: bold;
     }
-    .boss-out-card-name.none { color: #888; font-style: italic; }
+    .boss-out-card-name.none { color: var(--boss-text-muted); font-style: italic; }
     .boss-out-card-text {
-      background: rgba(0,0,0,0.8);
+      background: var(--boss-bg-code);
       padding: 18px;
       border-radius: 14px;
-      font-family: "Courier New", ui-monospace, monospace;
+      font-family: var(--boss-font-mono);
       font-size: 14px; line-height: 1.6;
-      border: 2px solid #444;
+      border: 2px solid var(--boss-border-strong);
       word-wrap: break-word;
       white-space: pre-wrap;
       max-height: 360px;
@@ -318,51 +204,17 @@ function injectCSS() {
     }
     .boss-out-card-empty {
       text-align: center;
-      color: #999;
+      color: var(--boss-text-dim);
       font-size: 14px;
       padding: 40px;
     }
-
-    /* Footer with Save/Cancel pinned bottom-left */
-    .boss-out-footer {
-      height: 56px;
-      background: #171718;
-      border-top: 1px solid #3a3d40;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-out-save {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 2px 6px ${BRAND_GLOW};
-    }
-    .boss-out-save:hover { background: #7C3AED; }
-    .boss-out-cancel {
-      background: transparent;
-      color: #eee;
-      border: 1px solid #3a3d40;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .boss-out-cancel:hover { background: #3a3d40; }
 
     /* Modal error banner */
     .boss-out-error {
       background: #5a1a1a;
       color: #ff9999;
       padding: 12px 16px;
-      border-radius: 6px;
+      border-radius: var(--boss-radius-md);
       border-left: 4px solid #ff4444;
       margin-bottom: 12px;
       font-size: 13px;
@@ -494,7 +346,7 @@ function escapeHtml(s) {
 function setStatus(node, text, isError = false) {
   const root = node._bossOutRoot;
   if (!root) return;
-  const s = root.querySelector(".boss-out-status");
+  const s = root.querySelector(".boss-status");
   if (!s) return;
   s.textContent = text || "";
   s.classList.toggle("is-error", !!isError);
@@ -565,20 +417,20 @@ function setupOutfitNode(node) {
   }
 
   const root = document.createElement("div");
-  root.className = "boss-out-root";
+  root.className = "boss-widget";
 
   const head = document.createElement("div");
-  head.className = "boss-out-head";
+  head.className = "boss-widget-head";
   root.appendChild(head);
 
   const openBtn = document.createElement("button");
   openBtn.type = "button";
-  openBtn.className = "boss-out-open";
+  openBtn.className = "boss-btn-open";
   openBtn.textContent = "✏️ Open Editor";
   root.appendChild(openBtn);
 
   const status = document.createElement("div");
-  status.className = "boss-out-status";
+  status.className = "boss-status";
   root.appendChild(status);
 
   node.addDOMWidget("outfit_ui", "boss_outfit", root, {
@@ -725,15 +577,15 @@ class OutfitEditor {
       this.modal = null;
     }
     const modal = document.createElement("div");
-    modal.className = "boss-out-modal";
+    modal.className = "boss-modal";
 
     // Top bar
     const bar = document.createElement("div");
-    bar.className = "boss-out-bar";
-    bar.innerHTML = `<div class="boss-out-bar-title">Outfit Editor</div>`;
+    bar.className = "boss-bar";
+    bar.innerHTML = `<div class="boss-bar-title">Outfit Editor</div>`;
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
-    closeBtn.className = "boss-out-bar-x";
+    closeBtn.className = "boss-btn-close";
     closeBtn.textContent = "CLOSE";
     closeBtn.addEventListener("click", () => this.cancel());
     bar.appendChild(closeBtn);
@@ -741,9 +593,9 @@ class OutfitEditor {
 
     // Body: left controls + right preview
     const body = document.createElement("div");
-    body.className = "boss-out-body";
+    body.className = "boss-body";
     const side = document.createElement("div");
-    side.className = "boss-out-side";
+    side.className = "boss-side";
     body.appendChild(side);
 
     // ── Error banner (if load failed) ──
@@ -772,7 +624,7 @@ class OutfitEditor {
 
     // Preview panel
     const previewWrap = document.createElement("div");
-    previewWrap.className = "boss-out-preview";
+    previewWrap.className = "boss-preview";
     const card = document.createElement("div");
     card.className = "boss-out-card";
     card.id = "boss-out-card";
@@ -782,16 +634,16 @@ class OutfitEditor {
 
     // Footer: Save + Cancel pinned bottom-left
     const footer = document.createElement("div");
-    footer.className = "boss-out-footer";
+    footer.className = "boss-footer";
     const saveBtn = document.createElement("button");
     saveBtn.type = "button";
-    saveBtn.className = "boss-out-save";
+    saveBtn.className = "boss-btn-primary";
     saveBtn.textContent = "Save";
     saveBtn.disabled = this.loadError;
     saveBtn.addEventListener("click", () => this.save());
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
-    cancelBtn.className = "boss-out-cancel";
+    cancelBtn.className = "boss-btn-ghost";
     cancelBtn.textContent = "Cancel";
     cancelBtn.addEventListener("click", () => this.cancel());
     footer.appendChild(saveBtn);
@@ -812,13 +664,13 @@ class OutfitEditor {
     wrap.className = "boss-out-outfits-wrap";
 
     const lbl = document.createElement("span");
-    lbl.className = "boss-out-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Outfit";
     wrap.appendChild(lbl);
 
     const search = document.createElement("input");
     search.type = "text";
-    search.className = "boss-out-input";
+    search.className = "boss-input";
     search.placeholder = "Search outfits…";
     wrap.appendChild(search);
 
@@ -900,26 +752,23 @@ class OutfitEditor {
   buildCategorySection() {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-out-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Category";
     wrap.appendChild(lbl);
 
-    const sel = document.createElement("select");
-    sel.className = "boss-out-input";
     const opts = [ALL_CATEGORIES, ...Object.keys(this.categories).sort()];
-    for (const c of opts) {
-      const o = document.createElement("option");
-      o.value = c;
-      o.textContent = c;
-      if (c === this.state.category) o.selected = true;
-      sel.appendChild(o);
-    }
-    sel.addEventListener("change", (e) => {
-      this.state.category = e.target.value;
-      this.refreshOutfitList();
-      this.refreshPreview();
+    const dropdown = new BossDropdown({
+      label: "",
+      options: opts.map((c) => ({ value: c, label: c })),
+      value: this.state.category,
+      searchable: opts.length > 8,
+      onChange: (value) => {
+        this.state.category = value;
+        this.refreshOutfitList();
+        this.refreshPreview();
+      },
     });
-    wrap.appendChild(sel);
+    wrap.appendChild(dropdown.element);
     return wrap;
   }
 
@@ -927,7 +776,7 @@ class OutfitEditor {
   buildStrengthSection() {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-out-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = `Strength: ${this.state.strength.toFixed(2)}`;
     wrap.appendChild(lbl);
 
@@ -941,7 +790,7 @@ class OutfitEditor {
     slider.value = String(this.state.strength);
     const num = document.createElement("input");
     num.type = "number";
-    num.className = "boss-out-input";
+    num.className = "boss-input";
     num.min = String(STRENGTH_MIN);
     num.max = String(STRENGTH_MAX);
     num.step = String(STRENGTH_STEP);
@@ -967,7 +816,7 @@ class OutfitEditor {
     const wrap = document.createElement("div");
 
     const lbl = document.createElement("span");
-    lbl.className = "boss-out-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Seed";
     wrap.appendChild(lbl);
 
