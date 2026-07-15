@@ -1,8 +1,6 @@
 // Ultimate Loader Pro - DOM widget + editor modal (with model preview)
 import { app } from "/scripts/app.js";
-
-const BRAND = "#8B5CF6";
-const BRAND_GLOW = "rgba(139, 92, 246, 0.3)";
+import { BossDropdown } from "../boss_theme/index.js";
 
 const STATE_PROP = "loaderState";
 const HIDDEN_INPUT_NAME = "LoaderState";
@@ -25,200 +23,47 @@ const VISIBLE_NATIVE_WIDGETS = [
 function injectCSS() {
   if (document.getElementById("boss-loader-css")) return;
   const css = `
-    .boss-lr-root {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 10px;
-      background: #131415;
-      border-radius: 6px;
-      color: #eee;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .boss-lr-head {
-      font-size: 12px;
-      color: #eee;
-      line-height: 1.5;
-      min-height: 18px;
-    }
-    .boss-lr-head .label { color: #999; }
-    .boss-lr-head .value { color: #fff; font-weight: 600; }
-    .boss-lr-head .sep { color: #555; margin: 0 6px; }
-    .boss-lr-open {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.05s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .boss-lr-open:hover { background: #7C3AED; }
-    .boss-lr-open:active { transform: translateY(1px); }
-    .boss-lr-status {
-      font-size: 11px;
-      color: #999;
-      text-align: center;
-      min-height: 14px;
-    }
-    .boss-lr-status.is-error { color: #ff8080; }
+    /* ── Component-specific overrides ────────────────────────────── */
 
-    .boss-lr-modal {
-      position: fixed; inset: 0;
-      background: #131415;
-      color: #eee;
-      z-index: 2000;
-      display: flex; flex-direction: column;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-    }
-    .boss-lr-bar {
-      height: 56px;
-      background: #171718;
-      border-bottom: 1px solid #3a3d40;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-lr-bar-title { font-size: 14px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-    .boss-lr-bar-x {
-      background: transparent;
-      border: 1px solid #3a3d40;
-      color: #eee;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .boss-lr-bar-x:hover { background: #3a3d40; }
+    /* Header value variants */
+    .boss-widget-head .label { color: var(--boss-text-muted); }
+    .boss-widget-head .sep { color: var(--boss-text-faint); margin: 0 6px; }
 
-    .boss-lr-body {
-      flex: 1; display: flex; overflow: hidden; min-height: 0;
-    }
-    .boss-lr-side {
-      width: 380px;
-      background: #171718;
-      border-right: 1px solid #3a3d40;
-      padding: 18px;
-      display: flex; flex-direction: column; gap: 14px;
-      flex-shrink: 0;
-      overflow-y: auto;
-    }
-    .boss-lr-section-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #999;
-      letter-spacing: 1px;
-      display: block;
-      margin-bottom: 6px;
-    }
-    .boss-lr-input, .boss-lr-select {
-      width: 100%;
-      padding: 9px 12px;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      color: #fff;
-      border-radius: 6px;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    .boss-lr-input:focus, .boss-lr-select:focus { border-color: ${BRAND}; }
+    /* Side panel width override */
+    .boss-lr-side-custom { width: 380px; }
+
+    /* Row layout */
     .boss-lr-row { display: flex; align-items: center; gap: 10px; }
-    .boss-lr-row .boss-lr-input { flex: auto; }
+    .boss-lr-row .boss-input { flex: auto; }
+
+    /* Checkbox */
     .boss-lr-check {
       display: flex;
       align-items: center;
       gap: 9px;
-      color: #ddd;
+      color: var(--boss-text);
       font-size: 13px;
       cursor: pointer;
       user-select: none;
     }
-    .boss-lr-check input { width: 16px; height: 16px; accent-color: ${BRAND}; }
+    .boss-lr-check input { width: 16px; height: 16px; accent-color: var(--boss-brand); }
+
+    /* Action buttons */
     .boss-lr-btn {
-      background: ${BRAND};
+      background: var(--boss-brand);
       color: #fff;
       border: none;
       padding: 8px 16px;
-      border-radius: 6px;
+      border-radius: var(--boss-radius-md);
       font-size: 13px;
       font-weight: 600;
       cursor: pointer;
     }
-    .boss-lr-btn:hover { background: #7C3AED; }
+    .boss-lr-btn:hover { background: var(--boss-brand-hover); }
     .boss-lr-btn.danger { background: #e53e3e; }
     .boss-lr-btn.danger:hover { background: #c53030; }
 
-    .boss-lr-footer {
-      height: 56px;
-      background: #171718;
-      border-top: 1px solid #3a3d40;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-lr-save {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 2px 6px ${BRAND_GLOW};
-    }
-    .boss-lr-save:hover { background: #7C3AED; }
-    .boss-lr-cancel {
-      background: transparent;
-      color: #eee;
-      border: 1px solid #3a3d40;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .boss-lr-cancel:hover { background: #3a3d40; }
-
-    .boss-lr-preview {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-      box-sizing: border-box;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-    }
-    .boss-lr-card {
-      padding: 20px;
-      background: #000000;
-      border-radius: 12px;
-      border: 1px solid #33438775;
-      max-width: 900px;
-      width: 100%;
-      box-shadow: 0 0 40px rgba(82, 78, 184, 0.3);
-      color: #fff;
-    }
-    .boss-lr-card-title {
-      font-size: 1.4em;
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 16px;
-      letter-spacing: 1px;
-      background: linear-gradient(#ffd700, #ff6b6b);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
+    /* Preview grid */
     .boss-lr-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -230,28 +75,52 @@ function injectCSS() {
       justify-content: space-between;
       padding: 6px 8px;
       border-radius: 4px;
-      background: rgba(255,255,255,0.04);
+      background: var(--boss-bg-section);
     }
-    .boss-lr-item .label { color: #999; font-weight: 500; }
-    .boss-lr-item .value { color: #fff; font-weight: 600; font-family: ui-monospace, monospace; }
+    .boss-lr-item .label { color: var(--boss-text-muted); font-weight: 500; }
+    .boss-lr-item .value { color: #fff; font-weight: 600; font-family: var(--boss-font-mono); }
+
+    /* Summary box */
     .boss-lr-summary {
-      background: rgba(139,92,246,0.12);
+      background: var(--boss-bg-active);
       padding: 10px 12px;
-      border-radius: 6px;
-      border-left: 3px solid ${BRAND};
+      border-radius: var(--boss-radius-md);
+      border-left: 3px solid var(--boss-brand);
       font-size: 13px;
-      color: #ddd;
+      color: var(--boss-text);
       text-align: center;
     }
-    .boss-lr-summary strong { color: ${BRAND}; }
+    .boss-lr-summary strong { color: var(--boss-brand); }
+
+    /* Dimension labels (W/H) */
+    .boss-lr-row > span {
+      color: var(--boss-text);
+      font-weight: 500;
+      font-size: 13px;
+    }
+
+    /* Card title gradient */
+    .boss-lr-card-title {
+      font-size: 1.4em;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 16px;
+      letter-spacing: 1px;
+      background: linear-gradient(#ffd700, #ff6b6b);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Preview image */
     .boss-lr-preview-img {
       display: block;
       max-width: 100%;
       max-height: 200px;
       margin: 8px auto;
       border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.1);
-      background: #1a1a1a;
+      border: 1px solid var(--boss-border);
+      background: var(--boss-bg-input);
       object-fit: contain;
     }
     .boss-lr-preview-img.placeholder {
@@ -382,7 +251,7 @@ function renderHeader(node) {
 function setStatus(node, text, isError = false) {
   const root = node._bossLrRoot;
   if (!root) return;
-  const s = root.querySelector(".boss-lr-status");
+  const s = root.querySelector(".boss-status");
   if (!s) return;
   s.textContent = text || "";
   s.classList.toggle("is-error", !!isError);
@@ -505,24 +374,24 @@ class LoaderEditor {
       this.modal = null;
     }
     const modal = document.createElement("div");
-    modal.className = "boss-lr-modal";
+    modal.className = "boss-modal";
 
     const bar = document.createElement("div");
-    bar.className = "boss-lr-bar";
-    bar.innerHTML = `<div class="boss-lr-bar-title">Ultimate Loader Pro Editor</div>`;
+    bar.className = "boss-bar";
+    bar.innerHTML = `<div class="boss-bar-title">Ultimate Loader Pro Editor</div>`;
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
-    closeBtn.className = "boss-lr-bar-x";
+    closeBtn.className = "boss-btn-close";
     closeBtn.textContent = "CLOSE";
     closeBtn.addEventListener("click", () => this.cancel());
     bar.appendChild(closeBtn);
     modal.appendChild(bar);
 
     const body = document.createElement("div");
-    body.className = "boss-lr-body";
+    body.className = "boss-body";
 
     const side = document.createElement("div");
-    side.className = "boss-lr-side";
+    side.className = "boss-side boss-lr-side-custom";
 
     // ── Model section ──────────────────────────────────────────────
     side.appendChild(this.buildModelSection());
@@ -537,7 +406,7 @@ class LoaderEditor {
     side.appendChild(this.buildSizePresetSection());
 
     const workspace = document.createElement("div");
-    workspace.className = "boss-lr-preview";
+    workspace.className = "boss-preview";
     this.previewEl = document.createElement("div");
     workspace.appendChild(this.previewEl);
     body.appendChild(side);
@@ -545,15 +414,15 @@ class LoaderEditor {
     modal.appendChild(body);
 
     const footer = document.createElement("div");
-    footer.className = "boss-lr-footer";
+    footer.className = "boss-footer";
     const saveBtn = document.createElement("button");
     saveBtn.type = "button";
-    saveBtn.className = "boss-lr-save";
+    saveBtn.className = "boss-btn-primary";
     saveBtn.textContent = "Apply";
     saveBtn.addEventListener("click", () => this.save());
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
-    cancelBtn.className = "boss-lr-cancel";
+    cancelBtn.className = "boss-btn-ghost";
     cancelBtn.textContent = "Cancel";
     cancelBtn.addEventListener("click", () => this.cancel());
     footer.appendChild(saveBtn);
@@ -572,49 +441,45 @@ class LoaderEditor {
   buildModelSection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-lr-section-label";
+    label.className = "boss-label";
     label.textContent = "Model";
     wrap.appendChild(label);
 
     // Checkpoint dropdown
-    const ckptSel = document.createElement("select");
-    ckptSel.className = "boss-lr-select";
     const checkpoints = this.data.checkpoints || [];
-    for (const ckpt of checkpoints) {
-      const opt = document.createElement("option");
-      opt.value = ckpt;
-      opt.textContent = ckpt;
-      if (ckpt === this.state.ckpt_name) opt.selected = true;
-      ckptSel.appendChild(opt);
-    }
-    ckptSel.addEventListener("change", () => {
-      this.state.ckpt_name = ckptSel.value;
-      this.previewUrl = this.previewImageUrl(this.state.ckpt_name);
-      this.refreshPreview();
+    const ckptDropdown = new BossDropdown({
+      options: checkpoints.map((c) => ({ value: c, label: c })),
+      value: this.state.ckpt_name,
+      placeholder: "Select checkpoint…",
+      onChange: (val) => {
+        this.state.ckpt_name = val;
+        this.previewUrl = this.previewImageUrl(this.state.ckpt_name);
+        this.refreshPreview();
+      },
     });
-    wrap.appendChild(ckptSel);
+    wrap.appendChild(ckptDropdown.element);
 
     // Action dropdown + name input
     const actionRow = document.createElement("div");
     actionRow.className = "boss-lr-row";
-    const actionSel = document.createElement("select");
-    actionSel.className = "boss-lr-select";
-    for (const act of ["Load Model", "Save Favorite", "Delete Favorite"]) {
-      const opt = document.createElement("option");
-      opt.value = act;
-      opt.textContent = act;
-      if (act === this.state.model_action) opt.selected = true;
-      actionSel.appendChild(opt);
-    }
-    actionSel.addEventListener("change", () => {
-      this.state.model_action = actionSel.value;
-      this.refreshPreview();
+    const actionDropdown = new BossDropdown({
+      options: ["Load Model", "Save Favorite", "Delete Favorite"].map((a) => ({
+        value: a,
+        label: a,
+      })),
+      value: this.state.model_action,
+      placeholder: "Select action…",
+      searchable: false,
+      onChange: (val) => {
+        this.state.model_action = val;
+        this.refreshPreview();
+      },
     });
-    actionRow.appendChild(actionSel);
+    actionRow.appendChild(actionDropdown.element);
 
     const favName = document.createElement("input");
     favName.type = "text";
-    favName.className = "boss-lr-input";
+    favName.className = "boss-input";
     favName.placeholder = "Favorite name";
     favName.value = this.state.fav_name;
     favName.addEventListener("input", () => {
@@ -626,40 +491,28 @@ class LoaderEditor {
     // Favorites preset dropdown
     const presetRow = document.createElement("div");
     const presetLabel = document.createElement("span");
-    presetLabel.className = "boss-lr-section-label";
+    presetLabel.className = "boss-label";
     presetLabel.textContent = "Model Preset (Favorite)";
     presetRow.appendChild(presetLabel);
-    const presetSel = document.createElement("select");
-    presetSel.className = "boss-lr-select";
     const favNames = Object.keys(this.data.model_favorites || {});
-    const opts = ["None", ...favNames];
-    for (const p of opts) {
-      const opt = document.createElement("option");
-      opt.value = p;
-      opt.textContent = p;
-      if (p === this.state.model_preset) opt.selected = true;
-      presetSel.appendChild(opt);
-    }
-    presetSel.addEventListener("change", () => {
-      this.state.model_preset = presetSel.value;
-      if (presetSel.value !== "None") {
-        const ckpt = this.data.model_favorites[presetSel.value];
-        if (ckpt) {
-          this.state.ckpt_name = ckpt;
-          // Update the checkpoint dropdown
-          const ckptSel2 = wrap.querySelector("select:first-of-type");
-          if (ckptSel2) {
-            for (const opt of ckptSel2.options) {
-              if (opt.value === ckpt) opt.selected = true;
-            }
+    const presetOpts = ["None", ...favNames];
+    const presetDropdown = new BossDropdown({
+      options: presetOpts.map((p) => ({ value: p, label: p })),
+      value: this.state.model_preset,
+      placeholder: "Select preset…",
+      onChange: (val) => {
+        this.state.model_preset = val;
+        if (val !== "None") {
+          const ckpt = this.data.model_favorites[val];
+          if (ckpt) {
+            this.state.ckpt_name = ckpt;
+            this.previewUrl = this.previewImageUrl(ckpt);
           }
-          // Set preview for the loaded favorite
-          this.previewUrl = this.previewImageUrl(ckpt);
         }
-      }
-      this.refreshPreview();
+        this.refreshPreview();
+      },
     });
-    presetRow.appendChild(presetSel);
+    presetRow.appendChild(presetDropdown.element);
     wrap.appendChild(presetRow);
 
     return wrap;
@@ -668,32 +521,28 @@ class LoaderEditor {
   buildVAESection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-lr-section-label";
+    label.className = "boss-label";
     label.textContent = "VAE";
     wrap.appendChild(label);
 
-    const sel = document.createElement("select");
-    sel.className = "boss-lr-select";
     const vaes = ["Baked VAE", ...(this.data.vaes || [])];
-    for (const v of vaes) {
-      const opt = document.createElement("option");
-      opt.value = v;
-      opt.textContent = v;
-      if (v === this.state.vae_name) opt.selected = true;
-      sel.appendChild(opt);
-    }
-    sel.addEventListener("change", () => {
-      this.state.vae_name = sel.value;
-      this.refreshPreview();
+    const vaeDropdown = new BossDropdown({
+      options: vaes.map((v) => ({ value: v, label: v })),
+      value: this.state.vae_name,
+      placeholder: "Select VAE…",
+      onChange: (val) => {
+        this.state.vae_name = val;
+        this.refreshPreview();
+      },
     });
-    wrap.appendChild(sel);
+    wrap.appendChild(vaeDropdown.element);
     return wrap;
   }
 
   buildClipSkipSection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-lr-section-label";
+    label.className = "boss-label";
     label.textContent = "Clip Skip";
     wrap.appendChild(label);
 
@@ -701,7 +550,7 @@ class LoaderEditor {
     row.className = "boss-lr-row";
     const input = document.createElement("input");
     input.type = "number";
-    input.className = "boss-lr-input";
+    input.className = "boss-input";
     input.min = -24;
     input.max = 0;
     input.step = 1;
@@ -722,12 +571,10 @@ class LoaderEditor {
   buildSizeSection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-lr-section-label";
+    label.className = "boss-label";
     label.textContent = "Aspect Ratio";
     wrap.appendChild(label);
 
-    const sel = document.createElement("select");
-    sel.className = "boss-lr-select";
     const presets = this.data.size_presets || {};
     const allRatios = [
       "width x height [custom]",
@@ -759,35 +606,33 @@ class LoaderEditor {
     ];
     const customKeys = Object.keys(presets);
     const fullList = [...allRatios, ...customKeys];
-    for (const r of fullList) {
-      const opt = document.createElement("option");
-      opt.value = r;
-      opt.textContent = r;
-      if (r === this.state.aspect_ratio) opt.selected = true;
-      sel.appendChild(opt);
-    }
-    sel.addEventListener("change", () => {
-      this.state.aspect_ratio = sel.value;
-      // Auto‑update width/height if it's a preset
-      const match = sel.value.match(/(\d+)\s*x\s*(\d+)/);
-      if (match) {
-        this.state.width = parseInt(match[1]);
-        this.state.height = parseInt(match[2]);
-        if (this._wInput) this._wInput.value = this.state.width;
-        if (this._hInput) this._hInput.value = this.state.height;
-      } else if (sel.value in presets) {
-        const p = presets[sel.value];
-        this.state.width = p.width;
-        this.state.height = p.height;
-        this.state.batch_size = p.batch_size || this.state.batch_size;
-        if (this._wInput) this._wInput.value = this.state.width;
-        if (this._hInput) this._hInput.value = this.state.height;
-        if (this._bInput) this._bInput.value = this.state.batch_size;
-      }
-      this.refreshPreview();
+
+    const aspectDropdown = new BossDropdown({
+      options: fullList.map((r) => ({ value: r, label: r })),
+      value: this.state.aspect_ratio,
+      placeholder: "Select aspect ratio…",
+      onChange: (val) => {
+        this.state.aspect_ratio = val;
+        const match = val.match(/(\d+)\s*x\s*(\d+)/);
+        if (match) {
+          this.state.width = parseInt(match[1]);
+          this.state.height = parseInt(match[2]);
+          if (this._wInput) this._wInput.value = this.state.width;
+          if (this._hInput) this._hInput.value = this.state.height;
+        } else if (val in presets) {
+          const p = presets[val];
+          this.state.width = p.width;
+          this.state.height = p.height;
+          this.state.batch_size = p.batch_size || this.state.batch_size;
+          if (this._wInput) this._wInput.value = this.state.width;
+          if (this._hInput) this._hInput.value = this.state.height;
+          if (this._bInput) this._bInput.value = this.state.batch_size;
+        }
+        this.refreshPreview();
+      },
     });
-    wrap.appendChild(sel);
-    this._aspectRatioSel = sel;
+    this._aspectRatioDropdown = aspectDropdown;
+    wrap.appendChild(aspectDropdown.element);
 
     // Width/Height inputs
     const dimRow = document.createElement("div");
@@ -796,7 +641,7 @@ class LoaderEditor {
     wLabel.textContent = "W";
     const wInput = document.createElement("input");
     wInput.type = "number";
-    wInput.className = "boss-lr-input";
+    wInput.className = "boss-input";
     wInput.name = "width";
     wInput.min = 64;
     wInput.max = 8192;
@@ -809,10 +654,8 @@ class LoaderEditor {
       this.state.width = val;
       wInput.value = val;
       this.state.aspect_ratio = "width x height [custom]";
-      if (this._aspectRatioSel) {
-        for (const opt of this._aspectRatioSel.options) {
-          if (opt.value === "width x height [custom]") opt.selected = true;
-        }
+      if (this._aspectRatioDropdown) {
+        this._aspectRatioDropdown.setValue("width x height [custom]");
       }
       this.refreshPreview();
     });
@@ -821,7 +664,7 @@ class LoaderEditor {
     hLabel.textContent = "H";
     const hInput = document.createElement("input");
     hInput.type = "number";
-    hInput.className = "boss-lr-input";
+    hInput.className = "boss-input";
     hInput.name = "height";
     hInput.min = 64;
     hInput.max = 8192;
@@ -834,10 +677,8 @@ class LoaderEditor {
       this.state.height = val;
       hInput.value = val;
       this.state.aspect_ratio = "width x height [custom]";
-      if (this._aspectRatioSel) {
-        for (const opt of this._aspectRatioSel.options) {
-          if (opt.value === "width x height [custom]") opt.selected = true;
-        }
+      if (this._aspectRatioDropdown) {
+        this._aspectRatioDropdown.setValue("width x height [custom]");
       }
       this.refreshPreview();
     });
@@ -854,13 +695,13 @@ class LoaderEditor {
   buildBatchSection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-lr-section-label";
+    label.className = "boss-label";
     label.textContent = "Batch Size";
     wrap.appendChild(label);
 
     const input = document.createElement("input");
     input.type = "number";
-    input.className = "boss-lr-input";
+    input.className = "boss-input";
     input.name = "batch_size";
     input.min = 1;
     input.max = 32;
@@ -882,7 +723,7 @@ class LoaderEditor {
   buildSizePresetSection() {
     const wrap = document.createElement("div");
     const label = document.createElement("span");
-    label.className = "boss-lr-section-label";
+    label.className = "boss-label";
     label.textContent = "Save Size Preset";
     wrap.appendChild(label);
 
@@ -890,7 +731,7 @@ class LoaderEditor {
     row.className = "boss-lr-row";
     const nameInput = document.createElement("input");
     nameInput.type = "text";
-    nameInput.className = "boss-lr-input";
+    nameInput.className = "boss-input";
     nameInput.placeholder = "Name";
     const saveBtn = document.createElement("button");
     saveBtn.type = "button";
@@ -925,32 +766,27 @@ class LoaderEditor {
     delRow.className = "boss-lr-row";
     delRow.style.marginTop = "6px";
     const delLabel = document.createElement("span");
-    delLabel.className = "boss-lr-section-label";
+    delLabel.className = "boss-label";
     delLabel.textContent = "Delete Size Preset";
-    const delSelect = document.createElement("select");
-    delSelect.className = "boss-lr-select";
     const presets = this.data.size_presets || {};
     const keys = Object.keys(presets);
-    if (keys.length) {
-      for (const k of keys) {
-        const opt = document.createElement("option");
-        opt.value = k;
-        opt.textContent = k;
-        delSelect.appendChild(opt);
-      }
-    } else {
-      const opt = document.createElement("option");
-      opt.value = "";
-      opt.textContent = "(none)";
-      opt.disabled = true;
-      delSelect.appendChild(opt);
-    }
+    const delOpts = keys.length ? keys : ["(none)"];
+    const delDropdown = new BossDropdown({
+      options: delOpts.map((k) => ({
+        value: k,
+        label: k,
+        disabled: k === "(none)",
+      })),
+      value: "",
+      placeholder: "Select preset…",
+      searchable: false,
+    });
     const delBtn = document.createElement("button");
     delBtn.type = "button";
     delBtn.className = "boss-lr-btn danger";
     delBtn.textContent = "Delete";
     delBtn.addEventListener("click", async () => {
-      const name = delSelect.value;
+      const name = delDropdown.value;
       if (!name) return;
       if (!confirm(`Delete size preset "${name}"?`)) return;
       try {
@@ -961,7 +797,7 @@ class LoaderEditor {
         setStatus(this.node, err.message, true);
       }
     });
-    delRow.appendChild(delSelect);
+    delRow.appendChild(delDropdown.element);
     delRow.appendChild(delBtn);
     wrap.appendChild(delRow);
 
@@ -969,8 +805,8 @@ class LoaderEditor {
   }
 
   refreshSizeDropdown() {
-    const sel = this._aspectRatioSel;
-    if (!sel) return;
+    const dropdown = this._aspectRatioDropdown;
+    if (!dropdown) return;
     const current = this.state.aspect_ratio;
     const presets = this.data.size_presets || {};
     const allRatios = [
@@ -1003,14 +839,8 @@ class LoaderEditor {
     ];
     const customKeys = Object.keys(presets);
     const fullList = [...allRatios, ...customKeys];
-    sel.innerHTML = "";
-    for (const r of fullList) {
-      const opt = document.createElement("option");
-      opt.value = r;
-      opt.textContent = r;
-      if (r === current) opt.selected = true;
-      sel.appendChild(opt);
-    }
+    dropdown.setOptions(fullList.map((r) => ({ value: r, label: r })));
+    dropdown.setValue(current);
   }
 
   refreshPreview() {
@@ -1046,20 +876,20 @@ function setupLoaderNode(node) {
   }
 
   const root = document.createElement("div");
-  root.className = "boss-lr-root";
+  root.className = "boss-widget";
 
   const head = document.createElement("div");
-  head.className = "boss-lr-head";
+  head.className = "boss-widget-head";
   root.appendChild(head);
 
   const openBtn = document.createElement("button");
   openBtn.type = "button";
-  openBtn.className = "boss-lr-open";
+  openBtn.className = "boss-btn-open";
   openBtn.textContent = "Open Editor";
   root.appendChild(openBtn);
 
   const status = document.createElement("div");
-  status.className = "boss-lr-status";
+  status.className = "boss-status";
   root.appendChild(status);
 
   node.addDOMWidget("loader_ui", "boss_loader", root, {
