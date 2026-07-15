@@ -173,11 +173,14 @@
     "85mm Portrait": "shot on 85mm lens, creamy bokeh, perfect subject isolation",
     "50mm Natural": "shot on 50mm prime, natural human eye perspective, filmic",
     "35mm Cinematic": "shot on 35mm lens, immersive storytelling, environmental portrait",
+    "35mm Storytelling": "shot on 35mm lens, environmental portrait, immersive wide feel",
     "24mm Wide Drama": "shot on 24mm wide angle, dramatic perspective, slight distortion",
     "135mm Compression": "shot on 135mm telephoto, background compression, dreamy stacked look",
     "Macro Detail": "macro lens, extreme detail, shallow depth of field",
     "Anamorphic": "anamorphic lens, cinematic oval bokeh, horizontal flares, hollywood",
-    "Tilt-Shift": "tilt-shift lens, miniature effect, selective focus, toy-like world"
+    "Tilt-Shift": "tilt-shift lens, miniature effect, selective focus, toy-like world",
+    "Arri Alexa Look": "Arri Alexa 65, cinematic color science, filmic tones, hollywood quality",
+    "8K Film Scan": "shot on 70mm IMAX, scanned at 8K, ultra detailed, reference quality"
   },
 
   "quality_boosters": {
