@@ -32,7 +32,7 @@ class QualityBoosterPRO:
     RETURN_TYPES = ("STRING", "STRING")
     RETURN_NAMES = ("quality_prompt", "live_preview")
     FUNCTION = "inject"
-    CATEGORY = "🌟 Pro Tools/Prompting"
+    CATEGORY = "👑 Boss Nodes/⚡ Prompting"
     OUTPUT_NODE = True
 
     @classmethod
