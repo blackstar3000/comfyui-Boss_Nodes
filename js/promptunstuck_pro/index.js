@@ -13,10 +13,9 @@
 //     editor with live preview) is a DOM widget via addDOMWidget.
 
 import { app } from "/scripts/app.js";
+import { BossDropdown } from "../boss_theme/index.js";
 
 // ── Brand + constants ──────────────────────────────────────────────────────
-const BRAND = "#8B5CF6";
-const BRAND_GLOW = "rgba(139, 92, 246, 0.3)";
 
 const STATE_PROP = "punstuckState";
 const HIDDEN_INPUT_NAME = "PunstuckState";
@@ -57,121 +56,12 @@ const FRAGMENTS = [
 function injectCSS() {
   if (document.getElementById("boss-punstuck-css")) return;
   const css = `
-    /* On-node body */
-    .boss-pun-root {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 10px;
-      background: #131415;
-      border-radius: 6px;
-      color: #eee;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .boss-pun-head {
-      font-size: 12px;
-      color: #eee;
-      line-height: 1.5;
-      min-height: 18px;
-    }
-    .boss-pun-head .label { color: #999; }
-    .boss-pun-head .value { color: #fff; font-weight: 600; }
-    .boss-pun-head .value.none { color: #888; font-style: italic; }
-    .boss-pun-head .value.chaos { color: ${BRAND}; }
-    .boss-pun-head .sep { color: #555; margin: 0 6px; }
-    .boss-pun-open {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.05s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .boss-pun-open:hover { background: #7C3AED; }
-    .boss-pun-open:active { transform: translateY(1px); }
-    .boss-pun-status {
-      font-size: 11px;
-      color: #999;
-      text-align: center;
-      min-height: 14px;
-    }
-    .boss-pun-status.is-error { color: #ff8080; }
+    /* ── Component-specific overrides ────────────────────────────── */
 
-    /* Fullscreen editor modal */
-    .boss-pun-modal {
-      position: fixed; inset: 0;
-      background: #131415;
-      color: #eee;
-      z-index: 2000;
-      display: flex; flex-direction: column;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-    }
-    .boss-pun-bar {
-      height: 56px;
-      background: #171718;
-      border-bottom: 1px solid #3a3d40;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-pun-bar-title { font-size: 14px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-    .boss-pun-bar-x {
-      background: transparent;
-      border: 1px solid #3a3d40;
-      color: #eee;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .boss-pun-bar-x:hover { background: #3a3d40; }
+    /* Header separator */
+    .boss-widget-head .sep { color: var(--boss-text-faint); margin: 0 6px; }
 
-    /* Body: left controls | right preview */
-    .boss-pun-body {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-      min-height: 0;
-    }
-    .boss-pun-side {
-      width: 320px;
-      background: #171718;
-      border-right: 1px solid #3a3d40;
-      padding: 18px;
-      display: flex; flex-direction: column; gap: 14px;
-      flex-shrink: 0;
-      overflow-y: auto;
-    }
-    .boss-pun-section-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #999;
-      letter-spacing: 1px;
-      display: block;
-      margin-bottom: 6px;
-    }
-    .boss-pun-input {
-      width: 100%;
-      padding: 9px 12px;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      color: #fff;
-      border-radius: 6px;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    .boss-pun-input:focus { border-color: ${BRAND}; }
-
-    /* Mode chip strip (horizontal scrollable) */
+    /* Mode chip strip */
     .boss-pun-chips {
       display: flex;
       flex-wrap: wrap;
@@ -179,29 +69,29 @@ function injectCSS() {
     }
     .boss-pun-chip {
       padding: 5px 10px;
-      font-size: 12px;
+      font-size: var(--boss-font-size);
       border-radius: 999px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.85);
+      background: var(--boss-bg-hover);
+      border: 1px solid var(--boss-border-strong);
+      color: var(--boss-text);
       cursor: pointer;
       user-select: none;
-      transition: background 0.08s, border-color 0.08s, color 0.08s;
+      transition: background var(--boss-transition-fast), border-color var(--boss-transition-fast), color var(--boss-transition-fast);
     }
-    .boss-pun-chip:hover { background: rgba(255,255,255,0.12); }
+    .boss-pun-chip:hover { background: var(--boss-bg-section); }
     .boss-pun-chip.selected,
     .boss-pun-chip.selected:hover {
-      background: ${BRAND};
-      border-color: ${BRAND};
+      background: var(--boss-brand);
+      border-color: var(--boss-brand);
       color: #fff;
       font-weight: 600;
     }
-    .boss-pun-chip.special { color: ${BRAND}; border-color: rgba(139,92,246,0.4); }
+    .boss-pun-chip.special { color: var(--boss-brand); border-color: rgba(139,92,246,0.4); }
     .boss-pun-chip.special.selected,
     .boss-pun-chip.special.selected:hover {
-      background: ${BRAND};
+      background: var(--boss-brand);
       color: #fff;
-      border-color: ${BRAND};
+      border-color: var(--boss-brand);
     }
 
     /* Fragment toggle grid */
@@ -215,50 +105,50 @@ function injectCSS() {
       align-items: center;
       gap: 6px;
       padding: 7px 10px;
-      border-radius: 6px;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.10);
-      font-size: 12px;
+      border-radius: var(--boss-radius-md);
+      background: var(--boss-bg-section);
+      border: 1px solid var(--boss-border-input);
+      font-size: var(--boss-font-size);
       cursor: pointer;
       user-select: none;
-      transition: background 0.08s, border-color 0.08s, color 0.08s;
+      transition: background var(--boss-transition-fast), border-color var(--boss-transition-fast), color var(--boss-transition-fast);
     }
-    .boss-pun-flag:hover { background: rgba(255,255,255,0.10); }
+    .boss-pun-flag:hover { background: var(--boss-bg-hover); }
     .boss-pun-flag.on {
-      background: rgba(139,92,246,0.18);
-      border-color: ${BRAND};
-      color: #fff;
+      background: var(--boss-bg-active);
+      border-color: var(--boss-brand);
+      color: var(--boss-text-bright);
     }
     .boss-pun-flag.disabled,
     .boss-pun-flag.disabled:hover {
       opacity: 0.35;
       cursor: not-allowed;
-      background: rgba(255,255,255,0.03);
-      border-color: rgba(255,255,255,0.07);
+      background: var(--boss-bg-card);
+      border-color: var(--boss-border);
     }
     .boss-pun-flag .check {
       width: 14px; height: 14px;
-      border-radius: 3px;
-      background: rgba(255,255,255,0.08);
+      border-radius: var(--boss-radius-xs);
+      background: var(--boss-bg-hover);
       display: inline-flex; align-items: center; justify-content: center;
       font-size: 10px; color: transparent;
       flex-shrink: 0;
     }
     .boss-pun-flag.on .check {
-      background: ${BRAND};
+      background: var(--boss-brand);
       color: #fff;
     }
 
     /* Intensity slider + linked number */
     .boss-pun-strength { display: flex; align-items: center; gap: 10px; }
-    .boss-pun-strength input[type=range] { flex: 1; accent-color: ${BRAND}; }
+    .boss-pun-strength input[type=range] { flex: 1; accent-color: var(--boss-brand); }
     .boss-pun-strength input[type=number] { width: 70px; flex-shrink: 0; }
 
     /* Seed pill + buttons */
     .boss-pun-pill {
       display: flex; gap: 0;
-      background: rgba(255,255,255,0.06);
-      border-radius: 7px;
+      background: var(--boss-bg-hover);
+      border-radius: var(--boss-radius-lg);
       padding: 3px;
     }
     .boss-pun-seg {
@@ -268,33 +158,33 @@ function injectCSS() {
       border: none;
       border-radius: 5px;
       background: transparent;
-      font-family: inherit; font-size: 12px;
-      color: rgba(255,255,255,0.55);
+      font-family: inherit; font-size: var(--boss-font-size);
+      color: var(--boss-text-muted);
       cursor: pointer; user-select: none; outline: none;
-      transition: background 0.08s, color 0.08s;
+      transition: background var(--boss-transition-fast), color var(--boss-transition-fast);
     }
-    .boss-pun-seg:hover:not(.active) { color: rgba(255,255,255,0.85); }
-    .boss-pun-seg.active { background: ${BRAND}; color: #fff; font-weight: 500; }
-    .boss-pun-seg:focus-visible { outline: 2px solid ${BRAND}; outline-offset: -2px; }
+    .boss-pun-seg:hover:not(.active) { color: var(--boss-text); }
+    .boss-pun-seg.active { background: var(--boss-brand); color: #fff; font-weight: 500; }
+    .boss-pun-seg:focus-visible { outline: 2px solid var(--boss-brand); outline-offset: -2px; }
 
     .boss-pun-btn {
       box-sizing: border-box;
       padding: 7px 10px;
-      border-radius: 6px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.85);
-      font-family: inherit; font-size: 12px;
+      border-radius: var(--boss-radius-md);
+      background: var(--boss-bg-hover);
+      border: 1px solid var(--boss-border-strong);
+      color: var(--boss-text);
+      font-family: inherit; font-size: var(--boss-font-size);
       cursor: pointer; user-select: none;
       text-align: center;
-      transition: background 0.08s, border-color 0.08s, color 0.08s;
+      transition: background var(--boss-transition-fast), border-color var(--boss-transition-fast), color var(--boss-transition-fast);
     }
-    .boss-pun-btn:hover { background: ${BRAND}; border-color: ${BRAND}; color: #fff; }
+    .boss-pun-btn:hover { background: var(--boss-brand); border-color: var(--boss-brand); color: #fff; }
     .boss-pun-btn:disabled { opacity: 0.4; cursor: default; }
     .boss-pun-btn:disabled:hover {
-      background: rgba(255,255,255,0.05);
-      border-color: rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.85);
+      background: var(--boss-bg-hover);
+      border-color: var(--boss-border-strong);
+      color: var(--boss-text);
     }
     .boss-pun-btn.is-flashing,
     .boss-pun-btn.is-flashing:hover {
@@ -306,113 +196,50 @@ function injectCSS() {
     .boss-pun-seed-num {
       width: 100%; box-sizing: border-box;
       height: 36px;
-      background: #171819;
-      border: 1px solid #3a3d40;
-      border-radius: 6px;
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border-input);
+      border-radius: var(--boss-radius-md);
       padding: 6px 10px;
-      color: #f2f2f2;
-      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      color: var(--boss-text-bright);
+      font-family: var(--boss-font-mono);
       font-size: 15px;
       text-align: center;
       outline: none;
     }
-    .boss-pun-seed-num:focus { border-color: ${BRAND}; }
+    .boss-pun-seed-num:focus { border-color: var(--boss-brand); }
     .boss-pun-seed-last {
-      font-size: 11px; line-height: 1.5;
-      color: rgba(255,255,255,0.55);
+      font-size: var(--boss-font-size-sm); line-height: 1.5;
+      color: var(--boss-text-muted);
       text-align: center;
       white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* Right preview panel — replicates the v3.0 _preview HTML */
-    .boss-pun-preview {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-      box-sizing: border-box;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
+    /* Right preview panel */
+    .boss-pun-output {
+      background: var(--boss-bg-code);
+      padding: 12px;
+      border-radius: var(--boss-radius-lg);
+      font-family: var(--boss-font-mono);
+      font-size: 0.95em;
+      line-height: 1.6;
+      word-break: break-all;
+      border: 1px solid var(--boss-border);
+      white-space: pre-wrap;
     }
-    .boss-pun-card {
-      padding: 16px;
-      background: #2a2a2a;
-      border-radius: 12px;
-      border: 1px solid #444;
-      font-family: system-ui, sans-serif;
-      color: #fff;
-      max-width: 760px;
-      width: 100%;
-      box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
-    }
-    .boss-pun-card-title {
-      font-size: 1.4em;
-      color: #ffd700;
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 14px;
-      letter-spacing: 1px;
-      text-shadow: 0 0 10px rgba(255,215,0,0.3);
-    }
+    .boss-pun-output .arrow { color: #ff0066; font-weight: bold; }
+    .boss-pun-output.empty { color: var(--boss-text-faint); font-style: italic; }
     .boss-pun-card-sub {
       font-size: 1.05em;
       color: #ff5555;
       text-align: center;
       margin-bottom: 12px;
     }
-    .boss-pun-output {
-      background: #1a1a1a;
-      padding: 12px;
-      border-radius: 8px;
-      font-family: "Courier New", ui-monospace, monospace;
-      font-size: 0.95em;
-      line-height: 1.6;
-      word-break: break-all;
-      border: 1px solid #333;
-      white-space: pre-wrap;
-    }
-    .boss-pun-output .arrow { color: #ff0066; font-weight: bold; }
-    .boss-pun-output.empty { color: #666; font-style: italic; }
     .boss-pun-meta {
       text-align: center;
       margin-top: 12px;
       font-size: 0.85em;
-      color: #888;
+      color: var(--boss-text-muted);
     }
-
-    /* Footer with Save/Cancel pinned bottom-left */
-    .boss-pun-footer {
-      height: 56px;
-      background: #171718;
-      border-top: 1px solid #3a3d40;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-pun-save {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 2px 6px ${BRAND_GLOW};
-    }
-    .boss-pun-save:hover { background: #7C3AED; }
-    .boss-pun-cancel {
-      background: transparent;
-      color: #eee;
-      border: 1px solid #3a3d40;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
-    }
-    .boss-pun-cancel:hover { background: #3a3d40; }
   `;
   const style = document.createElement("style");
   style.id = "boss-punstuck-css";
@@ -548,7 +375,7 @@ function renderHeader(node) {
 function setStatus(node, text, isError = false) {
   const root = node._bossPunRoot;
   if (!root) return;
-  const s = root.querySelector(".boss-pun-status");
+  const s = root.querySelector(".boss-status");
   if (!s) return;
   s.textContent = text || "";
   s.classList.toggle("is-error", !!isError);
@@ -583,20 +410,20 @@ function setupPunstuckNode(node) {
   }
 
   const root = document.createElement("div");
-  root.className = "boss-pun-root";
+  root.className = "boss-widget";
 
   const head = document.createElement("div");
-  head.className = "boss-pun-head";
+  head.className = "boss-widget-head";
   root.appendChild(head);
 
   const openBtn = document.createElement("button");
   openBtn.type = "button";
-  openBtn.className = "boss-pun-open";
+  openBtn.className = "boss-btn-open";
   openBtn.textContent = "⚡ Open Editor";
   root.appendChild(openBtn);
 
   const status = document.createElement("div");
-  status.className = "boss-pun-status";
+  status.className = "boss-status";
   root.appendChild(status);
 
   node.addDOMWidget("punstuck_ui", "boss_punstuck", root, {
@@ -853,15 +680,15 @@ class PunstuckEditor {
       this.modal = null;
     }
     const modal = document.createElement("div");
-    modal.className = "boss-pun-modal";
+    modal.className = "boss-modal";
 
     // Top bar
     const bar = document.createElement("div");
-    bar.className = "boss-pun-bar";
-    bar.innerHTML = `<div class="boss-pun-bar-title">Prompt Unstuck Pro Editor</div>`;
+    bar.className = "boss-bar";
+    bar.innerHTML = `<div class="boss-bar-title">Prompt Unstuck Pro Editor</div>`;
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
-    closeBtn.className = "boss-pun-bar-x";
+    closeBtn.className = "boss-btn-close";
     closeBtn.textContent = "CLOSE";
     closeBtn.addEventListener("click", () => this.cancel());
     bar.appendChild(closeBtn);
@@ -869,11 +696,11 @@ class PunstuckEditor {
 
     // Body
     const body = document.createElement("div");
-    body.className = "boss-pun-body";
+    body.className = "boss-body";
 
     // Left controls
     const side = document.createElement("div");
-    side.className = "boss-pun-side";
+    side.className = "boss-side";
 
     side.appendChild(this.buildModeSection());
     side.appendChild(this.buildIntensitySection());
@@ -884,24 +711,24 @@ class PunstuckEditor {
 
     // Right preview
     const previewWrap = document.createElement("div");
-    previewWrap.className = "boss-pun-preview";
+    previewWrap.className = "boss-preview";
     const card = document.createElement("div");
-    card.className = "boss-pun-card";
+    card.className = "boss-card";
     previewWrap.appendChild(card);
     body.appendChild(previewWrap);
     modal.appendChild(body);
 
     // Footer
     const footer = document.createElement("div");
-    footer.className = "boss-pun-footer";
+    footer.className = "boss-footer";
     const saveBtn = document.createElement("button");
     saveBtn.type = "button";
-    saveBtn.className = "boss-pun-save";
+    saveBtn.className = "boss-btn-primary";
     saveBtn.textContent = "Save";
     saveBtn.addEventListener("click", () => this.save());
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
-    cancelBtn.className = "boss-pun-cancel";
+    cancelBtn.className = "boss-btn-ghost";
     cancelBtn.textContent = "Cancel";
     cancelBtn.addEventListener("click", () => this.cancel());
     footer.appendChild(saveBtn);
@@ -919,7 +746,7 @@ class PunstuckEditor {
   buildModeSection() {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-pun-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Mode";
     wrap.appendChild(lbl);
 
@@ -962,7 +789,7 @@ class PunstuckEditor {
   buildIntensitySection() {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-pun-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = `Intensity: ${this.state.intensity.toFixed(2)}`;
     wrap.appendChild(lbl);
 
@@ -976,7 +803,7 @@ class PunstuckEditor {
     slider.value = String(this.state.intensity);
     const num = document.createElement("input");
     num.type = "number";
-    num.className = "boss-pun-input";
+    num.className = "boss-input";
     num.min = String(INTENSITY_MIN);
     num.max = String(INTENSITY_MAX);
     num.step = String(INTENSITY_STEP);
@@ -1001,7 +828,7 @@ class PunstuckEditor {
   buildFlagsSection() {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-pun-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Fragments";
     wrap.appendChild(lbl);
 
@@ -1054,7 +881,7 @@ class PunstuckEditor {
     const wrap = document.createElement("div");
 
     const lbl = document.createElement("span");
-    lbl.className = "boss-pun-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Seed";
     wrap.appendChild(lbl);
 
