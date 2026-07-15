@@ -61,14 +61,14 @@ def load_nodes_from_subdirectory():
     py_dir = os.path.join(current_dir, "py")
 
     if not os.path.exists(py_dir):
-        print(f"[MyCustomPack] Warning: 'py' directory not found at {py_dir}")
+        print(f"[👑 Boss Nodes] Warning: 'py' directory not found at {py_dir}")
         return
 
     utils_dir = os.path.join(py_dir, "utils")
     if os.path.isdir(utils_dir):
         _load_utils_package(utils_dir)
 
-    print(f"\n[MyCustomPack] Loading nodes from '{py_dir}'...")
+    print(f"\n[👑 Boss Nodes] Loading nodes from '{py_dir}'...")
 
     for filename in os.listdir(py_dir):
         if filename.endswith(".py") and filename != "__init__.py":
@@ -93,6 +93,7 @@ def load_nodes_from_subdirectory():
 load_nodes_from_subdirectory()
 
 # Print summary
-print(f"[MyCustomPack] Total nodes loaded: {len(NODE_CLASS_MAPPINGS)}\n")
+print(f"[👑 Boss Nodes] Total nodes loaded: {len(NODE_CLASS_MAPPINGS)}\n")
 
 __all__ = ['NODE_CLASS_MAPPINGS', 'NODE_DISPLAY_NAME_MAPPINGS', 'WEB_DIRECTORY']
+
