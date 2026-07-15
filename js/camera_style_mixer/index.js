@@ -15,11 +15,9 @@
 // UPDATED: Added Camera Framing as a third independent axis.
 
 import { app } from "/scripts/app.js";
+import { BossDropdown } from "../boss_theme/index.js";
 
-// ── Brand + constants ──────────────────────────────────────────────────────
-const BRAND = "#8B5CF6";
-const BRAND_GLOW = "rgba(139, 92, 246, 0.3)";
-
+// ── Constants ──────────────────────────────────────────────────────────────
 const STATE_PROP = "cameraState";
 const HIDDEN_INPUT_NAME = "CameraState";
 
@@ -40,254 +38,60 @@ const DELIMITER_DEFAULT = ", ";
 function injectCSS() {
   if (document.getElementById("boss-camera-css")) return;
   const css = `
-    /* On-node body */
-    .boss-cam-root {
-      box-sizing: border-box;
-      width: 100%;
-      padding: 10px;
-      background: #131415;
-      border-radius: 6px;
-      color: #eee;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-      font-size: 12px;
+    /* ── Component-specific overrides ────────────────────────────── */
+
+    /* Header value variants */
+    .boss-widget-head .value.none { color: var(--boss-text-muted); font-style: italic; }
+    .boss-widget-head .value.random { color: var(--boss-brand); }
+    .boss-widget-head .sep { color: var(--boss-text-faint); margin: 0 6px; }
+
+    /* Preview centering */
+    .boss-side + .boss-preview {
       display: flex;
-      flex-direction: column;
-      gap: 8px;
+      align-items: center;
+      justify-content: center;
     }
-    .boss-cam-head {
-      font-size: 12px;
-      color: #eee;
-      line-height: 1.5;
-      min-height: 18px;
-    }
-    .boss-cam-head .label { color: #999; }
-    .boss-cam-head .value { color: #fff; font-weight: 600; }
-    .boss-cam-head .value.none { color: #888; font-style: italic; }
-    .boss-cam-head .value.random { color: ${BRAND}; }
-    .boss-cam-head .sep { color: #555; margin: 0 6px; }
-    .boss-cam-open {
-      background: ${BRAND};
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      padding: 8px 10px;
-      font-size: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.15s, transform 0.05s;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-    .boss-cam-open:hover { background: #7C3AED; }
-    .boss-cam-open:active { transform: translateY(1px); }
-    .boss-cam-status {
-      font-size: 11px;
-      color: #999;
-      text-align: center;
-      min-height: 14px;
-    }
-    .boss-cam-status.is-error { color: #ff8080; }
 
-    /* Fullscreen editor modal */
-    .boss-cam-modal {
-      position: fixed; inset: 0;
-      background: #131415;
-      color: #eee;
-      z-index: 2000;
-      display: flex; flex-direction: column;
-      font-family: ui-sans-serif, system-ui, "Segoe UI", sans-serif;
-    }
-    .boss-cam-bar {
-      height: 56px;
-      background: #171718;
-      border-bottom: 1px solid #3a3d40;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 24px;
-      flex-shrink: 0;
-    }
-    .boss-cam-bar-title { font-size: 14px; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; }
-    .boss-cam-bar-x {
-      background: transparent;
-      border: 1px solid #3a3d40;
-      color: #eee;
-      padding: 6px 14px;
-      border-radius: 6px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .boss-cam-bar-x:hover { background: #3a3d40; }
+    /* Side panel width override */
+    .boss-cam-side-custom { width: 320px; }
 
-    /* Body: left controls | right preview */
-    .boss-cam-body {
-      flex: 1;
-      display: flex;
-      overflow: hidden;
-      min-height: 0;
-    }
-    .boss-cam-side {
-      width: 320px;
-      background: #171718;
-      border-right: 1px solid #3a3d40;
-      padding: 18px;
-      display: flex; flex-direction: column; gap: 14px;
-      flex-shrink: 0;
-      overflow-y: auto;
-    }
-    .boss-cam-section-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      color: #999;
-      letter-spacing: 1px;
-      display: block;
-      margin-bottom: 6px;
-    }
-    .boss-cam-input {
-      width: 100%;
-      padding: 9px 12px;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      color: #fff;
-      border-radius: 6px;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
-      font-family: inherit;
-    }
-    .boss-cam-input:focus { border-color: ${BRAND}; }
-
-    /* Outfit-style list (search + scrollable entries) */
+    /* Per-collection list */
     .boss-cam-list-wrap { display: flex; flex-direction: column; gap: 6px; }
     .boss-cam-list {
       max-height: 160px;
       overflow-y: auto;
-      background: #131415;
-      border: 1px solid #3a3d40;
-      border-radius: 6px;
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border-input);
+      border-radius: var(--boss-radius-md);
     }
     .boss-cam-list-item {
       padding: 6px 12px;
       font-size: 13px;
+      color: var(--boss-text);
       cursor: pointer;
-      border-bottom: 1px solid #232527;
+      border-bottom: 1px solid var(--boss-border);
       display: flex; align-items: center; gap: 8px;
     }
     .boss-cam-list-item:last-child { border-bottom: none; }
-    .boss-cam-list-item:hover { background: #1c1e20; }
+    .boss-cam-list-item:hover { background: var(--boss-bg-hover); }
     .boss-cam-list-item.selected {
-      background: rgba(139,92,246,0.18);
-      color: #fff;
-      box-shadow: inset 3px 0 0 ${BRAND};
+      background: var(--boss-bg-active);
+      color: var(--boss-text-bright);
+      box-shadow: inset 3px 0 0 var(--boss-brand);
     }
     .boss-cam-list-item .badge {
-      font-size: 10px; color: #999; padding: 2px 6px;
-      background: #232527; border-radius: 3px;
+      font-size: 10px; color: var(--boss-text-dim); padding: 2px 6px;
+      background: var(--boss-border); border-radius: 3px;
       flex-shrink: 0;
     }
     .boss-cam-list-item .name { flex: 1; }
 
     /* Strength slider + linked number */
     .boss-cam-strength { display: flex; align-items: center; gap: 10px; }
-    .boss-cam-strength input[type=range] { flex: 1; accent-color: ${BRAND}; }
+    .boss-cam-strength input[type=range] { flex: 1; accent-color: var(--boss-brand); }
     .boss-cam-strength input[type=number] { width: 70px; flex-shrink: 0; }
 
-    /* Seed pill + buttons (mirrors outfit_selector) */
-    .boss-cam-pill {
-      display: flex; gap: 0;
-      background: rgba(255,255,255,0.06);
-      border-radius: 7px;
-      padding: 3px;
-    }
-    .boss-cam-seg {
-      flex: 1;
-      text-align: center;
-      padding: 6px;
-      border: none;
-      border-radius: 5px;
-      background: transparent;
-      font-family: inherit; font-size: 12px;
-      color: rgba(255,255,255,0.55);
-      cursor: pointer; user-select: none; outline: none;
-      transition: background 0.08s, color 0.08s;
-    }
-    .boss-cam-seg:hover:not(.active) { color: rgba(255,255,255,0.85); }
-    .boss-cam-seg.active { background: ${BRAND}; color: #fff; font-weight: 500; }
-    .boss-cam-seg:focus-visible { outline: 2px solid ${BRAND}; outline-offset: -2px; }
-
-    .boss-cam-btn {
-      box-sizing: border-box;
-      padding: 7px 10px;
-      border-radius: 6px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.85);
-      font-family: inherit; font-size: 12px;
-      cursor: pointer; user-select: none;
-      text-align: center;
-      transition: background 0.08s, border-color 0.08s, color 0.08s;
-    }
-    .boss-cam-btn:hover { background: ${BRAND}; border-color: ${BRAND}; color: #fff; }
-    .boss-cam-btn:disabled { opacity: 0.4; cursor: default; }
-    .boss-cam-btn:disabled:hover {
-      background: rgba(255,255,255,0.05);
-      border-color: rgba(255,255,255,0.14);
-      color: rgba(255,255,255,0.85);
-    }
-    .boss-cam-btn.is-flashing,
-    .boss-cam-btn.is-flashing:hover {
-      background: #3ec371; border-color: #3ec371; color: #fff;
-    }
-    .boss-cam-seed-row { display: flex; gap: 6px; }
-    .boss-cam-seed-row .boss-cam-btn { flex: 1; }
-    .boss-cam-seed-row .boss-cam-btn.is-copy { flex: 0 0 auto; min-width: 56px; }
-    .boss-cam-seed-num {
-      width: 100%; box-sizing: border-box;
-      height: 36px;
-      background: #171819;
-      border: 1px solid #3a3d40;
-      border-radius: 6px;
-      padding: 6px 10px;
-      color: #f2f2f2;
-      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
-      font-size: 15px;
-      text-align: center;
-      outline: none;
-    }
-    .boss-cam-seed-num:focus { border-color: ${BRAND}; }
-    .boss-cam-seed-last {
-      font-size: 11px; line-height: 1.5;
-      color: rgba(255,255,255,0.55);
-      text-align: center;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-
-    /* Right preview panel — replicates the v3.0 _build_preview HTML */
-    .boss-cam-preview {
-      flex: 1;
-      padding: 24px;
-      overflow-y: auto;
-      box-sizing: border-box;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-    }
-    .boss-cam-card {
-      padding: 16px;
-      background: #2a2a2a;
-      border-radius: 12px;
-      border: 1px solid #444;
-      font-family: system-ui, sans-serif;
-      color: #fff;
-      max-width: 760px;
-      width: 100%;
-      box-shadow: 0 0 40px rgba(255, 215, 0, 0.3);
-    }
-    .boss-cam-card-title {
-      font-size: 1.2em;
-      color: #ffd700;
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 14px;
-      letter-spacing: 1px;
-    }
+    /* Preview mini-cards */
     .boss-cam-cards {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
@@ -295,7 +99,7 @@ function injectCSS() {
       margin-bottom: 12px;
     }
     .boss-cam-mini {
-      background: #1e1e1e;
+      background: var(--boss-bg-section);
       padding: 10px;
       border-radius: 8px;
       border-left: 3px solid var(--accent);
@@ -313,62 +117,90 @@ function injectCSS() {
       word-break: break-word;
     }
     .boss-cam-mini .w {
-      color: #888;
+      color: var(--boss-text-muted);
       font-size: 0.8em;
     }
-    .boss-cam-mini.none .v { color: #666; font-style: italic; }
+    .boss-cam-mini.none .v { color: var(--boss-text-faint); font-style: italic; }
     .boss-cam-meta {
-      color: #888;
+      color: var(--boss-text-muted);
       font-size: 0.8em;
       margin-bottom: 8px;
     }
     .boss-cam-output {
-      background: #1a1a1a;
+      background: var(--boss-bg-code);
       padding: 12px;
-      border-radius: 8px;
-      font-family: "Courier New", ui-monospace, monospace;
+      border-radius: var(--boss-radius-lg);
+      font-family: var(--boss-font-mono);
       font-size: 0.95em;
       line-height: 1.6;
       word-break: break-all;
-      border: 1px solid #333;
+      border: 1px solid var(--boss-border);
       white-space: pre-wrap;
     }
     .boss-cam-output .arrow { color: #ff0066; font-weight: bold; }
-    .boss-cam-output.empty { color: #666; font-style: italic; }
+    .boss-cam-output.empty { color: var(--boss-text-faint); font-style: italic; }
 
-    /* Footer with Save/Cancel pinned bottom-left */
-    .boss-cam-footer {
-      height: 56px;
-      background: #171718;
-      border-top: 1px solid #3a3d40;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 0 24px;
-      flex-shrink: 0;
+    /* Seed pill + buttons */
+    .boss-cam-pill {
+      display: flex; gap: 0;
+      background: var(--boss-bg-section);
+      border-radius: var(--boss-radius-md);
+      padding: 3px;
     }
-    .boss-cam-save {
-      background: ${BRAND};
-      color: #fff;
+    .boss-cam-seg {
+      flex: 1;
+      text-align: center;
+      padding: 6px;
       border: none;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 2px 6px ${BRAND_GLOW};
-    }
-    .boss-cam-save:hover { background: #7C3AED; }
-    .boss-cam-cancel {
+      border-radius: 5px;
       background: transparent;
-      color: #eee;
-      border: 1px solid #3a3d40;
-      padding: 9px 22px;
-      border-radius: 6px;
-      font-size: 13px;
-      cursor: pointer;
+      font-family: inherit; font-size: 12px;
+      color: var(--boss-text-muted);
+      cursor: pointer; user-select: none; outline: none;
+      transition: background 0.08s, color 0.08s;
     }
-    .boss-cam-cancel:hover { background: #3a3d40; }
+    .boss-cam-seg:hover:not(.active) { color: var(--boss-text-bright); }
+    .boss-cam-seg.active { background: var(--boss-brand); color: #fff; font-weight: 500; }
+    .boss-cam-btn {
+      box-sizing: border-box;
+      padding: 7px 10px;
+      border-radius: var(--boss-radius-md);
+      background: var(--boss-bg-section);
+      border: 1px solid var(--boss-border-strong);
+      color: var(--boss-text);
+      font-family: inherit; font-size: 12px;
+      cursor: pointer; user-select: none;
+      text-align: center;
+      transition: background 0.08s, border-color 0.08s, color 0.08s;
+    }
+    .boss-cam-btn:hover { background: var(--boss-brand); border-color: var(--boss-brand); color: #fff; }
+    .boss-cam-btn:disabled { opacity: 0.4; cursor: default; }
+    .boss-cam-btn:disabled:hover { background: var(--boss-bg-section); border-color: var(--boss-border-strong); color: var(--boss-text); }
+    .boss-cam-btn.is-flashing,
+    .boss-cam-btn.is-flashing:hover { background: #3ec371; border-color: #3ec371; color: #fff; }
+    .boss-cam-seed-row { display: flex; gap: 6px; }
+    .boss-cam-seed-row .boss-cam-btn { flex: 1; }
+    .boss-cam-seed-row .boss-cam-btn.is-copy { flex: 0 0 auto; min-width: 56px; }
+    .boss-cam-seed-num {
+      width: 100%; box-sizing: border-box;
+      height: 36px;
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border-input);
+      border-radius: var(--boss-radius-md);
+      padding: 6px 10px;
+      color: var(--boss-text-bright);
+      font-family: var(--boss-font-mono);
+      font-size: 15px;
+      text-align: center;
+      outline: none;
+    }
+    .boss-cam-seed-num:focus { border-color: var(--boss-brand); }
+    .boss-cam-seed-last {
+      font-size: 11px; line-height: 1.5;
+      color: var(--boss-text-muted);
+      text-align: center;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
   `;
   const style = document.createElement("style");
   style.id = "boss-camera-css";
@@ -508,7 +340,7 @@ function renderHeader(node) {
 function setStatus(node, text, isError = false) {
   const root = node._bossCamRoot;
   if (!root) return;
-  const s = root.querySelector(".boss-cam-status");
+  const s = root.querySelector(".boss-status");
   if (!s) return;
   s.textContent = text || "";
   s.classList.toggle("is-error", !!isError);
@@ -550,20 +382,20 @@ function setupCameraNode(node) {
   }
 
   const root = document.createElement("div");
-  root.className = "boss-cam-root";
+  root.className = "boss-widget";
 
   const head = document.createElement("div");
-  head.className = "boss-cam-head";
+  head.className = "boss-widget-head";
   root.appendChild(head);
 
   const openBtn = document.createElement("button");
   openBtn.type = "button";
-  openBtn.className = "boss-cam-open";
+  openBtn.className = "boss-btn-open";
   openBtn.textContent = "🎬 Open Editor";
   root.appendChild(openBtn);
 
   const status = document.createElement("div");
-  status.className = "boss-cam-status";
+  status.className = "boss-status";
   root.appendChild(status);
 
   node.addDOMWidget("camera_ui", "boss_camera", root, {
@@ -758,15 +590,15 @@ class CameraEditor {
       this.modal = null;
     }
     const modal = document.createElement("div");
-    modal.className = "boss-cam-modal";
+    modal.className = "boss-modal";
 
     // Top bar
     const bar = document.createElement("div");
-    bar.className = "boss-cam-bar";
-    bar.innerHTML = `<div class="boss-cam-bar-title">Camera Style Mixer Editor</div>`;
+    bar.className = "boss-bar";
+    bar.innerHTML = `<div class="boss-bar-title">Camera Style Mixer Editor</div>`;
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
-    closeBtn.className = "boss-cam-bar-x";
+    closeBtn.className = "boss-btn-close";
     closeBtn.textContent = "CLOSE";
     closeBtn.addEventListener("click", () => this.cancel());
     bar.appendChild(closeBtn);
@@ -774,11 +606,11 @@ class CameraEditor {
 
     // Body
     const body = document.createElement("div");
-    body.className = "boss-cam-body";
+    body.className = "boss-body";
 
     // Left controls
     const side = document.createElement("div");
-    side.className = "boss-cam-side";
+    side.className = "boss-side boss-cam-side-custom";
 
     // ── Angle ──────────────────────────────────────────────────────────
     side.appendChild(
@@ -870,24 +702,24 @@ class CameraEditor {
 
     // Right preview
     const previewWrap = document.createElement("div");
-    previewWrap.className = "boss-cam-preview";
+    previewWrap.className = "boss-preview";
     const card = document.createElement("div");
-    card.className = "boss-cam-card";
+    card.className = "boss-card";
     previewWrap.appendChild(card);
     body.appendChild(previewWrap);
     modal.appendChild(body);
 
     // Footer
     const footer = document.createElement("div");
-    footer.className = "boss-cam-footer";
+    footer.className = "boss-footer";
     const saveBtn = document.createElement("button");
     saveBtn.type = "button";
-    saveBtn.className = "boss-cam-save";
+    saveBtn.className = "boss-btn-primary";
     saveBtn.textContent = "Save";
     saveBtn.addEventListener("click", () => this.save());
     const cancelBtn = document.createElement("button");
     cancelBtn.type = "button";
-    cancelBtn.className = "boss-cam-cancel";
+    cancelBtn.className = "boss-btn-ghost";
     cancelBtn.textContent = "Cancel";
     cancelBtn.addEventListener("click", () => this.cancel());
     footer.appendChild(saveBtn);
@@ -919,13 +751,13 @@ class CameraEditor {
     wrap.className = "boss-cam-list-wrap";
 
     const lbl = document.createElement("span");
-    lbl.className = "boss-cam-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = title;
     wrap.appendChild(lbl);
 
     const search = document.createElement("input");
     search.type = "text";
-    search.className = "boss-cam-input";
+    search.className = "boss-input";
     search.placeholder = `Search ${title.toLowerCase()}…`;
     wrap.appendChild(search);
 
@@ -1044,32 +876,28 @@ class CameraEditor {
   buildCategorySection({ title, stateKey, categories }) {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-cam-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = title;
     wrap.appendChild(lbl);
 
-    const sel = document.createElement("select");
-    sel.className = "boss-cam-input";
     const opts = [ALL_CATEGORIES, ...Object.keys(categories).sort()];
-    for (const c of opts) {
-      const o = document.createElement("option");
-      o.value = c;
-      o.textContent = c;
-      if (c === this.state[stateKey]) o.selected = true;
-      sel.appendChild(o);
-    }
-    sel.addEventListener("change", (e) => {
-      this.state[stateKey] = e.target.value;
-      const which =
-        stateKey === "angleCategory"
-          ? "angle"
-          : stateKey === "framingCategory"
-            ? "framing"
-            : "style";
-      this.refreshList(which);
-      this.refreshPreview();
+    const dropdown = new BossDropdown({
+      options: opts.map((c) => ({ value: c, label: c })),
+      value: this.state[stateKey],
+      placeholder: `Select ${title.toLowerCase()}…`,
+      onChange: (val) => {
+        this.state[stateKey] = val;
+        const which =
+          stateKey === "angleCategory"
+            ? "angle"
+            : stateKey === "framingCategory"
+              ? "framing"
+              : "style";
+        this.refreshList(which);
+        this.refreshPreview();
+      },
     });
-    wrap.appendChild(sel);
+    wrap.appendChild(dropdown.element);
     return wrap;
   }
 
@@ -1077,7 +905,7 @@ class CameraEditor {
   buildStrengthSection({ title, stateKey }) {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-cam-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = `${title}: ${this.state[stateKey].toFixed(2)}`;
     wrap.appendChild(lbl);
 
@@ -1091,7 +919,7 @@ class CameraEditor {
     slider.value = String(this.state[stateKey]);
     const num = document.createElement("input");
     num.type = "number";
-    num.className = "boss-cam-input";
+    num.className = "boss-input";
     num.min = String(STRENGTH_MIN);
     num.max = String(STRENGTH_MAX);
     num.step = String(STRENGTH_STEP);
@@ -1116,24 +944,23 @@ class CameraEditor {
   buildFormatSection() {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-cam-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Weight Format";
     wrap.appendChild(lbl);
 
-    const sel = document.createElement("select");
-    sel.className = "boss-cam-input";
-    for (const f of this.library.weightFormats) {
-      const o = document.createElement("option");
-      o.value = f.key;
-      o.textContent = f.label;
-      if (f.key === this.state.weightFormat) o.selected = true;
-      sel.appendChild(o);
-    }
-    sel.addEventListener("change", (e) => {
-      this.state.weightFormat = e.target.value;
-      this.refreshPreview();
+    const dropdown = new BossDropdown({
+      options: this.library.weightFormats.map((f) => ({
+        value: f.key,
+        label: f.label,
+      })),
+      value: this.state.weightFormat,
+      placeholder: "Select format…",
+      onChange: (val) => {
+        this.state.weightFormat = val;
+        this.refreshPreview();
+      },
     });
-    wrap.appendChild(sel);
+    wrap.appendChild(dropdown.element);
     return wrap;
   }
 
@@ -1141,13 +968,13 @@ class CameraEditor {
   buildDelimiterSection() {
     const wrap = document.createElement("div");
     const lbl = document.createElement("span");
-    lbl.className = "boss-cam-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Delimiter";
     wrap.appendChild(lbl);
 
     const inp = document.createElement("input");
     inp.type = "text";
-    inp.className = "boss-cam-input";
+    inp.className = "boss-input";
     inp.value = this.state.delimiter;
     inp.addEventListener("change", (e) => {
       this.state.delimiter = e.target.value;
@@ -1162,7 +989,7 @@ class CameraEditor {
     const wrap = document.createElement("div");
 
     const lbl = document.createElement("span");
-    lbl.className = "boss-cam-section-label";
+    lbl.className = "boss-label";
     lbl.textContent = "Seed";
     wrap.appendChild(lbl);
 
