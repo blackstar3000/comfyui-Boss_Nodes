@@ -223,6 +223,102 @@ function injectCSS() {
       gap: 8px;
     }
     .boss-out-error .icon { font-size: 18px; }
+
+    /* CRUD toolbar */
+    .boss-out-crud-bar {
+      display: flex; gap: 6px; margin-top: 6px;
+    }
+    .boss-out-crud-bar .boss-out-btn { flex: 1; font-size: 12px; padding: 5px 8px; }
+
+    /* Edit/delete icons on outfit items */
+    .boss-out-outfit-item .item-actions {
+      display: none; gap: 4px; flex-shrink: 0;
+    }
+    .boss-out-outfit-item:hover .item-actions { display: flex; }
+    .boss-out-outfit-item .item-actions button {
+      background: none; border: none; color: var(--boss-text-dim);
+      cursor: pointer; font-size: 12px; padding: 2px 4px; line-height: 1;
+      border-radius: 3px; transition: color 0.15s, background 0.15s;
+    }
+    .boss-out-outfit-item .item-actions button:hover {
+      color: var(--boss-text-bright); background: var(--boss-border);
+    }
+    .boss-out-outfit-item .item-actions .btn-del:hover { color: #ff4444; }
+
+    /* Sub-modal (outfit editor) overlay */
+    .boss-out-submodal {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.6);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .boss-out-submodal .boss-out-card {
+      max-width: 600px; width: 95%; padding: 20px;
+      border: 2px solid var(--boss-border-strong);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .boss-out-submodal .boss-label { display: block; margin-bottom: 4px; margin-top: 10px; }
+    .boss-out-submodal .boss-label:first-child { margin-top: 0; }
+    .boss-out-submodal .boss-input,
+    .boss-out-submodal textarea {
+      width: 100%; box-sizing: border-box;
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border-input);
+      border-radius: var(--boss-radius-md);
+      padding: 6px 10px;
+      color: var(--boss-text-bright);
+      font-family: inherit; font-size: 13px;
+      outline: none; resize: vertical;
+    }
+    .boss-out-submodal textarea {
+      min-height: 70px; max-height: 120px; font-family: var(--boss-font-mono);
+      font-size: 13px; line-height: 1.5;
+    }
+    .boss-out-submodal .boss-input:focus,
+    .boss-out-submodal textarea:focus { border-color: var(--boss-brand); }
+    .boss-out-submodal .boss-out-cats-row {
+      display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
+      max-height: 180px; overflow-y: auto;
+      padding: 4px 0;
+    }
+    .boss-out-submodal .boss-out-cat-chip {
+      padding: 3px 8px; border-radius: 10px; font-size: 11px;
+      background: var(--boss-bg-hover); border: 1px solid var(--boss-border);
+      cursor: pointer; color: var(--boss-text-muted);
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .boss-out-submodal .boss-out-cat-chip.active {
+      background: var(--boss-brand); border-color: var(--boss-brand);
+      color: #fff;
+    }
+    .boss-out-submodal .boss-footer {
+      margin-top: 14px; display: flex; gap: 8px; justify-content: flex-end;
+    }
+    .boss-out-submodal .boss-footer .boss-btn-primary { min-width: 80px; }
+    .boss-out-submodal .boss-footer .boss-btn-ghost { min-width: 80px; }
+
+    /* Refresh button in bar */
+    .boss-bar .boss-out-refresh {
+      background: none; border: 1px solid var(--boss-border-strong);
+      color: var(--boss-text); border-radius: var(--boss-radius-md);
+      padding: 4px 10px; font-size: 12px; cursor: pointer;
+      margin-left: 8px; transition: background 0.15s, color 0.15s;
+    }
+    .boss-bar .boss-out-refresh:hover {
+      background: var(--boss-brand); border-color: var(--boss-brand); color: #fff;
+    }
+
+    /* Toast notification */
+    .boss-out-toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      z-index: 99999; padding: 10px 24px;
+      border-radius: var(--boss-radius-md);
+      font-size: 13px; font-weight: 500;
+      color: #fff; pointer-events: none;
+      opacity: 0; transition: opacity 0.25s;
+    }
+    .boss-out-toast.show { opacity: 1; }
+    .boss-out-toast.success { background: #2d8a4e; border: 1px solid #3ec371; }
+    .boss-out-toast.error { background: #8a2d2d; border: 1px solid #ff4444; }
   `;
   const style = document.createElement("style");
   style.id = "boss-outfit-css";
@@ -535,6 +631,20 @@ function debounce(fn, delay) {
   };
 }
 
+// ── Toast notification ──────────────────────────────────────────────────────
+
+function showToast(message, type = "success") {
+  const el = document.createElement("div");
+  el.className = `boss-out-toast ${type}`;
+  el.textContent = message;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add("show"));
+  setTimeout(() => {
+    el.classList.remove("show");
+    setTimeout(() => el.remove(), 300);
+  }, 1800);
+}
+
 // ── OutfitEditor ────────────────────────────────────────────────────────────
 
 class OutfitEditor {
@@ -583,6 +693,12 @@ class OutfitEditor {
     const bar = document.createElement("div");
     bar.className = "boss-bar";
     bar.innerHTML = `<div class="boss-bar-title">Outfit Editor</div>`;
+    const refreshBtn = document.createElement("button");
+    refreshBtn.type = "button";
+    refreshBtn.className = "boss-out-refresh";
+    refreshBtn.textContent = "🔄 Refresh";
+    refreshBtn.addEventListener("click", () => this.refreshLibrary());
+    bar.appendChild(refreshBtn);
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
     closeBtn.className = "boss-btn-close";
@@ -678,6 +794,17 @@ class OutfitEditor {
     list.className = "boss-out-outfit-list";
     wrap.appendChild(list);
 
+    // CRUD toolbar: Add button
+    const crudBar = document.createElement("div");
+    crudBar.className = "boss-out-crud-bar";
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "boss-out-btn";
+    addBtn.textContent = "+ Add Outfit";
+    addBtn.addEventListener("click", () => this.openOutfitEditor(null));
+    crudBar.appendChild(addBtn);
+    wrap.appendChild(crudBar);
+
     // Apply debounce to search input
     const debouncedRefresh = debounce(() => this.refreshOutfitList(), 200);
     search.addEventListener("input", (e) => {
@@ -730,6 +857,30 @@ class OutfitEditor {
         badge.className = "badge";
         badge.textContent = it.badge;
         row.appendChild(badge);
+      }
+      // Edit/Delete icons for real outfits (not sentinels)
+      const isReal = it.name !== RANDOM_SENTINEL && it.name !== NONE_SENTINEL;
+      if (isReal) {
+        const actions = document.createElement("span");
+        actions.className = "item-actions";
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "✏";
+        editBtn.title = "Edit outfit";
+        editBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.openOutfitEditor(it.name);
+        });
+        const delBtn = document.createElement("button");
+        delBtn.className = "btn-del";
+        delBtn.textContent = "✕";
+        delBtn.title = "Delete outfit";
+        delBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.deleteOutfit(it.name);
+        });
+        actions.appendChild(editBtn);
+        actions.appendChild(delBtn);
+        row.appendChild(actions);
       }
       row.addEventListener("click", () => {
         this.state.outfit = it.name;
@@ -1004,6 +1155,227 @@ class OutfitEditor {
       this.modal.remove();
       this.modal = null;
     }
+  }
+
+  // ── CRUD: Refresh library from disk ──────────────────────────────────────
+  async refreshLibrary() {
+    try {
+      const r = await fetch("/outfit_boss/refresh", { method: "POST" });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const data = await r.json();
+      this.library = data.outfits || {};
+      this.categories = data.categories || {};
+      this.loadError = false;
+      this.refreshOutfitList();
+      this.refreshPreview();
+    } catch (err) {
+      console.error("[OutfitEditor] refresh failed", err);
+    }
+  }
+
+  // ── CRUD: Save library to disk ───────────────────────────────────────────
+  async saveLibrary() {
+    try {
+      const r = await fetch("/outfit_boss/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          outfits: this.library,
+          categories: this.categories,
+        }),
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({ error: `HTTP ${r.status}` }));
+        throw new Error(err.error || `HTTP ${r.status}`);
+      }
+      showToast("Outfit saved successfully");
+      return true;
+    } catch (err) {
+      console.error("[OutfitEditor] save failed", err);
+      showToast(`Failed to save: ${err.message}`, "error");
+      return false;
+    }
+  }
+
+  // ── CRUD: Delete outfit ──────────────────────────────────────────────────
+  async deleteOutfit(name) {
+    if (!confirm(`Delete outfit "${name}"?`)) return;
+    delete this.library[name];
+    // Remove from all categories
+    for (const cat of Object.keys(this.categories)) {
+      this.categories[cat] = this.categories[cat].filter((n) => n !== name);
+      if (this.categories[cat].length === 0) delete this.categories[cat];
+    }
+    if (this.state.outfit === name) this.state.outfit = RANDOM_SENTINEL;
+    const ok = await this.saveLibrary();
+    if (ok) {
+      showToast(`"${name}" deleted`);
+      this.refreshOutfitList();
+      this.refreshPreview();
+    }
+  }
+
+  // ── CRUD: Add / Edit outfit sub-modal ────────────────────────────────────
+  openOutfitEditor(existingName) {
+    const isEdit = existingName != null;
+    const existingText = isEdit ? (this.library[existingName] || "") : "";
+    // Determine which categories this outfit belongs to
+    const existingCats = new Set();
+    if (isEdit) {
+      for (const [cat, items] of Object.entries(this.categories)) {
+        if (items.includes(existingName)) existingCats.add(cat);
+      }
+    }
+
+    const overlay = document.createElement("div");
+    overlay.className = "boss-out-submodal";
+
+    const card = document.createElement("div");
+    card.className = "boss-out-card";
+    card.style.border = "2px solid var(--boss-brand)";
+
+    card.innerHTML = `
+      <div class="boss-out-card-title" style="font-size:18px;">
+        ${isEdit ? "Edit Outfit" : "Add New Outfit"}
+      </div>
+    `;
+
+    // Name input
+    const nameLbl = document.createElement("label");
+    nameLbl.className = "boss-label";
+    nameLbl.textContent = "Outfit Name";
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.className = "boss-input";
+    nameInput.value = existingName || "";
+    nameInput.placeholder = "e.g. Gothic Lolita";
+    nameInput.disabled = isEdit; // Can't rename via this editor
+    card.appendChild(nameLbl);
+    card.appendChild(nameInput);
+
+    // Prompt text textarea
+    const promptLbl = document.createElement("label");
+    promptLbl.className = "boss-label";
+    promptLbl.textContent = "Prompt Text";
+    const promptInput = document.createElement("textarea");
+    promptInput.value = existingText;
+    promptInput.placeholder = "e.g. gothic lolita dress, black lace, ribbons, bow";
+    card.appendChild(promptLbl);
+    card.appendChild(promptInput);
+
+    // Category chips
+    const catLbl = document.createElement("label");
+    catLbl.className = "boss-label";
+    catLbl.textContent = "Categories (click to toggle)";
+    card.appendChild(catLbl);
+
+    const chipRow = document.createElement("div");
+    chipRow.className = "boss-out-cats-row";
+    const allCats = Object.keys(this.categories).sort();
+    const selectedCats = new Set(existingCats);
+
+    const renderChips = () => {
+      chipRow.innerHTML = "";
+      for (const cat of allCats) {
+        const chip = document.createElement("span");
+        chip.className = "boss-out-cat-chip" + (selectedCats.has(cat) ? " active" : "");
+        chip.textContent = cat;
+        chip.addEventListener("click", () => {
+          if (selectedCats.has(cat)) selectedCats.delete(cat);
+          else selectedCats.add(cat);
+          chip.classList.toggle("active");
+        });
+        chipRow.appendChild(chip);
+      }
+    };
+    renderChips();
+    card.appendChild(chipRow);
+
+    // New category input
+    const newCatRow = document.createElement("div");
+    newCatRow.style.cssText = "display:flex;gap:6px;margin-top:8px;";
+    const newCatInput = document.createElement("input");
+    newCatInput.type = "text";
+    newCatInput.className = "boss-input";
+    newCatInput.placeholder = "New category name…";
+    newCatInput.style.flex = "1";
+    const newCatBtn = document.createElement("button");
+    newCatBtn.type = "button";
+    newCatBtn.className = "boss-out-btn";
+    newCatBtn.textContent = "+";
+    newCatBtn.style.cssText = "flex:0 0 auto;padding:5px 10px;";
+    newCatBtn.addEventListener("click", () => {
+      const val = newCatInput.value.trim();
+      if (!val || allCats.includes(val)) return;
+      allCats.push(val);
+      this.categories[val] = this.categories[val] || [];
+      selectedCats.add(val);
+      newCatInput.value = "";
+      allCats.sort();
+      renderChips();
+    });
+    newCatInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") { e.preventDefault(); newCatBtn.click(); }
+    });
+    newCatRow.appendChild(newCatInput);
+    newCatRow.appendChild(newCatBtn);
+    card.appendChild(newCatRow);
+
+    // Footer
+    const footer = document.createElement("div");
+    footer.className = "boss-footer";
+    const saveBtn = document.createElement("button");
+    saveBtn.type = "button";
+    saveBtn.className = "boss-btn-primary";
+    saveBtn.textContent = isEdit ? "Save Changes" : "Add Outfit";
+    const cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className = "boss-btn-ghost";
+    cancelBtn.textContent = "Cancel";
+
+    saveBtn.addEventListener("click", async () => {
+      const newName = nameInput.value.trim();
+      const newText = promptInput.value.trim();
+      if (!newName) { alert("Outfit name is required."); return; }
+      if (!newText) { alert("Prompt text is required."); return; }
+
+      this.library[newName] = newText;
+
+      // Update categories: add outfit to selected categories, remove from others
+      for (const cat of allCats) {
+        if (!this.categories[cat]) this.categories[cat] = [];
+        const idx = this.categories[cat].indexOf(newName);
+        if (selectedCats.has(cat) && idx === -1) {
+          this.categories[cat].push(newName);
+        } else if (!selectedCats.has(cat) && idx !== -1) {
+          this.categories[cat].splice(idx, 1);
+        }
+      }
+      // Clean empty categories
+      for (const cat of Object.keys(this.categories)) {
+        if (this.categories[cat].length === 0) delete this.categories[cat];
+      }
+
+      const ok = await this.saveLibrary();
+      if (ok) {
+        this.state.outfit = newName;
+        this.refreshOutfitList();
+        this.refreshPreview();
+        overlay.remove();
+      }
+    });
+
+    cancelBtn.addEventListener("click", () => overlay.remove());
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) overlay.remove();
+    });
+
+    footer.appendChild(saveBtn);
+    footer.appendChild(cancelBtn);
+    card.appendChild(footer);
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+    nameInput.focus();
   }
 }
 
