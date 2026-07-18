@@ -13,6 +13,7 @@ Mirrors the rebuilt artist_selector (py/artist_selector.py) and the Pixaroma
 
 import json
 import random
+import re
 import time
 from pathlib import Path
 
@@ -61,6 +62,15 @@ def _load_library(force: bool = False):
     return _db_cache
 
 
+def _save_library(outfits: dict, categories: dict):
+    """Write outfits and categories back to outfits.json and bust the cache."""
+    global _db_cache
+    data = {"outfits": outfits, "categories": categories}
+    with OUTFITS_FILE.open("w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    _db_cache = (outfits, categories)
+
+
 def _category_pool(outfits: dict, categories: dict, category: str):
     """Return the list of outfit names in `category`. Falls back to all
     outfits when the category is missing or empty."""
@@ -69,6 +79,47 @@ def _category_pool(outfits: dict, categories: dict, category: str):
     items = categories.get(category, [])
     # Filter against the actual library so deleted outfits can't linger.
     return [n for n in items if n in outfits]
+
+
+# ── Wildcard resolution ──────────────────────────────────────────────────────
+# Minimal, dependency-free {a|b|c} resolver so outfits.json entries can embed
+# alternation groups without needing an external wildcard node.
+#
+# Supported syntax:
+#   {option one|option two|option three}   -> picks one option
+#   {a|{b|c}}                              -> nested groups resolve innermost-first
+#   {|option}                              -> empty alternative is allowed (picks "")
+#
+# Not supported (by design, to keep this dependency-free): __file__ wildcard
+# lookups, weighted options (a::2|b), or quantifiers like {2$$a|b|c}. If you
+# need those later, this is the function to extend.
+
+_WILDCARD_RE = re.compile(r"\{([^{}]*)\}")
+
+
+def resolve_wildcards(text: str, seed=None) -> str:
+    """Resolve {a|b|c} alternation groups in `text` using a seeded RNG so the
+    same seed always reproduces the same picks (mirrors the outfit picker's
+    own seeded random.Random usage below)."""
+    if not text or "{" not in text:
+        return text
+
+    rng = random.Random(seed)
+
+    def _pick(match):
+        options = match.group(1).split("|")
+        return rng.choice(options) if options else ""
+
+    # Resolve repeatedly so nested {a|{b|c}} groups work: each pass collapses
+    # the innermost {...} (the regex can't match across an outer brace while
+    # an inner one is still present), so looping until nothing changes
+    # unwinds nesting from the inside out.
+    prev = None
+    while prev != text:
+        prev = text
+        text = _WILDCARD_RE.sub(_pick, text)
+
+    return text
 
 
 # ── Node class ──────────────────────────────────────────────────────────────
@@ -248,6 +299,11 @@ class BossOutfitSelector:
                 name = f"Missing: {outfit}"
                 text = ""
 
+        # Resolve any {a|b|c} wildcard groups embedded in the outfit text.
+        # Uses the same seed as outfit selection above, so a fixed seed
+        # reproduces both the outfit choice AND its wildcard picks.
+        text = resolve_wildcards(text, int(seed) if seed else None)
+
         if strength <= 0.01 or not text:
             prompt = ""
         elif abs(strength - 1.0) > 0.01:
@@ -298,6 +354,24 @@ def register_api_routes():
             })
         except Exception:
             return web.json_response({"error": "Internal server error"}, status=500)
+
+    @routes.post("/outfit_boss/save")
+    async def save_outfit_data(request):
+        """Write the full outfits + categories dict to outfits.json."""
+        import traceback
+        try:
+            body = await request.json()
+            outfits = body.get("outfits", {})
+            categories = body.get("categories", {})
+            _save_library(outfits, categories)
+            return web.json_response({
+                "ok": True,
+                "count": len(outfits),
+            })
+        except Exception as e:
+            tb = traceback.format_exc()
+            print(f"[BossOutfitSelector] save error: {e}\n{tb}")
+            return web.json_response({"error": str(e)}, status=500)
 
 
 register_api_routes()
