@@ -1,0 +1,242 @@
+[
+  {
+    "id": "character",
+    "name": "Character",
+    "icon": "character",
+    "icon_type": "svg",
+    "color": "#7c5cfc",
+    "sort_order": 0,
+    "files": {
+      "girls.json": {
+        "display": "Girls",
+        "icon": "F:\\ComfyUI\\Boss Generators\\boss_nodes_editor\\data\\custom_icons\\catgirl.svg",
+        "format": "prompt_lib",
+        "icon_type": "custom_file"
+      },
+      "males.json": {
+        "display": "Males",
+        "icon": "F:\\ComfyUI\\Boss Generators\\boss_nodes_editor\\data\\custom_icons\\male.svg",
+        "format": "prompt_lib",
+        "icon_type": "custom_file"
+      },
+      "characters.json": {
+        "display": "Characters",
+        "icon": "F:\\ComfyUI\\Boss Generators\\boss_nodes_editor\\data\\icon packs\\My Pack\\bust-in-silhouette.svg",
+        "format": "prompt_lib",
+        "icon_type": "custom_file"
+      },
+      "poses.json": {
+        "display": "Poses",
+        "icon": "file",
+        "format": "tag_list"
+      },
+      "expressions.json": {
+        "display": "Expressions",
+        "icon": "F:\\ComfyUI\\Boss Generators\\boss_nodes_editor\\data\\icon packs\\My Pack\\emoticon.svg",
+        "format": "tag_list",
+        "icon_type": "custom_file"
+      }
+    }
+  },
+  {
+    "id": "artist",
+    "name": "Artist",
+    "icon": "artstation",
+    "icon_type": "svg",
+    "color": "#7c5cfc",
+    "sort_order": 1,
+    "files": {
+      "artists.json": {
+        "display": "Artists",
+        "icon": "file",
+        "format": "flat_kv"
+      },
+      "history.json": {
+        "display": "Artist History",
+        "icon": "file",
+        "format": "simple_array"
+      },
+      "favorites.json": {
+        "display": "Artist Favorites",
+        "icon": "file",
+        "format": "simple_array"
+      }
+    }
+  },
+  {
+    "id": "camera",
+    "name": "Camera",
+    "icon": "nikon",
+    "icon_type": "svg",
+    "color": "#7c5cfc",
+    "sort_order": 2,
+    "files": {
+      "camera_style_mixer.json": {
+        "display": "Camera Style Mixer",
+        "icon": "F:\\ComfyUI\\Boss Generators\\boss_nodes_editor\\data\\custom_icons\\camera (1).svg",
+        "format": "camera_style",
+        "icon_type": "custom_file"
+      },
+      "lens.json": {
+        "display": "Lens Library",
+        "icon": "F:\\ComfyUI\\Boss Generators\\boss_nodes_editor\\data\\custom_icons\\camera.svg",
+        "format": "array",
+        "icon_type": "custom_file"
+      }
+    }
+  },
+  {
+    "id": "scene",
+    "name": "Scene",
+    "icon": "googleearth",
+    "icon_type": "svg",
+    "color": "#7c5cfc",
+    "sort_order": 3,
+    "files": {
+      "scenes.json": {
+        "display": "Scenes",
+        "icon": "file",
+        "format": "prompt_lib"
+      }
+    }
+  },
+  {
+    "id": "outfit",
+    "name": "Outfit",
+    "icon": "nike",
+    "icon_type": "svg",
+    "color": "#7c5cfc",
+    "sort_order": 4,
+    "files": {
+      "outfits.json": {
+        "display": "Outfits",
+        "icon": "file",
+        "format": "prompt_lib"
+      }
+    }
+  },
+  {
+    "id": "prompt_master",
+    "name": "Prompt Master",
+    "icon": "lighthouse",
+    "icon_type": "svg",
+    "color": "#7c5cfc",
+    "sort_order": 5,
+    "files": {
+      "lights.json": {
+        "display": "Lights",
+        "icon": "F:\\ComfyUI\\Boss Generators\\boss_nodes_editor\\data\\icon packs\\My Pack\\light-bulb-24.svg",
+        "format": "nested_cat",
+        "icon_type": "custom_file"
+      },
+      "themes.json": {
+        "display": "Themes",
+        "icon": "file",
+        "format": "nested_cat"
+      },
+      "styles.json": {
+        "display": "Styles",
+        "icon": "file",
+        "format": "nested_cat"
+      },
+      "PromptMaster_favorites.json": {
+        "display": "Prompt Master Favorites",
+        "icon": "file",
+        "format": "combo_fav"
+      }
+    }
+  },
+  {
+    "id": "promptunstuck",
+    "name": "Prompt Unstuck",
+    "icon": "figma",
+    "icon_type": "svg",
+    "color": "#7c5cfc",
+    "sort_order": 6,
+    "files": {
+      "promptunstuck.json": {
+        "display": "Prompt Unstuck",
+        "icon": "file",
+        "format": "promptunstuck"
+      }
+    }
+  },
+  {
+    "id": "prompting",
+    "name": "Prompting",
+    "icon": "googlegemini",
+    "icon_type": "svg",
+    "color": "#7c5cfc",
+    "sort_order": 7,
+    "files": {
+      "quality_boosts.json": {
+        "display": "Quality Boosts",
+        "icon": "file",
+        "format": "flat_kv"
+      },
+      "negative_boosts.json": {
+        "display": "Negative Boosts",
+        "icon": "file",
+        "format": "nested_cat"
+      }
+    }
+  },
+  {
+    "id": "sampling",
+    "name": "Sampling",
+    "icon": "googlegemini",
+    "icon_type": "svg",
+    "color": "#7c5cfc",
+    "sort_order": 8,
+    "files": {
+      "ksampler_favorites.json": {
+        "display": "KSampler Favorites",
+        "icon": "F:\\ComfyUI\\Boss Generators\\boss_nodes_editor\\data\\icon packs\\My Pack\\baseline-swap-horiz.svg",
+        "format": "combo_fav",
+        "icon_type": "custom_file"
+      },
+      "checkpoint_favorites.json": {
+        "display": "Checkpoint Favorites",
+        "icon": "F:\\ComfyUI\\Boss Generators\\boss_nodes_editor\\data\\icon packs\\My Pack\\baseline-done.svg",
+        "format": "flat_kv",
+        "icon_type": "custom_file"
+      },
+      "size_presets.json": {
+        "display": "Size Presets",
+        "icon": "file",
+        "format": "size_preset"
+      }
+    }
+  },
+  {
+    "id": "tags",
+    "name": "Tags",
+    "icon": "figma",
+    "icon_type": "svg",
+    "color": "#7c5cfc",
+    "sort_order": 9,
+    "files": {
+      "danbooru_tags.json": {
+        "display": "Danbooru Tags",
+        "icon": "file",
+        "format": "tag_list"
+      }
+    }
+  },
+  {
+    "id": "test",
+    "name": "test",
+    "icon": "🏆",
+    "icon_type": "emoji",
+    "color": "#ef4444",
+    "description": "",
+    "sort_order": 0,
+    "files": {
+      "Bosstest.json": {
+        "display": "Bosstest",
+        "icon": "file",
+        "format": "flat_kv"
+      }
+    }
+  }
+]
