@@ -105,3 +105,10 @@ class Collection:
             f"{len(self.categories)} categories"
         )
         return self
+
+    def save(self):
+        """Write the current items + categories back to disk and bust mtime cache."""
+        data = {self.data_key: self.items, "categories": self.categories}
+        with self.path.open("w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+        self.mtime = os.path.getmtime(self.path)
