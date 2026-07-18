@@ -245,6 +245,96 @@ function injectCSS() {
     }
     .boss-scn-output .arrow { color: #ff0066; font-weight: bold; }
     .boss-scn-output.empty { color: var(--boss-text-faint); font-style: italic; }
+
+    /* CRUD toolbar */
+    .boss-scn-crud-bar { display: flex; gap: 6px; margin-top: 6px; }
+    .boss-scn-crud-bar .boss-scn-btn { flex: 1; font-size: 12px; padding: 5px 8px; }
+
+    /* Edit/delete icons on list items */
+    .boss-scn-list-item .item-actions { display: none; gap: 4px; flex-shrink: 0; }
+    .boss-scn-list-item:hover .item-actions { display: flex; }
+    .boss-scn-list-item .item-actions button {
+      background: none; border: none; color: var(--boss-text-dim);
+      cursor: pointer; font-size: 12px; padding: 2px 4px; line-height: 1;
+      border-radius: 3px; transition: color 0.15s, background 0.15s;
+    }
+    .boss-scn-list-item .item-actions button:hover {
+      color: var(--boss-text-bright); background: var(--boss-border);
+    }
+    .boss-scn-list-item .item-actions .btn-del:hover { color: #ff4444; }
+
+    /* Sub-modal (editor) overlay */
+    .boss-scn-submodal {
+      position: fixed; inset: 0; z-index: 9999;
+      background: rgba(0,0,0,0.6);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .boss-scn-submodal .boss-scn-card {
+      max-width: 600px; width: 95%; padding: 20px;
+      border: 2px solid var(--boss-border-strong);
+      max-height: 90vh; overflow-y: auto;
+    }
+    .boss-scn-submodal .boss-label { display: block; margin-bottom: 4px; margin-top: 10px; }
+    .boss-scn-submodal .boss-label:first-child { margin-top: 0; }
+    .boss-scn-submodal .boss-input,
+    .boss-scn-submodal textarea {
+      width: 100%; box-sizing: border-box;
+      background: var(--boss-bg-input);
+      border: 1px solid var(--boss-border-input);
+      border-radius: var(--boss-radius-md);
+      padding: 6px 10px;
+      color: var(--boss-text-bright);
+      font-family: inherit; font-size: 13px;
+      outline: none; resize: vertical;
+    }
+    .boss-scn-submodal textarea {
+      min-height: 70px; max-height: 160px; font-family: var(--boss-font-mono);
+      font-size: 13px; line-height: 1.5;
+    }
+    .boss-scn-submodal .boss-input:focus,
+    .boss-scn-submodal textarea:focus { border-color: var(--boss-brand); }
+    .boss-scn-submodal .boss-scn-cats-row {
+      display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px;
+      max-height: 140px; overflow-y: auto; padding: 4px 0;
+    }
+    .boss-scn-submodal .boss-scn-cat-chip {
+      padding: 3px 8px; border-radius: 10px; font-size: 11px;
+      background: var(--boss-bg-hover); border: 1px solid var(--boss-border);
+      cursor: pointer; color: var(--boss-text-muted);
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+    }
+    .boss-scn-submodal .boss-scn-cat-chip.active {
+      background: var(--boss-brand); border-color: var(--boss-brand); color: #fff;
+    }
+    .boss-scn-submodal .boss-footer {
+      margin-top: 14px; display: flex; gap: 8px; justify-content: flex-end;
+    }
+    .boss-scn-submodal .boss-footer .boss-btn-primary { min-width: 80px; }
+    .boss-scn-submodal .boss-footer .boss-btn-ghost { min-width: 80px; }
+
+    /* Refresh button in bar */
+    .boss-bar .boss-scn-refresh {
+      background: none; border: 1px solid var(--boss-border-strong);
+      color: var(--boss-text); border-radius: var(--boss-radius-md);
+      padding: 4px 10px; font-size: 12px; cursor: pointer;
+      margin-left: 8px; transition: background 0.15s, color 0.15s;
+    }
+    .boss-bar .boss-scn-refresh:hover {
+      background: var(--boss-brand); border-color: var(--boss-brand); color: #fff;
+    }
+
+    /* Toast notification */
+    .boss-scn-toast {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      z-index: 99999; padding: 10px 24px;
+      border-radius: var(--boss-radius-md);
+      font-size: 13px; font-weight: 500;
+      color: #fff; pointer-events: none;
+      opacity: 0; transition: opacity 0.25s;
+    }
+    .boss-scn-toast.show { opacity: 1; }
+    .boss-scn-toast.success { background: #2d8a4e; border: 1px solid #3ec371; }
+    .boss-scn-toast.error { background: #8a2d2d; border: 1px solid #ff4444; }
   `;
   const style = document.createElement("style");
   style.id = "boss-scene-css";
@@ -350,6 +440,18 @@ function escapeHtml(s) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function showToast(message, type = "success") {
+  const el = document.createElement("div");
+  el.className = `boss-scn-toast ${type}`;
+  el.textContent = message;
+  document.body.appendChild(el);
+  requestAnimationFrame(() => el.classList.add("show"));
+  setTimeout(() => {
+    el.classList.remove("show");
+    setTimeout(() => el.remove(), 300);
+  }, 1800);
 }
 
 // ── On-node body ───────────────────────────────────────────────────────────
@@ -682,6 +784,12 @@ class SceneEditor {
     const bar = document.createElement("div");
     bar.className = "boss-bar";
     bar.innerHTML = `<div class="boss-bar-title">Scene Maker Pro Editor</div>`;
+    const refreshBtn = document.createElement("button");
+    refreshBtn.type = "button";
+    refreshBtn.className = "boss-scn-refresh";
+    refreshBtn.textContent = "🔄 Refresh";
+    refreshBtn.addEventListener("click", () => this.refreshLibrary());
+    bar.appendChild(refreshBtn);
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
     closeBtn.className = "boss-btn-close";
@@ -852,6 +960,16 @@ class SceneEditor {
     list.className = "boss-scn-list";
     wrap.appendChild(list);
 
+    const crudBar = document.createElement("div");
+    crudBar.className = "boss-scn-crud-bar";
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "boss-scn-btn";
+    addBtn.textContent = `+ Add ${title}`;
+    addBtn.addEventListener("click", () => this.openItemEditor(which, null));
+    crudBar.appendChild(addBtn);
+    wrap.appendChild(crudBar);
+
     this[searchVar] = "";
     this[listVar] = list;
 
@@ -907,6 +1025,29 @@ class SceneEditor {
         badge.className = "badge";
         badge.textContent = it.badge;
         row.appendChild(badge);
+      }
+      const isReal = it.name !== RANDOM_SENTINEL && it.name !== NONE_SENTINEL;
+      if (isReal) {
+        const actions = document.createElement("span");
+        actions.className = "item-actions";
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "✏";
+        editBtn.title = "Edit";
+        editBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.openItemEditor(which, it.name);
+        });
+        const delBtn = document.createElement("button");
+        delBtn.className = "btn-del";
+        delBtn.textContent = "✕";
+        delBtn.title = "Delete";
+        delBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this.deleteItem(which, it.name);
+        });
+        actions.appendChild(editBtn);
+        actions.appendChild(delBtn);
+        row.appendChild(actions);
       }
       row.addEventListener("click", () => {
         this.state[stateKey] = it.name;
@@ -1189,6 +1330,230 @@ class SceneEditor {
       this.modal.remove();
       this.modal = null;
     }
+  }
+
+  // ── CRUD: Refresh library from disk ──────────────────────────────────────
+  async refreshLibrary() {
+    try {
+      const r = await fetch("/scene_boss/refresh", { method: "POST" });
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      await this.fetchData();
+      this.refreshList("girl");
+      this.refreshList("male");
+      this.refreshList("scene");
+      this.refreshPreview();
+    } catch (err) {
+      console.error("[SceneEditor] refresh failed", err);
+    }
+  }
+
+  // ── CRUD: Save a single collection to disk ───────────────────────────────
+  async saveCollection(which) {
+    const libKey = which + "s";
+    const catKey = which + "Categories";
+    try {
+      const r = await fetch("/scene_boss/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          type: libKey,
+          items: this.libs[libKey],
+          categories: this.libs[catKey],
+        }),
+      });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({ error: `HTTP ${r.status}` }));
+        throw new Error(err.error || `HTTP ${r.status}`);
+      }
+      showToast(`${which.charAt(0).toUpperCase() + which.slice(1)} saved`);
+      return true;
+    } catch (err) {
+      console.error(`[SceneEditor] save ${which} failed`, err);
+      showToast(`Failed to save: ${err.message}`, "error");
+      return false;
+    }
+  }
+
+  // ── CRUD: Delete item ────────────────────────────────────────────────────
+  async deleteItem(which, name) {
+    if (!confirm(`Delete "${name}"?`)) return;
+    const libKey = which + "s";
+    const catKey = which + "Categories";
+    delete this.libs[libKey][name];
+    for (const cat of Object.keys(this.libs[catKey])) {
+      this.libs[catKey][cat] = this.libs[catKey][cat].filter((n) => n !== name);
+      if (this.libs[catKey][cat].length === 0) delete this.libs[catKey][cat];
+    }
+    const stateKey = which;
+    if (this.state[stateKey] === name) this.state[stateKey] = RANDOM_SENTINEL;
+    const ok = await this.saveCollection(which);
+    if (ok) {
+      this.refreshList(which);
+      this.refreshPreview();
+    }
+  }
+
+  // ── CRUD: Add / Edit item sub-modal ──────────────────────────────────────
+  openItemEditor(which, existingName) {
+    const isEdit = existingName != null;
+    const libKey = which + "s";
+    const catKey = which + "Categories";
+    const existingText = isEdit ? (this.libs[libKey][existingName] || "") : "";
+    const existingCats = new Set();
+    if (isEdit) {
+      for (const [cat, items] of Object.entries(this.libs[catKey])) {
+        if (items.includes(existingName)) existingCats.add(cat);
+      }
+    }
+    const allCats = Object.keys(this.libs[catKey]).sort();
+    const selectedCats = new Set(existingCats);
+
+    const overlay = document.createElement("div");
+    overlay.className = "boss-scn-submodal";
+
+    const card = document.createElement("div");
+    card.className = "boss-scn-card";
+    card.style.border = "2px solid var(--boss-brand)";
+
+    const label = which.charAt(0).toUpperCase() + which.slice(1);
+    card.innerHTML = `<div class="boss-scn-card-title" style="font-size:18px;">
+      ${isEdit ? "Edit" : "Add New"} ${label}
+    </div>`;
+
+    // Name input
+    const nameLbl = document.createElement("label");
+    nameLbl.className = "boss-label";
+    nameLbl.textContent = `${label} Name`;
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.className = "boss-input";
+    nameInput.value = existingName || "";
+    nameInput.placeholder = `e.g. ${label}_01`;
+    nameInput.disabled = isEdit;
+    card.appendChild(nameLbl);
+    card.appendChild(nameInput);
+
+    // Prompt text textarea
+    const promptLbl = document.createElement("label");
+    promptLbl.className = "boss-label";
+    promptLbl.textContent = "Prompt Text";
+    const promptInput = document.createElement("textarea");
+    promptInput.value = existingText;
+    promptInput.placeholder = "Enter prompt text…";
+    card.appendChild(promptLbl);
+    card.appendChild(promptInput);
+
+    // Category chips (only if there are categories)
+    if (allCats.length > 0) {
+      const catLbl = document.createElement("label");
+      catLbl.className = "boss-label";
+      catLbl.textContent = "Categories (click to toggle)";
+      card.appendChild(catLbl);
+
+      const chipRow = document.createElement("div");
+      chipRow.className = "boss-scn-cats-row";
+      const renderChips = () => {
+        chipRow.innerHTML = "";
+        for (const cat of allCats) {
+          const chip = document.createElement("span");
+          chip.className = "boss-scn-cat-chip" + (selectedCats.has(cat) ? " active" : "");
+          chip.textContent = cat;
+          chip.addEventListener("click", () => {
+            if (selectedCats.has(cat)) selectedCats.delete(cat);
+            else selectedCats.add(cat);
+            chip.classList.toggle("active");
+          });
+          chipRow.appendChild(chip);
+        }
+      };
+      renderChips();
+      card.appendChild(chipRow);
+
+      // New category input
+      const newCatRow = document.createElement("div");
+      newCatRow.style.cssText = "display:flex;gap:6px;margin-top:8px;";
+      const newCatInput = document.createElement("input");
+      newCatInput.type = "text";
+      newCatInput.className = "boss-input";
+      newCatInput.placeholder = "New category…";
+      newCatInput.style.flex = "1";
+      const newCatBtn = document.createElement("button");
+      newCatBtn.type = "button";
+      newCatBtn.className = "boss-scn-btn";
+      newCatBtn.textContent = "+";
+      newCatBtn.style.cssText = "flex:0 0 auto;padding:5px 10px;";
+      newCatBtn.addEventListener("click", () => {
+        const val = newCatInput.value.trim();
+        if (!val || allCats.includes(val)) return;
+        allCats.push(val);
+        allCats.sort();
+        this.libs[catKey][val] = this.libs[catKey][val] || [];
+        selectedCats.add(val);
+        newCatInput.value = "";
+        renderChips();
+      });
+      newCatInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); newCatBtn.click(); }
+      });
+      newCatRow.appendChild(newCatInput);
+      newCatRow.appendChild(newCatBtn);
+      card.appendChild(newCatRow);
+    }
+
+    // Footer
+    const footer = document.createElement("div");
+    footer.className = "boss-footer";
+    const saveBtn = document.createElement("button");
+    saveBtn.type = "button";
+    saveBtn.className = "boss-btn-primary";
+    saveBtn.textContent = isEdit ? "Save Changes" : `Add ${label}`;
+    const cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className = "boss-btn-ghost";
+    cancelBtn.textContent = "Cancel";
+
+    saveBtn.addEventListener("click", async () => {
+      const newName = nameInput.value.trim();
+      const newText = promptInput.value.trim();
+      if (!newName) { alert("Name is required."); return; }
+      if (!newText) { alert("Prompt text is required."); return; }
+
+      this.libs[libKey][newName] = newText;
+
+      // Update categories
+      for (const cat of allCats) {
+        if (!this.libs[catKey][cat]) this.libs[catKey][cat] = [];
+        const idx = this.libs[catKey][cat].indexOf(newName);
+        if (selectedCats.has(cat) && idx === -1) {
+          this.libs[catKey][cat].push(newName);
+        } else if (!selectedCats.has(cat) && idx !== -1) {
+          this.libs[catKey][cat].splice(idx, 1);
+        }
+      }
+      for (const cat of Object.keys(this.libs[catKey])) {
+        if (this.libs[catKey][cat].length === 0) delete this.libs[catKey][cat];
+      }
+
+      const ok = await this.saveCollection(which);
+      if (ok) {
+        this.state[which] = newName;
+        this.refreshList(which);
+        this.refreshPreview();
+        overlay.remove();
+      }
+    });
+
+    cancelBtn.addEventListener("click", () => overlay.remove());
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) overlay.remove();
+    });
+
+    footer.appendChild(saveBtn);
+    footer.appendChild(cancelBtn);
+    card.appendChild(footer);
+    overlay.appendChild(card);
+    document.body.appendChild(overlay);
+    nameInput.focus();
   }
 }
 
