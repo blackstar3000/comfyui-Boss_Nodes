@@ -17,6 +17,7 @@ pattern (comfyui-pixaroma/nodes/node_seed.py):
 import json
 import os
 import random
+import re
 from pathlib import Path
 
 from utils.constants import SEED_MAX, ALL_CATEGORIES, DELIMITER_DEFAULT
@@ -54,6 +55,46 @@ def _load_all(force: bool = False) -> None:
     _GIRLS.load(force)
     _MALES.load(force)
     _SCENES.load(force)
+
+
+# ── Wildcard resolution ──────────────────────────────────────────────────────
+# Minimal, dependency-free {a|b|c} resolver so girls.json/males.json/scenes.json
+# entries can embed alternation groups without needing an external wildcard node.
+# Same approach as py/outfit_selector.py's resolve_wildcards, but here it takes
+# a shared `rng` (rather than reseeding per call) so that with a fixed seed,
+# girl/male/scene wildcard picks form one deterministic sequence instead of
+# three independent ones that would otherwise all pick the "first" option.
+
+_WILDCARD_RE = re.compile(r"\{([^{}]*)\}")
+
+# {girl}/{girls}/{male}/{males} are scene placeholders, not wildcard groups -
+# they must survive resolve_wildcards untouched so _substitute_placeholders
+# can still find them afterward. Without this guard, {girl} (a single
+# "option" with no "|") would silently collapse to the bare word `girl`,
+# breaking substitution with no visible error.
+_RESERVED_PLACEHOLDERS = {"girl", "girls", "male", "males"}
+
+
+def resolve_wildcards(text: str, rng: random.Random) -> str:
+    """Resolve {a|b|c} alternation groups in `text` using the given rng.
+    Handles nesting ({a|{b|c}}) by re-scanning until stable. Leaves
+    {girl}/{girls}/{male}/{males} placeholder tokens untouched."""
+    if not text or "{" not in text:
+        return text
+
+    def _pick(match):
+        content = match.group(1)
+        if content in _RESERVED_PLACEHOLDERS:
+            return match.group(0)  # leave the placeholder as-is
+        options = content.split("|")
+        return rng.choice(options) if options else ""
+
+    prev = None
+    while prev != text:
+        prev = text
+        text = _WILDCARD_RE.sub(_pick, text)
+
+    return text
 
 
 # ── Resolve + weight helpers ───────────────────────────────────────────────
@@ -264,6 +305,15 @@ class SceneMakerGOD:
         male_key, male_text = _resolve(rng, male, _MALES.items, _MALES.categories, male_cat)
         scene_key, scene_text = _resolve(rng, scene, _SCENES.items, _SCENES.categories, scene_cat)
 
+        # Resolve {a|b|c} wildcard groups embedded in each fragment. Shares
+        # `rng` with the pool-selection above, so a fixed seed reproduces
+        # the girl/male/scene choice AND every wildcard pick, in one
+        # deterministic sequence. {girl}/{male}/etc. placeholders in
+        # scene_text are protected and pass through untouched.
+        girl_text = resolve_wildcards(girl_text, rng)
+        male_text = resolve_wildcards(male_text, rng)
+        scene_text = resolve_wildcards(scene_text, rng)
+
         girl_w = clamp_strength(girl_w, STRENGTH_MIN, STRENGTH_MAX, 1.0)
         male_w = clamp_strength(male_w, STRENGTH_MIN, STRENGTH_MAX, 1.0)
         scene_w = clamp_strength(scene_w, STRENGTH_MIN, STRENGTH_MAX, 1.0)
@@ -331,6 +381,36 @@ def register_api_routes():
             })
         except Exception:
             return web.json_response({"error": "Internal server error"}, status=500)
+
+    @routes.post("/scene_boss/save")
+    async def save_scene_data(request):
+        """Write a single collection (girls/males/scenes) back to disk."""
+        import traceback
+        try:
+            body = await request.json()
+            lib_type = body.get("type")  # "girls", "males", or "scenes"
+            items = body.get("items", {})
+            categories = body.get("categories", {})
+
+            coll_map = {"girls": _GIRLS, "males": _MALES, "scenes": _SCENES}
+            coll = coll_map.get(lib_type)
+            if coll is None:
+                return web.json_response(
+                    {"error": f"Unknown type: {lib_type}"}, status=400,
+                )
+
+            coll.items = items
+            coll.categories = categories
+            coll.save()
+            return web.json_response({
+                "ok": True,
+                "type": lib_type,
+                "count": len(items),
+            })
+        except Exception as e:
+            tb = traceback.format_exc()
+            print(f"[SceneMakerPro] save error: {e}\n{tb}")
+            return web.json_response({"error": str(e)}, status=500)
 
 
 register_api_routes()
