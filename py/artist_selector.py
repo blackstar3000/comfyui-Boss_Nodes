@@ -175,6 +175,27 @@ def _coerce_int(value, fallback, minimum, maximum):
     return max(minimum, min(maximum, n))
 
 
+def _fetch_danbooru_post_count(artist_name: str) -> int:
+    """Fetch post count from Danbooru API for a given artist tag."""
+    try:
+        import urllib.request
+        import urllib.error
+        import urllib.parse
+
+        encoded = urllib.parse.quote(artist_name)
+        url = f"https://danbooru.donmai.us/tags.json?search[name]={encoded}&limit=1"
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "BossNodes/1.0 (ComfyUI custom node)"
+        })
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            tags = json.loads(resp.read().decode("utf-8", errors="replace"))
+            if isinstance(tags, list) and len(tags) > 0:
+                return tags[0].get("post_count", 0)
+    except Exception:
+        pass
+    return 0
+
+
 def _state_overrides(
     ArtistState,
     selection,
@@ -482,6 +503,102 @@ def register_api_routes():
                 "action": action,
                 "artist": artist_name,
             })
+        except Exception:
+            return web.json_response({"error": "Internal server error"}, status=500)
+
+    @routes.post("/wai_artist/save")
+    async def save_artist(request):
+        try:
+            data = await request.json()
+        except json.JSONDecodeError:
+            return web.json_response({"error": "Invalid JSON body"}, status=400)
+
+        name = (data.get("name") or "").strip()
+        prompt = (data.get("prompt") or "").strip()
+        categories = data.get("categories") or []
+
+        if not name:
+            return web.json_response({"error": "Artist name required"}, status=400)
+        if not prompt:
+            return web.json_response({"error": "Prompt required"}, status=400)
+
+        try:
+            raw = load_json(ARTISTS_FILE, {})
+            if not isinstance(raw, dict):
+                raw = {}
+            artists = raw.get("artists", {})
+            if not isinstance(artists, dict):
+                artists = {}
+
+            is_new = name not in artists
+
+            entry = {
+                "prompt": prompt,
+                "categories": [c for c in categories if isinstance(c, str)],
+            }
+
+            if is_new:
+                entry["post_count"] = _fetch_danbooru_post_count(name)
+            else:
+                existing = artists[name]
+                if isinstance(existing, dict):
+                    entry["post_count"] = existing.get("post_count", 0)
+                else:
+                    entry["post_count"] = 0
+
+            artists[name] = entry
+            raw["artists"] = artists
+            save_json(ARTISTS_FILE, raw)
+
+            global _db_cache
+            _db_cache = None
+
+            return web.json_response({
+                "name": name,
+                "prompt": prompt,
+                "categories": entry["categories"],
+                "post_count": entry["post_count"],
+                "is_new": is_new,
+            })
+        except Exception:
+            return web.json_response({"error": "Internal server error"}, status=500)
+
+    @routes.post("/wai_artist/delete")
+    async def delete_artist(request):
+        try:
+            data = await request.json()
+        except json.JSONDecodeError:
+            return web.json_response({"error": "Invalid JSON body"}, status=400)
+
+        name = (data.get("name") or "").strip()
+        if not name:
+            return web.json_response({"error": "Artist name required"}, status=400)
+
+        try:
+            raw = load_json(ARTISTS_FILE, {})
+            if not isinstance(raw, dict):
+                raw = {}
+            artists = raw.get("artists", {})
+            if not isinstance(artists, dict):
+                artists = {}
+
+            if name not in artists:
+                return web.json_response({"error": "Artist not found"}, status=404)
+
+            del artists[name]
+            raw["artists"] = artists
+            save_json(ARTISTS_FILE, raw)
+
+            favorites = load_json(FAVORITES_FILE, [])
+            if isinstance(favorites, list) and name in favorites:
+                favorites.remove(name)
+                save_json(FAVORITES_FILE, favorites)
+                _set_favorites(favorites)
+
+            global _db_cache
+            _db_cache = None
+
+            return web.json_response({"name": name, "deleted": True})
         except Exception:
             return web.json_response({"error": "Internal server error"}, status=500)
 

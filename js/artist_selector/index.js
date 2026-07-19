@@ -19,6 +19,59 @@ const MAX_ARTISTS_DEFAULT = 3;
 const MAX_ARTISTS_MIN = 1;
 const MAX_ARTISTS_MAX = 100;
 
+const ALPHA_RANGES = [
+  "=(-Ak", "Ak-Ao", "Ao-Az", "B(-Bu", "Bu-Ci", "Ci-Di", "Di-En", "En-Fu",
+  "Fu-Gr", "Gr-Ha", "Ha-Hi", "Hi-Ig", "Ig-Jh", "Jy-Ka", "Ka-Ka", "Ka-Ki",
+  "Ki-Ko", "Ko-Ku", "Ku-Ma", "Ma-Ma", "Ma-Mi", "Mi-Mo", "Mo-Mu", "Mu-Na",
+  "Na-Nn", "Nn-Ok", "Ok-Pe", "Pe-Ra", "Ra-Ro", "Ro-Sa", "Sa-Se", "Se-Sh",
+  "Sh-Sq", "Sq-Ta", "Ta-Te", "Te-Tr", "Tr-Ur", "Ur-Xi", "Xi-Yo", "Yo-Yu",
+  "Yu-Zz",
+];
+
+const RANGE_MAP = {
+  "=(-Ak": (c) => c < "ak",
+  "Ak-Ao": (c) => c >= "ak" && c < "ao",
+  "Ao-Az": (c) => c >= "ao" && c < "b",
+  "B(-Bu": (c) => c >= "b" && c < "bu",
+  "Bu-Ci": (c) => c >= "bu" && c < "ci",
+  "Ci-Di": (c) => c >= "ci" && c < "di",
+  "Di-En": (c) => c >= "di" && c < "en",
+  "En-Fu": (c) => c >= "en" && c < "fu",
+  "Fu-Gr": (c) => c >= "fu" && c < "gr",
+  "Gr-Ha": (c) => c >= "gr" && c < "ha",
+  "Ha-Hi": (c) => c >= "ha" && c < "hi",
+  "Hi-Ig": (c) => c >= "hi" && c < "ig",
+  "Ig-Jh": (c) => c >= "ig" && c < "jy",
+  "Jy-Ka": (c) => c >= "jy" && c < "ka",
+  "Ka-Ka": (c) => c >= "ka" && c <= "ka",
+  "Ka-Ki": (c) => c >= "ka" && c < "ki",
+  "Ki-Ko": (c) => c >= "ki" && c < "ko",
+  "Ko-Ku": (c) => c >= "ko" && c < "ku",
+  "Ku-Ma": (c) => c >= "ku" && c < "ma",
+  "Ma-Ma": (c) => c >= "ma" && c <= "ma",
+  "Ma-Mi": (c) => c >= "ma" && c < "mi",
+  "Mi-Mo": (c) => c >= "mi" && c < "mo",
+  "Mo-Mu": (c) => c >= "mo" && c < "mu",
+  "Mu-Na": (c) => c >= "mu" && c < "na",
+  "Na-Nn": (c) => c >= "na" && c < "nn",
+  "Nn-Ok": (c) => c >= "nn" && c < "ok",
+  "Ok-Pe": (c) => c >= "ok" && c < "pe",
+  "Pe-Ra": (c) => c >= "pe" && c < "ra",
+  "Ra-Ro": (c) => c >= "ra" && c < "ro",
+  "Ro-Sa": (c) => c >= "ro" && c < "sa",
+  "Sa-Se": (c) => c >= "sa" && c < "se",
+  "Se-Sh": (c) => c >= "se" && c < "sh",
+  "Sh-Sq": (c) => c >= "sh" && c < "sq",
+  "Sq-Ta": (c) => c >= "sq" && c < "ta",
+  "Ta-Te": (c) => c >= "ta" && c < "te",
+  "Te-Tr": (c) => c >= "te" && c < "tr",
+  "Tr-Ur": (c) => c >= "tr" && c < "ur",
+  "Ur-Xi": (c) => c >= "ur" && c < "xi",
+  "Xi-Yo": (c) => c >= "xi" && c < "yo",
+  "Yo-Yu": (c) => c >= "yo" && c < "yu",
+  "Yu-Zz": (c) => c >= "yu",
+};
+
 const VISIBLE_NATIVE_WIDGETS = [
   "selection",
   "max_artists",
@@ -223,6 +276,226 @@ function injectCSS() {
       border-radius: 8px;
       white-space: nowrap;
     }
+
+    /* ── Range tabs ─────────────────────────────────────────────────── */
+    .boss-art-range-bar {
+      display: flex;
+      gap: 2px;
+      flex-wrap: wrap;
+      padding: 8px 20px;
+      border-top: 1px solid var(--boss-border-input);
+      background: var(--boss-bg-section);
+    }
+    .boss-art-range-tab {
+      padding: 4px 7px;
+      border: 1px solid var(--boss-border-input);
+      border-radius: 4px;
+      background: var(--boss-bg-hover);
+      color: var(--boss-text-muted);
+      font-size: 10px;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      line-height: 1.2;
+    }
+    .boss-art-range-tab:hover {
+      border-color: var(--boss-border-strong);
+      color: var(--boss-text);
+    }
+    .boss-art-range-tab.active {
+      background: var(--boss-brand);
+      border-color: var(--boss-brand);
+      color: #fff;
+    }
+
+    /* ── CRUD sidebar buttons ────────────────────────────────────────── */
+    .boss-art-crud {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+    .boss-art-crud-btn {
+      flex: 1;
+      min-width: 70px;
+      padding: 7px 10px;
+      border: 1px solid var(--boss-border-input);
+      border-radius: 5px;
+      background: var(--boss-bg-hover);
+      color: var(--boss-text);
+      font-family: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      text-align: center;
+    }
+    .boss-art-crud-btn:hover {
+      border-color: var(--boss-border-strong);
+      background: var(--boss-bg-active);
+    }
+    .boss-art-crud-btn.primary {
+      background: var(--boss-brand);
+      border-color: var(--boss-brand);
+      color: #fff;
+    }
+    .boss-art-crud-btn.primary:hover {
+      filter: brightness(1.1);
+    }
+    .boss-art-crud-btn.danger {
+      border-color: #e74c3c;
+      color: #e74c3c;
+    }
+    .boss-art-crud-btn.danger:hover {
+      background: #e74c3c;
+      color: #fff;
+    }
+    .boss-art-crud-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    /* ── Sub-modal (Add/Edit) ───────────────────────────────────────── */
+    .boss-art-submodal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .boss-art-submodal {
+      background: var(--boss-bg-main, #1e1e2e);
+      border: 1px solid var(--boss-border-strong);
+      border-radius: 8px;
+      padding: 24px;
+      min-width: 400px;
+      max-width: 500px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    }
+    .boss-art-submodal h3 {
+      margin: 0 0 16px 0;
+      font-size: 16px;
+      color: var(--boss-text-bright);
+    }
+    .boss-art-submodal label {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 12px;
+      color: var(--boss-text-muted);
+    }
+    .boss-art-submodal input[type="text"],
+    .boss-art-submodal textarea {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--boss-border-input);
+      border-radius: 5px;
+      background: var(--boss-bg-hover);
+      color: var(--boss-text);
+      font-family: inherit;
+      font-size: 13px;
+      margin-bottom: 12px;
+      box-sizing: border-box;
+    }
+    .boss-art-submodal input[type="text"]:focus,
+    .boss-art-submodal textarea:focus {
+      outline: none;
+      border-color: var(--boss-brand);
+    }
+    .boss-art-submodal textarea {
+      min-height: 80px;
+      resize: vertical;
+    }
+    .boss-art-submodal .field { margin-bottom: 14px; }
+    .boss-art-submodal .cat-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 12px;
+    }
+    .boss-art-submodal .cat-chip {
+      padding: 4px 9px;
+      border: 1px solid var(--boss-border-input);
+      border-radius: 12px;
+      background: var(--boss-bg-hover);
+      color: var(--boss-text-muted);
+      font-size: 11px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .boss-art-submodal .cat-chip:hover {
+      border-color: var(--boss-border-strong);
+    }
+    .boss-art-submodal .cat-chip.active {
+      background: var(--boss-brand);
+      border-color: var(--boss-brand);
+      color: #fff;
+    }
+    .boss-art-submodal .btn-row {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+
+    /* ── Toast system ────────────────────────────────────────────────── */
+    .boss-art-toasts {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 10001;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 8px;
+      pointer-events: none;
+    }
+    .boss-art-toast {
+      pointer-events: auto;
+      padding: 10px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      animation: bossToastIn 0.2s ease;
+      max-width: 360px;
+    }
+    .boss-art-toast.success { background: #27ae60; }
+    .boss-art-toast.error { background: #e74c3c; }
+    .boss-art-toast.info { background: #3498db; }
+    .boss-art-toast.confirm {
+      background: var(--boss-bg-section, #2a2a3e);
+      border: 1px solid var(--boss-border-strong);
+      color: var(--boss-text);
+    }
+    .boss-art-toast .toast-msg { flex: 1; }
+    .boss-art-toast .toast-btn {
+      padding: 4px 10px;
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 4px;
+      background: transparent;
+      color: inherit;
+      font-size: 12px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .boss-art-toast .toast-btn:hover {
+      background: rgba(255,255,255,0.15);
+    }
+    .boss-art-toast .toast-btn.danger {
+      border-color: #e74c3c;
+      color: #e74c3c;
+    }
+    .boss-art-toast .toast-btn.danger:hover {
+      background: #e74c3c;
+      color: #fff;
+    }
+    @keyframes bossToastIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
   `;
   const style = document.createElement("style");
   style.id = "boss-artist-css";
@@ -261,6 +534,7 @@ function defaultStateFromWidgets(node) {
     sortMode: SORT_MODES.includes(sortMode) ? sortMode : "A-Z",
     forceRefresh: !!widgetValue(node, "force_refresh", false),
     selectedCategories: [],
+    rangeFilter: null,
   };
 }
 
@@ -288,6 +562,7 @@ function readState(node) {
               (c) => typeof c === "string" && c.trim(),
             )
           : [];
+        merged.rangeFilter = obj.rangeFilter || null;
         return merged;
       }
     } catch {
@@ -310,6 +585,7 @@ function writeState(node, state) {
     sortMode: SORT_MODES.includes(state.sortMode) ? state.sortMode : "A-Z",
     forceRefresh: !!state.forceRefresh,
     selectedCategories: state.selectedCategories || [],
+    rangeFilter: state.rangeFilter || null,
   });
 }
 
@@ -363,6 +639,56 @@ function escapeHtml(s) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;")
     .replace(/`/g, "&#96;");
+}
+
+let _toastContainer = null;
+function getToastContainer() {
+  if (_toastContainer && document.body.contains(_toastContainer)) return _toastContainer;
+  _toastContainer = document.createElement("div");
+  _toastContainer.className = "boss-art-toasts";
+  document.body.appendChild(_toastContainer);
+  return _toastContainer;
+}
+
+function showToast(message, type = "info", duration = 3000) {
+  const container = getToastContainer();
+  const toast = document.createElement("div");
+  toast.className = `boss-art-toast ${type}`;
+  const msg = document.createElement("span");
+  msg.className = "toast-msg";
+  msg.textContent = message;
+  toast.appendChild(msg);
+  container.appendChild(toast);
+  if (duration > 0) {
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transition = "opacity 0.2s";
+      setTimeout(() => toast.remove(), 200);
+    }, duration);
+  }
+  return toast;
+}
+
+function showConfirmToast(message, onYes, onNo) {
+  const container = getToastContainer();
+  const toast = document.createElement("div");
+  toast.className = "boss-art-toast confirm";
+  const msg = document.createElement("span");
+  msg.className = "toast-msg";
+  msg.textContent = message;
+  toast.appendChild(msg);
+  const yesBtn = document.createElement("button");
+  yesBtn.className = "toast-btn danger";
+  yesBtn.textContent = "Yes";
+  yesBtn.addEventListener("click", () => { toast.remove(); onYes(); });
+  const noBtn = document.createElement("button");
+  noBtn.className = "toast-btn";
+  noBtn.textContent = "No";
+  noBtn.addEventListener("click", () => { toast.remove(); if (onNo) onNo(); });
+  toast.appendChild(yesBtn);
+  toast.appendChild(noBtn);
+  container.appendChild(toast);
+  return toast;
 }
 
 function renderHeader(node) {
@@ -465,6 +791,7 @@ class ArtistEditor {
     side.appendChild(this.buildSelectSection("Sort", "sortMode", SORT_MODES));
     side.appendChild(this.buildForceRefreshSection());
     side.appendChild(this.buildCategorySection());
+    side.appendChild(this.buildCrudSection());
     this.countEl = document.createElement("div");
     this.countEl.className = "boss-art-count";
     side.appendChild(this.countEl);
@@ -474,6 +801,7 @@ class ArtistEditor {
     const list = document.createElement("div");
     list.className = "boss-art-list";
     workspace.appendChild(list);
+    workspace.appendChild(this.buildRangeBar());
     this.listEl = list;
 
     body.appendChild(side);
@@ -723,6 +1051,291 @@ class ArtistEditor {
     });
   }
 
+  buildCrudSection() {
+    const wrap = document.createElement("div");
+    const label = document.createElement("span");
+    label.className = "boss-label";
+    label.textContent = "Manage";
+    const row = document.createElement("div");
+    row.className = "boss-art-crud";
+
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "boss-art-crud-btn primary";
+    addBtn.textContent = "+ Add";
+    addBtn.addEventListener("click", () => this.openAddModal());
+
+    const refreshBtn = document.createElement("button");
+    refreshBtn.type = "button";
+    refreshBtn.className = "boss-art-crud-btn";
+    refreshBtn.textContent = "Refresh";
+    refreshBtn.addEventListener("click", async () => {
+      refreshBtn.disabled = true;
+      try {
+        await this.fetchData();
+        this.refreshList();
+        this.updateCrudButtons();
+        showToast("Library refreshed", "success");
+      } catch (e) {
+        showToast("Refresh failed: " + e.message, "error");
+      }
+      refreshBtn.disabled = false;
+    });
+
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.className = "boss-art-crud-btn";
+    editBtn.textContent = "Edit";
+    editBtn.disabled = true;
+    editBtn.addEventListener("click", () => {
+      const sel = this.state.selectedNames || [];
+      if (sel.length === 1) this.openEditModal(sel[0]);
+    });
+
+    const deleteBtn = document.createElement("button");
+    deleteBtn.type = "button";
+    deleteBtn.className = "boss-art-crud-btn danger";
+    deleteBtn.textContent = "Delete";
+    deleteBtn.disabled = true;
+    deleteBtn.addEventListener("click", () => {
+      const sel = this.state.selectedNames || [];
+      if (sel.length === 1) this.confirmDelete(sel[0]);
+    });
+
+    row.appendChild(addBtn);
+    row.appendChild(refreshBtn);
+    row.appendChild(editBtn);
+    row.appendChild(deleteBtn);
+    wrap.appendChild(label);
+    wrap.appendChild(row);
+    this._editBtn = editBtn;
+    this._deleteBtn = deleteBtn;
+    return wrap;
+  }
+
+  updateCrudButtons() {
+    const sel = this.state.selectedNames || [];
+    const hasOne = sel.length === 1;
+    if (this._editBtn) this._editBtn.disabled = !hasOne;
+    if (this._deleteBtn) this._deleteBtn.disabled = !hasOne;
+  }
+
+  buildRangeBar() {
+    const bar = document.createElement("div");
+    bar.className = "boss-art-range-bar";
+    this._rangeBar = bar;
+
+    const allBtn = document.createElement("button");
+    allBtn.type = "button";
+    allBtn.className = "boss-art-range-tab" + (!this.state.rangeFilter ? " active" : "");
+    allBtn.textContent = "All";
+    allBtn.addEventListener("click", () => {
+      this.state.rangeFilter = null;
+      this.updateRangeTabs();
+      this.refreshList();
+    });
+    bar.appendChild(allBtn);
+
+    for (const range of ALPHA_RANGES) {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "boss-art-range-tab" + (this.state.rangeFilter === range ? " active" : "");
+      btn.textContent = range;
+      btn.dataset.range = range;
+      btn.addEventListener("click", () => {
+        this.state.rangeFilter = range;
+        this.updateRangeTabs();
+        this.refreshList();
+      });
+      bar.appendChild(btn);
+    }
+    return bar;
+  }
+
+  updateRangeTabs() {
+    if (!this._rangeBar) return;
+    this._rangeBar.querySelectorAll(".boss-art-range-tab").forEach((btn) => {
+      const range = btn.dataset.range;
+      if (range) {
+        btn.classList.toggle("active", this.state.rangeFilter === range);
+      } else {
+        btn.classList.toggle("active", !this.state.rangeFilter);
+      }
+    });
+  }
+
+  openAddModal() {
+    this._openArtistModal(null);
+  }
+
+  openEditModal(name) {
+    this._openArtistModal(name);
+  }
+
+  _openArtistModal(existingName) {
+    const isEdit = existingName !== null;
+    const library = this.data.library || {};
+    const artistCats = this.data.artist_categories || {};
+    const allCategories = this.data.categories || [];
+
+    let currentPrompt = "";
+    let currentCategories = [];
+    if (isEdit && library[existingName]) {
+      const entry = library[existingName];
+      currentPrompt = typeof entry === "string" ? entry : (entry.prompt || "");
+      currentCategories = artistCats[existingName] || [];
+    }
+
+    const overlay = document.createElement("div");
+    overlay.className = "boss-art-submodal-overlay";
+
+    const modal = document.createElement("div");
+    modal.className = "boss-art-submodal";
+
+    const title = document.createElement("h3");
+    title.textContent = isEdit ? `Edit: ${existingName}` : "Add Artist";
+    modal.appendChild(title);
+
+    if (!isEdit) {
+      const nameField = document.createElement("div");
+      nameField.className = "field";
+      const nameLabel = document.createElement("label");
+      nameLabel.textContent = "Name";
+      const nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.placeholder = "artist_tag_name";
+      nameInput.value = "";
+      nameField.appendChild(nameLabel);
+      nameField.appendChild(nameInput);
+      modal.appendChild(nameField);
+      this._subNameInput = nameInput;
+    } else {
+      this._subNameInput = null;
+    }
+
+    const promptField = document.createElement("div");
+    promptField.className = "field";
+    const promptLabel = document.createElement("label");
+    promptLabel.textContent = "Prompt";
+    const promptInput = document.createElement("textarea");
+    promptInput.placeholder = "by artist_name, ...";
+    promptInput.value = currentPrompt;
+    promptField.appendChild(promptLabel);
+    promptField.appendChild(promptInput);
+    modal.appendChild(promptField);
+
+    if (allCategories.length > 0) {
+      const catField = document.createElement("div");
+      catField.className = "field";
+      const catLabel = document.createElement("label");
+      catLabel.textContent = "Categories";
+      const catChips = document.createElement("div");
+      catChips.className = "cat-chips";
+      const selectedCats = new Set(currentCategories);
+
+      for (const cat of allCategories) {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "cat-chip" + (selectedCats.has(cat) ? " active" : "");
+        chip.textContent = cat;
+        chip.dataset.cat = cat;
+        chip.addEventListener("click", () => {
+          if (selectedCats.has(cat)) selectedCats.delete(cat);
+          else selectedCats.add(cat);
+          chip.classList.toggle("active");
+        });
+        catChips.appendChild(chip);
+      }
+      catField.appendChild(catLabel);
+      catField.appendChild(catChips);
+      modal.appendChild(catField);
+      this._subSelectedCats = selectedCats;
+    } else {
+      this._subSelectedCats = new Set(currentCategories);
+    }
+
+    const btnRow = document.createElement("div");
+    btnRow.className = "btn-row";
+    const saveBtn = document.createElement("button");
+    saveBtn.type = "button";
+    saveBtn.className = "boss-art-crud-btn primary";
+    saveBtn.textContent = "Save";
+    saveBtn.addEventListener("click", async () => {
+      const name = isEdit ? existingName : (this._subNameInput?.value || "").trim();
+      const prompt = promptInput.value.trim();
+      const categories = Array.from(this._subSelectedCats);
+
+      if (!name) { showToast("Name required", "error"); return; }
+      if (!prompt) { showToast("Prompt required", "error"); return; }
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving...";
+      try {
+        await this.saveArtist(name, prompt, categories);
+        overlay.remove();
+        showToast(isEdit ? "Artist updated" : "Artist added", "success");
+      } catch (e) {
+        showToast("Save failed: " + e.message, "error");
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save";
+      }
+    });
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className = "boss-art-crud-btn";
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.addEventListener("click", () => overlay.remove());
+
+    btnRow.appendChild(saveBtn);
+    btnRow.appendChild(cancelBtn);
+    modal.appendChild(btnRow);
+
+    overlay.appendChild(modal);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+    if (this._subNameInput) this._subNameInput.focus();
+    else promptInput.focus();
+  }
+
+  async saveArtist(name, prompt, categories) {
+    const r = await fetch("/wai_artist/save", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, prompt, categories }),
+    });
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.error || `HTTP ${r.status}`);
+    }
+    await this.fetchData();
+    this.refreshList();
+    this.updateCrudButtons();
+  }
+
+  confirmDelete(name) {
+    showConfirmToast(`Delete artist "${name}"?`, async () => {
+      try {
+        const r = await fetch("/wai_artist/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name }),
+        });
+        if (!r.ok) {
+          const err = await r.json().catch(() => ({}));
+          throw new Error(err.error || `HTTP ${r.status}`);
+        }
+        this.state.selectedNames = (this.state.selectedNames || []).filter((n) => n !== name);
+        await this.fetchData();
+        this.refreshList();
+        this.updateCrudButtons();
+        showToast(`Deleted "${name}"`, "success");
+      } catch (e) {
+        showToast("Delete failed: " + e.message, "error");
+      }
+    });
+  }
+
   createThumbPlaceholder() {
     const el = document.createElement("div");
     el.className = "boss-art-thumb-placeholder";
@@ -780,6 +1393,13 @@ class ArtistEditor {
         return selectedCats.some((c) => cats.includes(c));
       });
     }
+
+    const rangeFilter = this.state.rangeFilter;
+    if (rangeFilter && RANGE_MAP[rangeFilter]) {
+      const fn = RANGE_MAP[rangeFilter];
+      list = list.filter((n) => fn(n.toLowerCase()));
+    }
+
     return list;
   }
 
@@ -875,6 +1495,7 @@ class ArtistEditor {
         else next.add(name);
         this.state.selectedNames = Array.from(next);
         this.refreshList();
+        this.updateCrudButtons();
       });
       this.listEl.appendChild(item);
     }
