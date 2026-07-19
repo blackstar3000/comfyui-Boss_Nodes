@@ -55,6 +55,9 @@ const SCHEDULERS = [
   "sgm_uniform",
   "simple",
   "ddim_uniform",
+  "beta",
+  "linear_quadratic",
+  "kl_optimal",
 ];
 const SEED_CONTROL_MODES = ["fixed", "increment", "decrement", "randomize"];
 const SEED_MAX = 0xffffffff; // kept in sync with the modal's seed input range
@@ -82,6 +85,7 @@ const VISIBLE_NATIVE_WIDGETS = [
   "scheduler",
   "denoise",
   "seed",
+  "control_after_generate",
   "override_preset",
   "save_as_favorite",
   "favorite_name",
