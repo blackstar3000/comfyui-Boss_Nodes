@@ -429,6 +429,7 @@ const VISIBLE_NATIVE_WIDGETS = [
   "scene_cat",
   "scene_w",
   "seed",
+  "control_after_generate",
   "force_refresh",
   "delimiter",
 ];
