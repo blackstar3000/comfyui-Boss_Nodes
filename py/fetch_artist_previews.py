@@ -69,7 +69,7 @@ def parse_page(html):
     # Pair by position — each copy() call corresponds to the next img tag
     for i, tag in enumerate(artist_tags):
         if i < len(cdn_images):
-            # Store the raw CDN URL (browser handles encoding)
+            # Store the raw CDN URL as-is (CDN expects double-encoded names)
             results[tag] = cdn_images[i]
 
     return results
