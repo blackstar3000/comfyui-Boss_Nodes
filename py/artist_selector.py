@@ -74,13 +74,16 @@ def _get_previews(force_refresh: bool = False):
 
 
 def _get_artist_categories_file(force_refresh: bool = False):
-    """Load and cache artist_categories.json. Returns dict with 'artist_categories'."""
+    """Load and cache artist_categories.json. Returns (categories_list, artist_categories_dict)."""
     global _categories_cache
     if force_refresh or _categories_cache is None:
         raw = load_json(CATEGORIES_FILE, {})
         if not isinstance(raw, dict):
             raw = {}
-        _categories_cache = raw.get("artist_categories", {})
+        _categories_cache = (
+            raw.get("categories", []),
+            raw.get("artist_categories", {}),
+        )
     return _categories_cache
 
 
@@ -90,8 +93,8 @@ _db_cache = None
 
 
 def _get_database(force_refresh: bool = False):
-    """Load and cache the artist database. Returns 6-tuple:
-    (library, favorites, history, previews, categories_list, post_counts).
+    """Load and cache the artist database. Returns 7-tuple:
+    (library, favorites, history, previews, categories_list, artist_categories, post_counts).
     """
     global _db_cache
     if force_refresh or _db_cache is None:
@@ -107,7 +110,7 @@ def _get_database(force_refresh: bool = False):
             history = []
 
         previews = _get_previews(force_refresh=force_refresh)
-        cat_map = _get_artist_categories_file(force_refresh=force_refresh)
+        categories_list, cat_map = _get_artist_categories_file(force_refresh=force_refresh)
 
         # Merge category data into library entries for artists that have it.
         post_counts = {}
@@ -118,15 +121,15 @@ def _get_database(force_refresh: bool = False):
                 if not existing:
                     entry["categories"] = cat_map[name]
 
-        _db_cache = (library, favorites, history, previews, cat_map, post_counts)
+        _db_cache = (library, favorites, history, previews, categories_list, cat_map, post_counts)
     return _db_cache
 
 
 def _set_favorites(favorites: list):
     """Update cache + persist. Used by the /wai_artist/toggle_favorite route."""
     global _db_cache
-    library, _, history, previews, cat_map, post_counts = _get_database(force_refresh=False)
-    _db_cache = (library, list(favorites), history, previews, cat_map, post_counts)
+    library, _, history, previews, categories_list, cat_map, post_counts = _get_database(force_refresh=False)
+    _db_cache = (library, list(favorites), history, previews, categories_list, cat_map, post_counts)
     save_json(FAVORITES_FILE, favorites)
 
 
@@ -383,7 +386,7 @@ class BossArtistSelector:
         )
 
         try:
-            library, favorites, history, previews, cat_map, post_counts = _get_database(force_refresh=force_refresh)
+            library, favorites, history, previews, categories_list, cat_map, post_counts = _get_database(force_refresh=force_refresh)
         except Exception:
             return ("", "", 0)
 
@@ -411,8 +414,8 @@ class BossArtistSelector:
         if save_json(HISTORY_FILE, history):
             global _db_cache
             if _db_cache is not None:
-                lib, fav, _, previews, cat_map, post_counts = _db_cache
-                _db_cache = (lib, fav, history, previews, cat_map, post_counts)
+                lib, fav, _, previews, categories_list, cat_map, post_counts = _db_cache
+                _db_cache = (lib, fav, history, previews, categories_list, cat_map, post_counts)
 
         sorted_names = _sort_names(selected, sort_mode, favorites, history, post_counts)
         prompt, names = _format_output(sorted_names, output_mode, library)
@@ -435,13 +438,14 @@ def register_api_routes():
     @routes.get("/wai_artist/data")
     async def get_artists_data(request):
         try:
-            library, favorites, history, previews, cat_map, post_counts = _get_database(force_refresh=False)
+            library, favorites, history, previews, categories_list, cat_map, post_counts = _get_database(force_refresh=False)
             return web.json_response({
                 "library": library,
                 "favorites": favorites,
                 "history": history,
                 "previews": previews,
-                "categories": cat_map,
+                "categories": categories_list,
+                "artist_categories": cat_map,
                 "post_counts": post_counts,
             })
         except Exception:
