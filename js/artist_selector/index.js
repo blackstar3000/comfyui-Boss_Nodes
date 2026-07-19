@@ -782,6 +782,8 @@ class ArtistEditor {
     const r = await fetch("/wai_artist/data?t=" + Date.now());
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     this.data = await r.json();
+    const mac = this.data.library?.["macchiato (jae-min cho)"];
+    console.log("[BossArtistSelector] fetchData complete, macchiato entry:", mac);
   }
 
   async toggleFavorite(name) {
@@ -1485,6 +1487,9 @@ class ArtistEditor {
       const libEntry = this.data.library?.[name];
       const customPreview = typeof libEntry === "object" ? libEntry?.custom_preview : null;
       const preview = customPreview || previews[name];
+      if (name === "macchiato (jae-min cho)") {
+        console.log("[BossArtistSelector] DEBUG preview for", name, { customPreview, fallbackPreview: previews[name], libEntry });
+      }
       if (preview) {
         const img = document.createElement("img");
         img.className = "boss-art-thumb";
