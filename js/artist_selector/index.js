@@ -1221,9 +1221,11 @@ class ArtistEditor {
 
     let currentPrompt = "";
     let currentCategories = [];
+    let currentPreview = "";
     if (isEdit && library[existingName]) {
       const entry = library[existingName];
       currentPrompt = typeof entry === "string" ? entry : (entry.prompt || "");
+      currentPreview = typeof entry === "object" ? (entry.custom_preview || "") : "";
       currentCategories = artistCats[existingName] || [];
     }
 
@@ -1265,6 +1267,18 @@ class ArtistEditor {
     promptField.appendChild(promptInput);
     modal.appendChild(promptField);
 
+    const previewField = document.createElement("div");
+    previewField.className = "field";
+    const previewLabel = document.createElement("label");
+    previewLabel.textContent = "Preview Image URL (optional)";
+    const previewInput = document.createElement("input");
+    previewInput.type = "text";
+    previewInput.placeholder = "https://example.com/image.jpg";
+    previewInput.value = currentPreview;
+    previewField.appendChild(previewLabel);
+    previewField.appendChild(previewInput);
+    modal.appendChild(previewField);
+
     if (allCategories.length > 0) {
       const catField = document.createElement("div");
       catField.className = "field";
@@ -1301,10 +1315,11 @@ class ArtistEditor {
     saveBtn.type = "button";
     saveBtn.className = "boss-art-crud-btn primary";
     saveBtn.textContent = "Save";
-    saveBtn.addEventListener("click", async () => {
+      saveBtn.addEventListener("click", async () => {
       const name = isEdit ? existingName : (this._subNameInput?.value || "").trim();
       const prompt = promptInput.value.trim();
       const categories = Array.from(this._subSelectedCats);
+      const custom_preview = previewInput.value.trim();
 
       if (!name) { showToast("Name required", "error"); return; }
       if (!prompt) { showToast("Prompt required", "error"); return; }
@@ -1312,7 +1327,7 @@ class ArtistEditor {
       saveBtn.disabled = true;
       saveBtn.textContent = "Saving...";
       try {
-        await this.saveArtist(name, prompt, categories);
+        await this.saveArtist(name, prompt, categories, custom_preview);
         overlay.remove();
         showToast(isEdit ? "Artist updated" : "Artist added", "success");
       } catch (e) {
@@ -1339,11 +1354,11 @@ class ArtistEditor {
     else promptInput.focus();
   }
 
-  async saveArtist(name, prompt, categories) {
+  async saveArtist(name, prompt, categories, custom_preview) {
     const r = await fetch("/wai_artist/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, prompt, categories }),
+      body: JSON.stringify({ name, prompt, categories, custom_preview }),
     });
     if (!r.ok) {
       const err = await r.json().catch(() => ({}));
@@ -1467,7 +1482,9 @@ class ArtistEditor {
         "boss-art-item" + (selected.has(name) ? " selected" : "");
 
       const previews = this.data.previews || {};
-      const preview = previews[name];
+      const libEntry = this.data.library?.[name];
+      const customPreview = typeof libEntry === "object" ? libEntry?.custom_preview : null;
+      const preview = customPreview || previews[name];
       if (preview) {
         const img = document.createElement("img");
         img.className = "boss-art-thumb";

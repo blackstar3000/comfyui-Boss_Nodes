@@ -516,6 +516,7 @@ def register_api_routes():
         name = (data.get("name") or "").strip()
         prompt = (data.get("prompt") or "").strip()
         categories = data.get("categories") or []
+        custom_preview = (data.get("custom_preview") or "").strip()
 
         if not name:
             return web.json_response({"error": "Artist name required"}, status=400)
@@ -535,6 +536,7 @@ def register_api_routes():
             entry = {
                 "prompt": prompt,
                 "categories": [c for c in categories if isinstance(c, str)],
+                "custom_preview": custom_preview,
             }
 
             if is_new:
@@ -543,6 +545,8 @@ def register_api_routes():
                 existing = artists[name]
                 if isinstance(existing, dict):
                     entry["post_count"] = existing.get("post_count", 0)
+                    if not custom_preview and existing.get("custom_preview"):
+                        entry["custom_preview"] = existing["custom_preview"]
                 else:
                     entry["post_count"] = 0
 
