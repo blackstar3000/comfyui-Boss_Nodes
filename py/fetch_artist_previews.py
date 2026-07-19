@@ -69,9 +69,8 @@ def parse_page(html):
     # Pair by position — each copy() call corresponds to the next img tag
     for i, tag in enumerate(artist_tags):
         if i < len(cdn_images):
-            # URL-decode the filename from the src attribute
-            cdn_url = urllib.parse.unquote(cdn_images[i])
-            results[tag] = cdn_url
+            # Store the raw CDN URL (browser handles encoding)
+            results[tag] = cdn_images[i]
 
     return results
 
