@@ -518,8 +518,6 @@ def register_api_routes():
         categories = data.get("categories") or []
         custom_preview = (data.get("custom_preview") or "").strip()
 
-        print(f"[BossArtistSelector] save: name={name!r} prompt_len={len(prompt)} custom_preview={custom_preview!r}")
-
         if not name:
             return web.json_response({"error": "Artist name required"}, status=400)
         if not prompt:
@@ -568,6 +566,25 @@ def register_api_routes():
             })
         except Exception:
             return web.json_response({"error": "Internal server error"}, status=500)
+
+    @routes.get("/wai_artist/proxy_image")
+    async def proxy_image(request):
+        url = request.query.get("url", "").strip()
+        if not url or not url.startswith(("http://", "https://")):
+            return web.json_response({"error": "Invalid URL"}, status=400)
+        try:
+            import urllib.request
+            import urllib.error
+            req = urllib.request.Request(url, headers={
+                "User-Agent": "Mozilla/5.0 (compatible; BossNodes/1.0)",
+                "Referer": "https://danbooru.donmai.us/",
+            })
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                content_type = resp.headers.get("Content-Type", "image/jpeg")
+                data = resp.read()
+                return web.Response(body=data, content_type=content_type)
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=502)
 
     @routes.post("/wai_artist/delete")
     async def delete_artist(request):
