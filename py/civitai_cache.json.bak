@@ -1,0 +1,343 @@
+{
+    "Illustrious\\waiIllustriousSDXL_v160.safetensors": {
+        "data": {
+            "found": true,
+            "sha256": "A5F58EB1C33616C4F06BCA55AF39876A7B817913CD829CAA8ACB111B770C85CC",
+            "model_id": 827184,
+            "version_id": 2514310,
+            "version_name": "v16.0",
+            "model_name": "WAI-illustrious-SDXL",
+            "model_type": "Checkpoint",
+            "base_model": "Illustrious",
+            "description": "",
+            "civitai_url": "https://civitai.com/models/827184?modelVersionId=2514310",
+            "thumbnail_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/20ad2af3-9598-47ed-ad77-d09848a334f2/original=true/114266623.jpeg",
+            "stats": {
+                "downloadCount": 236982,
+                "thumbsUpCount": 15010
+            },
+            "recommended": {
+                "sampler": "Euler a",
+                "cfg": 7.0,
+                "steps": 30,
+                "clip_skip": null
+            },
+            "trained_words": []
+        },
+        "cached_at": 1784416703.447399,
+        "sha256": "A5F58EB1C33616C4F06BCA55AF39876A7B817913CD829CAA8ACB111B770C85CC"
+    },
+    "Illustrious\\BSSEquinoxILSemi_v10.safetensors": {
+        "data": {
+            "found": true,
+            "sha256": "820448260DA70C18D01EAFAA3323CF62BF107FA1B75394F9FA308AB97291F0FD",
+            "model_id": 1833737,
+            "version_id": 2075134,
+            "version_name": "v1.0",
+            "model_name": "[BSS] - 🌗 Equinox (IL Semi-Realistic model)",
+            "model_type": "Checkpoint",
+            "base_model": "Illustrious",
+            "description": "",
+            "civitai_url": "https://civitai.com/models/1833737?modelVersionId=2075134",
+            "thumbnail_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/f8ee5e1c-74ad-4a0e-bcd9-e806b83a7377/original=true/91989824.mp4",
+            "stats": {
+                "downloadCount": 889,
+                "thumbsUpCount": 172
+            },
+            "recommended": {
+                "sampler": "Euler a",
+                "cfg": 5.0,
+                "steps": 25,
+                "clip_skip": null
+            },
+            "trained_words": []
+        },
+        "cached_at": 1784416758.8179173,
+        "sha256": "820448260DA70C18D01EAFAA3323CF62BF107FA1B75394F9FA308AB97291F0FD"
+    },
+    "Illustrious\\waiIllustriousSDXL_v150.safetensors": {
+        "data": {
+            "found": true,
+            "sha256": "BEFC694A296F75E996488EBF9F9DB8A1493BD059B6E704B975829E87D5AEB4FA",
+            "model_id": 827184,
+            "version_id": 2167369,
+            "version_name": "v15.0",
+            "model_name": "WAI-illustrious-SDXL",
+            "model_type": "Checkpoint",
+            "base_model": "Illustrious",
+            "description": "",
+            "civitai_url": "https://civitai.com/models/827184?modelVersionId=2167369",
+            "thumbnail_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/9ca594fc-9f53-4fab-8f3f-62e73d6ff604/original=true/97626518.jpeg",
+            "stats": {
+                "downloadCount": 228937,
+                "thumbsUpCount": 19685
+            },
+            "recommended": {
+                "sampler": "Euler a",
+                "cfg": 7.0,
+                "steps": 30,
+                "clip_skip": null
+            },
+            "trained_words": []
+        },
+        "cached_at": 1784416878.0215895,
+        "sha256": "BEFC694A296F75E996488EBF9F9DB8A1493BD059B6E704B975829E87D5AEB4FA"
+    },
+    "NoobAI\\smoothmixRealism_realismV20.safetensors": {
+        "data": {
+            "found": true,
+            "sha256": "87F6219FCD9D5D56C3A84B06EF6EE00F96700AF56ECC3ECF908C9B52C61E4C10",
+            "model_id": 1719346,
+            "version_id": 1945732,
+            "version_name": "Realism v2.0",
+            "model_name": "SmoothMix Realism",
+            "model_type": "Checkpoint",
+            "base_model": "NoobAI",
+            "description": "",
+            "civitai_url": "https://civitai.com/models/1719346?modelVersionId=1945732",
+            "thumbnail_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/c332e537-3025-4d2b-97e1-76573dd253b1/original=true/84734034.mp4",
+            "stats": {
+                "downloadCount": 2017,
+                "thumbsUpCount": 302
+            },
+            "recommended": {
+                "sampler": "Euler a",
+                "cfg": 3.0,
+                "steps": 20,
+                "clip_skip": null
+            },
+            "trained_words": []
+        },
+        "cached_at": 1784416943.1965926,
+        "sha256": "87F6219FCD9D5D56C3A84B06EF6EE00F96700AF56ECC3ECF908C9B52C61E4C10"
+    },
+    "SD 1.5\\DreamShaper V8.safetensors": {
+        "data": {
+            "found": true,
+            "sha256": "879DB523C30D3B9017143D56705015E15A2CB5628762C11D086FED9538ABD7FD",
+            "model_id": 4384,
+            "version_id": 128713,
+            "version_name": "8",
+            "model_name": "DreamShaper",
+            "model_type": "Checkpoint",
+            "base_model": "SD 1.5",
+            "description": "<ul><li><p>Better at handling Character LoRA</p></li><li><p>Better at photorealism without sacrificing range (can still do art and anime pretty well, even if you might have to increase weight)</p></li><li><p>Better at NSFW</p></li></ul>",
+            "civitai_url": "https://civitai.com/models/4384?modelVersionId=128713",
+            "thumbnail_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/dd9b038c-bd15-43ab-86ab-66e145ad7ff2/original=true/1777041.jpeg",
+            "stats": {
+                "downloadCount": 1054573,
+                "thumbsUpCount": 18082
+            },
+            "recommended": {
+                "sampler": "DPM++ SDE Karras",
+                "cfg": 9.0,
+                "steps": 30,
+                "clip_skip": null
+            },
+            "trained_words": []
+        },
+        "cached_at": 1784417000.2711027,
+        "sha256": "879DB523C30D3B9017143D56705015E15A2CB5628762C11D086FED9538ABD7FD"
+    },
+    "SD 1.5\\juggernaut_reborn.safetensors": {
+        "data": {
+            "found": true,
+            "sha256": "338B85BC4F7628BC42CCE336242E79154A57C2A4360531436E97F7793568F18C",
+            "model_id": 46422,
+            "version_id": 274039,
+            "version_name": "Reborn",
+            "model_name": "Juggernaut",
+            "model_type": "Checkpoint",
+            "base_model": "SD 1.5",
+            "description": "<p>Took a Small Part of the JuggernautXL Model and trained it on the Version \"Juggernaut Final\"<br />I updated the epicRealism Model in the Merge and scratched the RPG and Diva Model</p>",
+            "civitai_url": "https://civitai.com/models/46422?modelVersionId=274039",
+            "thumbnail_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/af440c3e-20a8-444e-8f59-5ab488f00c1c/original=true/4863185.jpeg",
+            "stats": {
+                "downloadCount": 114884,
+                "thumbsUpCount": 2764
+            },
+            "recommended": {
+                "sampler": "DPM++ 2M Karras",
+                "cfg": 7.0,
+                "steps": 35,
+                "clip_skip": null
+            },
+            "trained_words": []
+        },
+        "cached_at": 1784417060.0800471,
+        "sha256": "338B85BC4F7628BC42CCE336242E79154A57C2A4360531436E97F7793568F18C"
+    },
+    "SDXL 1.0\\Juggernaut_X_RunDiffusion.safetensors": {
+        "data": {
+            "found": true,
+            "sha256": "D91D35736D8F2BE038F760A9B0009A771ECF0A417E9B38C244A84EA4CB9C0C45",
+            "model_id": 133005,
+            "version_id": 456194,
+            "version_name": "Jugg_X_by RunDiffusion",
+            "model_name": "Juggernaut XL",
+            "model_type": "Checkpoint",
+            "base_model": "SDXL 1.0",
+            "description": "<p><strong>Recommended Settings:</strong></p><p><strong>Res: 832*1216</strong></p><p><strong>Sampler: DPM++ 2M Karras</strong></p><p><strong>Steps: 30-40</strong></p><p><strong>CFG: 3-7 (less is a bit more realistic)</strong></p><p><strong>Negative: Start with no negative, and add afterwards the Stuff you don´t wanna see in that image. I don´t recommend using my Negative Prompt, i simply use it because i am lazy :D</strong></p><p><strong>VAE is already Baked In</strong></p><p><strong>HiRes: 4xNMKD-Siax_200k with 15 Steps and 0.3 Denoise + 1.5 Upscale</strong></p>",
+            "civitai_url": "https://civitai.com/models/133005?modelVersionId=456194",
+            "thumbnail_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/265d6db9-9bb4-40b9-b9f1-4404666effd7/original=true/10269273.jpeg",
+            "stats": {
+                "downloadCount": 118880,
+                "thumbsUpCount": 2971
+            },
+            "recommended": {
+                "sampler": "DPM++ 2M",
+                "cfg": 7.0,
+                "steps": 35,
+                "clip_skip": null
+            },
+            "trained_words": []
+        },
+        "cached_at": 1784417126.254029,
+        "sha256": "D91D35736D8F2BE038F760A9B0009A771ECF0A417E9B38C244A84EA4CB9C0C45"
+    },
+    "Illustrious\\lustfulPixels_v210.safetensors": {
+        "data": {
+            "found": true,
+            "sha256": "30BBEBB9D6BEFD1DD744C6A860DBC8FA3B4E3D732C80EF4BD06060824E341EB6",
+            "model_id": 1282569,
+            "version_id": 1564988,
+            "version_name": "v2.10",
+            "model_name": "Lustful Pixels - Illustrious",
+            "model_type": "Checkpoint",
+            "base_model": "Illustrious",
+            "description": "<p>Improved Detail</p>",
+            "civitai_url": "https://civitai.com/models/1282569?modelVersionId=1564988",
+            "thumbnail_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/ec77fec4-62d8-484a-b7dd-c534c575a97f/original=true/65088685.mp4",
+            "stats": {
+                "downloadCount": 501,
+                "thumbsUpCount": 50
+            },
+            "recommended": {
+                "sampler": "DPM++ 2M",
+                "cfg": 7.5,
+                "steps": 25,
+                "clip_skip": null
+            },
+            "trained_words": []
+        },
+        "cached_at": 1784417167.5289006,
+        "sha256": "30BBEBB9D6BEFD1DD744C6A860DBC8FA3B4E3D732C80EF4BD06060824E341EB6"
+    },
+    "Illustrious\\BSSEquinoxILSemi_v25.safetensors": {
+        "data": {
+            "found": true,
+            "sha256": "E13045035857F8E35943D134A5C79579F30F07315A73DFC8C14BC9D1679F2BEF",
+            "model_id": 1833737,
+            "version_id": 2216071,
+            "version_name": "v2.5",
+            "model_name": "[BSS] - 🌗 Equinox (IL Semi-Realistic model)",
+            "model_type": "Checkpoint",
+            "base_model": "Illustrious",
+            "description": "",
+            "civitai_url": "https://civitai.com/models/1833737?modelVersionId=2216071",
+            "thumbnail_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/e5387b76-cbb9-4973-b7ae-0f003d527d3b/original=true/100343422.jpeg",
+            "stats": {
+                "downloadCount": 1774,
+                "thumbsUpCount": 150
+            },
+            "recommended": {
+                "sampler": "Euler a",
+                "cfg": 5.0,
+                "steps": 25,
+                "clip_skip": null
+            },
+            "trained_words": []
+        },
+        "cached_at": 1784417306.488031,
+        "sha256": "E13045035857F8E35943D134A5C79579F30F07315A73DFC8C14BC9D1679F2BEF"
+    },
+    "Illustrious\\WAI-illustrious-SDXL_v14.safetensors": {
+        "data": {
+            "found": true,
+            "sha256": "BDB59BAC77D94AE7A55FF893170F9554C3F349E48A1B73C0C17C0B7C6F4D41A2",
+            "model_id": 827184,
+            "version_id": 1761560,
+            "version_name": "v14.0",
+            "model_name": "WAI-illustrious-SDXL",
+            "model_type": "Checkpoint",
+            "base_model": "Illustrious",
+            "description": "",
+            "civitai_url": "https://civitai.com/models/827184?modelVersionId=1761560",
+            "thumbnail_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/244bc929-9bbc-44b2-8a26-7622a1669f4a/original=true/74972532.jpeg",
+            "stats": {
+                "downloadCount": 300914,
+                "thumbsUpCount": 32499
+            },
+            "recommended": {
+                "sampler": "Euler a",
+                "cfg": 7.0,
+                "steps": 30,
+                "clip_skip": null
+            },
+            "trained_words": []
+        },
+        "cached_at": 1784418561.66668,
+        "sha256": "BDB59BAC77D94AE7A55FF893170F9554C3F349E48A1B73C0C17C0B7C6F4D41A2"
+    },
+    "Illustrious\\illustrij_v18.safetensors": {
+        "data": {
+            "found": true,
+            "sha256": "3C3925402851728FD9FD126A160595E392EC08567B12737113A0D10D45499656",
+            "model_id": 1025051,
+            "version_id": 2186168,
+            "version_name": "v18",
+            "model_name": "Illustrij",
+            "model_type": "Checkpoint",
+            "base_model": "Illustrious",
+            "description": "<p><strong>VAE baked in</strong></p><p>merge tinkered with love &amp; my merges and selfcrafted Loras ~♥</p>",
+            "civitai_url": "https://civitai.com/models/1025051?modelVersionId=2186168",
+            "thumbnail_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/6d7a8e6c-d5db-492f-b7b1-65777a39e7c7/original=true/100858184.jpeg",
+            "stats": {
+                "downloadCount": 20987,
+                "thumbsUpCount": 3179
+            },
+            "recommended": {
+                "sampler": "DPM++ 2M",
+                "cfg": 4.0,
+                "steps": 30,
+                "clip_skip": null
+            },
+            "trained_words": [
+                "+ PROMPT example:",
+                "masterpiece, best quality,",
+                "- PROMPT example:",
+                "worst quality, bad quality, young"
+            ]
+        },
+        "cached_at": 1784418702.313354,
+        "sha256": "3C3925402851728FD9FD126A160595E392EC08567B12737113A0D10D45499656"
+    },
+    "Illustrious\\ilustmix_v70Cinematic.safetensors": {
+        "data": {
+            "found": true,
+            "sha256": "3A4C3964E8484B74F5060EA3ACBF7C98E16783BC15600F59AEAFC15420524FB8",
+            "model_id": 1110783,
+            "version_id": 1888952,
+            "version_name": "v7.0 Cinematic",
+            "model_name": "iLustMix",
+            "model_type": "Checkpoint",
+            "base_model": "Illustrious",
+            "description": "<p>A brighter version of ilustmix, high attention to prompt</p>",
+            "civitai_url": "https://civitai.com/models/1110783?modelVersionId=1888952",
+            "thumbnail_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/293fc34c-0d60-42da-b2c0-237a67052469/original=true/81541576.jpeg",
+            "stats": {
+                "downloadCount": 21618,
+                "thumbsUpCount": 2742
+            },
+            "recommended": {
+                "sampler": "Euler a",
+                "cfg": 7.0,
+                "steps": 30,
+                "clip_skip": null
+            },
+            "trained_words": []
+        },
+        "cached_at": 1784419023.659171,
+        "sha256": "3A4C3964E8484B74F5060EA3ACBF7C98E16783BC15600F59AEAFC15420524FB8"
+    }
+}
