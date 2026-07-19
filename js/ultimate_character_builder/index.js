@@ -396,6 +396,7 @@ const VISIBLE_NATIVE_WIDGETS = [
   "pose_cat",
   "pose_strength",
   "seed",
+  "control_after_generate",
   "force_refresh",
   "delimiter",
 ];
