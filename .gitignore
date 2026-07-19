@@ -218,3 +218,6 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 Final Refactoring Summary.txt
+
+# Scraper cache files
+py/.artist_previews_cache.json
