@@ -4,18 +4,27 @@
 import os
 import json
 import re
+import hashlib
+import time
 import torch
 import folder_paths
 import comfy.sd
 import comfy.sample
 import comfy.model_management
 from urllib.parse import quote
+from concurrent.futures import ThreadPoolExecutor
 
 # ── Constants ───────────────────────────────────────────────────────────────
 
 BASE_DIR = os.path.dirname(__file__)
 MODEL_FAV_FILE = os.path.join(BASE_DIR, "checkpoint_favorites.json")
 SIZE_PRESET_FILE = os.path.join(BASE_DIR, "size_presets.json")
+CIVITAI_CACHE_FILE = os.path.join(BASE_DIR, "civitai_cache.json")
+CIVITAI_API_KEY = "27c4e6d514250557d843be021a98b681"
+CIVITAI_API_BASE = "https://civitai.com/api/v1"
+
+# Thread pool for background hashing (avoids blocking the event loop)
+_hash_executor = ThreadPoolExecutor(max_workers=1)
 
 # ── Helpers for JSON I/O ──────────────────────────────────────────────────
 
@@ -54,6 +63,110 @@ def _save_json(path, data):
             return False
     except Exception:
         return False
+
+# ── Civitai helpers ─────────────────────────────────────────────────────────
+
+def _compute_file_sha256(filepath):
+    """Compute SHA256 hash of a file. Streams in chunks to handle large files."""
+    sha256 = hashlib.sha256()
+    try:
+        with open(filepath, "rb") as f:
+            while True:
+                chunk = f.read(8192)
+                if not chunk:
+                    break
+                sha256.update(chunk)
+        return sha256.hexdigest().upper()
+    except Exception:
+        return None
+
+def _load_civitai_cache():
+    return _load_json(CIVITAI_CACHE_FILE, {})
+
+def _save_civitai_cache(cache):
+    _save_json(CIVITAI_CACHE_FILE, cache)
+
+def _fetch_civitai_by_hash(sha256_hash):
+    """Call Civitai API to look up a model version by SHA256 hash."""
+    import urllib.request
+    import urllib.error
+    url = f"{CIVITAI_API_BASE}/model-versions/by-hash/{sha256_hash}"
+    headers = {"User-Agent": "BossNodes-UltimateLoader/1.0"}
+    if CIVITAI_API_KEY:
+        headers["Authorization"] = f"Bearer {CIVITAI_API_KEY}"
+    req = urllib.request.Request(url, headers=headers)
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            return json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return None
+        print(f"[UltimateLoader] Civitai API error {e.code}: {e.reason}")
+        return None
+    except Exception as e:
+        print(f"[UltimateLoader] Civitai API request failed: {e}")
+        return None
+
+def _extract_recommended_params(version_data):
+    """Extract recommended generation params from Civitai model version images."""
+    params = {"sampler": None, "cfg": None, "steps": None, "clip_skip": None}
+    images = version_data.get("images", [])
+    if not images:
+        return params
+
+    # Collect metadata from images
+    sampler_counts = {}
+    cfg_values = []
+    steps_values = []
+    clip_skip_values = []
+
+    for img in images:
+        meta = img.get("meta", {})
+        if not meta:
+            continue
+        # Sampler
+        sampler = meta.get("sampler") or meta.get("Scheduler")
+        if sampler:
+            sampler_counts[sampler] = sampler_counts.get(sampler, 0) + 1
+        # CFG
+        cfg = meta.get("cfgScale") or meta.get("cfg")
+        if cfg:
+            try:
+                cfg_values.append(float(cfg))
+            except (ValueError, TypeError):
+                pass
+        # Steps
+        steps = meta.get("steps")
+        if steps:
+            try:
+                steps_values.append(int(steps))
+            except (ValueError, TypeError):
+                pass
+        # Clip skip
+        clip_skip = meta.get("Clip skip") or meta.get("clip_skip")
+        if clip_skip:
+            try:
+                clip_skip_values.append(int(clip_skip))
+            except (ValueError, TypeError):
+                pass
+
+    # Pick most common sampler
+    if sampler_counts:
+        params["sampler"] = max(sampler_counts, key=sampler_counts.get)
+    # Pick median CFG
+    if cfg_values:
+        cfg_values.sort()
+        params["cfg"] = cfg_values[len(cfg_values) // 2]
+    # Pick median steps
+    if steps_values:
+        steps_values.sort()
+        params["steps"] = steps_values[len(steps_values) // 2]
+    # Pick most common clip_skip
+    if clip_skip_values:
+        from collections import Counter
+        params["clip_skip"] = Counter(clip_skip_values).most_common(1)[0][0]
+
+    return params
 
 # ── API routes ──────────────────────────────────────────────────────────────
 
@@ -251,6 +364,63 @@ def register_api_routes():
             return web.json_response({"error": "Not found"}, status=404)
         except Exception as e:
             return web.json_response({"error": str(e)}, status=500)
+
+    @routes.get("/ultimate_loader/civitai")
+    async def get_civitai_info(request):
+        """Look up a checkpoint on Civitai by file hash and return model info + recommended params."""
+        ckpt = request.query.get("ckpt")
+        if not ckpt:
+            return web.json_response({"error": "Missing ckpt"}, status=400)
+
+        full_path = folder_paths.get_full_path("checkpoints", ckpt)
+        if not full_path or not os.path.isfile(full_path):
+            return web.json_response({"error": "Checkpoint not found"}, status=404)
+
+        # Check cache first
+        cache = _load_civitai_cache()
+        cached = cache.get(ckpt)
+        if cached and time.time() - cached.get("cached_at", 0) < 86400 * 30:  # 30 day cache
+            return web.json_response(cached.get("data", {}))
+
+        # Compute SHA256 in background thread to avoid blocking
+        loop = __import__("asyncio").get_event_loop()
+        sha256_hash = await loop.run_in_executor(_hash_executor, _compute_file_sha256, full_path)
+        if not sha256_hash:
+            return web.json_response({"error": "Failed to compute file hash"}, status=500)
+
+        # Lookup on Civitai
+        version_data = await loop.run_in_executor(_hash_executor, _fetch_civitai_by_hash, sha256_hash)
+        if not version_data:
+            return web.json_response({"found": False, "sha256": sha256_hash})
+
+        # Extract useful info
+        model_info = version_data.get("model", {})
+        images = version_data.get("images", [])
+        recommended = _extract_recommended_params(version_data)
+
+        # Build response
+        result = {
+            "found": True,
+            "sha256": sha256_hash,
+            "model_id": version_data.get("modelId"),
+            "version_id": version_data.get("id"),
+            "version_name": version_data.get("name", ""),
+            "model_name": model_info.get("name", ""),
+            "model_type": model_info.get("type", ""),
+            "base_model": version_data.get("baseModel", ""),
+            "description": (version_data.get("description") or "")[:2000],
+            "civitai_url": f"https://civitai.com/models/{version_data.get('modelId')}?modelVersionId={version_data.get('id')}",
+            "thumbnail_url": images[0].get("url") if images else None,
+            "stats": version_data.get("stats", {}),
+            "recommended": recommended,
+            "trained_words": version_data.get("trainedWords", []),
+        }
+
+        # Cache the result
+        cache[ckpt] = {"data": result, "cached_at": time.time(), "sha256": sha256_hash}
+        _save_civitai_cache(cache)
+
+        return web.json_response(result)
 
 register_api_routes()
 
