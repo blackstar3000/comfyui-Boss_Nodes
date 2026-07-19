@@ -439,6 +439,7 @@ const VISIBLE_NATIVE_WIDGETS = [
   "theme_strength",
   "style_strength",
   "seed",
+  "control_after_generate",
   "separator",
   "newlines",
   "weight_format",
