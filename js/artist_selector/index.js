@@ -481,12 +481,14 @@ function injectCSS() {
     .boss-art-toasts {
       position: fixed;
       bottom: 20px;
-      right: 20px;
+      left: 50%;
+      transform: translateX(-50%);
       z-index: 10001;
       display: flex;
       flex-direction: column-reverse;
       gap: 8px;
       pointer-events: none;
+      align-items: center;
     }
     .boss-art-toast {
       pointer-events: auto;
