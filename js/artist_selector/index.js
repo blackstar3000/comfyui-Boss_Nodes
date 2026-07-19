@@ -12,7 +12,7 @@ const STATE_PROP = "artistState";
 const HIDDEN_INPUT_NAME = "ArtistState";
 
 const TABS = ["All", "Favorites", "Recent"];
-const SORT_MODES = ["A-Z", "Z-A", "Favorites", "Recent"];
+const SORT_MODES = ["A-Z", "Z-A", "Favorites", "Recent", "Popular"];
 const OUTPUT_MODES = ["Prompt", "Names", "Both"];
 
 const MAX_ARTISTS_DEFAULT = 3;
@@ -104,28 +104,11 @@ function injectCSS() {
       padding: 20px;
       box-sizing: border-box;
     }
-    .boss-art-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 10px 14px;
-      background: var(--boss-bg-hover);
-      border: 1px solid var(--boss-border-input);
-      border-radius: 6px;
-      font-size: 14px;
-      margin-bottom: 6px;
-      cursor: pointer;
-    }
     .boss-art-item:hover { background: var(--boss-bg-active); border-color: var(--boss-border-strong); }
     .boss-art-item.selected {
       border-color: var(--boss-brand);
       background: var(--boss-bg-active);
       box-shadow: inset 0 0 0 1px var(--boss-brand);
-    }
-    .boss-art-item .name {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      color: var(--boss-text-dim);
     }
     .boss-art-fav {
       background: none;
@@ -142,6 +125,103 @@ function injectCSS() {
       font-size: 13px;
       padding: 20px;
       text-align: center;
+    }
+
+    /* Category chips */
+    .boss-art-categories {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding: 6px 0;
+      scrollbar-width: thin;
+    }
+    .boss-art-chip {
+      flex-shrink: 0;
+      padding: 5px 10px;
+      border-radius: 14px;
+      border: 1px solid var(--boss-border-input);
+      background: var(--boss-bg-hover);
+      color: var(--boss-text-muted);
+      font-size: 11px;
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+    }
+    .boss-art-chip:hover {
+      border-color: var(--boss-border-strong);
+      color: var(--boss-text);
+    }
+    .boss-art-chip.active {
+      background: var(--boss-brand);
+      border-color: var(--boss-brand);
+      color: #fff;
+    }
+
+    /* Thumbnail */
+    .boss-art-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 4px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .boss-art-thumb-placeholder {
+      width: 48px;
+      height: 48px;
+      border-radius: 4px;
+      background: var(--boss-bg-section);
+      border: 1px solid var(--boss-border-input);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--boss-text-faint);
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    /* Updated item layout */
+    .boss-art-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      background: var(--boss-bg-hover);
+      border: 1px solid var(--boss-border-input);
+      border-radius: 6px;
+      font-size: 14px;
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+    .boss-art-item-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .boss-art-item-name {
+      font-size: 14px;
+      color: var(--boss-text-dim);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .boss-art-item-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+      flex-wrap: wrap;
+    }
+    .boss-art-cats {
+      font-size: 10px;
+      color: var(--boss-text-faint);
+      white-space: nowrap;
+    }
+    .boss-art-posts {
+      font-size: 10px;
+      color: var(--boss-text-faint);
+      background: var(--boss-bg-section);
+      padding: 1px 5px;
+      border-radius: 8px;
+      white-space: nowrap;
     }
   `;
   const style = document.createElement("style");
@@ -180,6 +260,7 @@ function defaultStateFromWidgets(node) {
     outputMode: OUTPUT_MODES.includes(outputMode) ? outputMode : "Prompt",
     sortMode: SORT_MODES.includes(sortMode) ? sortMode : "A-Z",
     forceRefresh: !!widgetValue(node, "force_refresh", false),
+    selectedCategories: [],
   };
 }
 
@@ -202,6 +283,11 @@ function readState(node) {
         if (!SORT_MODES.includes(merged.sortMode))
           merged.sortMode = base.sortMode;
         merged.forceRefresh = !!merged.forceRefresh;
+        merged.selectedCategories = Array.isArray(obj.selectedCategories)
+          ? obj.selectedCategories.filter(
+              (c) => typeof c === "string" && c.trim(),
+            )
+          : [];
         return merged;
       }
     } catch {
@@ -223,6 +309,7 @@ function writeState(node, state) {
       : "Prompt",
     sortMode: SORT_MODES.includes(state.sortMode) ? state.sortMode : "A-Z",
     forceRefresh: !!state.forceRefresh,
+    selectedCategories: state.selectedCategories || [],
   });
 }
 
@@ -377,6 +464,7 @@ class ArtistEditor {
     );
     side.appendChild(this.buildSelectSection("Sort", "sortMode", SORT_MODES));
     side.appendChild(this.buildForceRefreshSection());
+    side.appendChild(this.buildCategorySection());
     this.countEl = document.createElement("div");
     this.countEl.className = "boss-art-count";
     side.appendChild(this.countEl);
@@ -582,6 +670,66 @@ class ArtistEditor {
     return wrap;
   }
 
+  buildCategorySection() {
+    const wrap = document.createElement("div");
+    const label = document.createElement("span");
+    label.className = "boss-label";
+    label.textContent = "Categories";
+    const chips = document.createElement("div");
+    chips.className = "boss-art-categories";
+    this.categoryChipsEl = chips;
+    const categories = this.data.categories || [];
+    const selectedCats = this.state.selectedCategories || [];
+    const allChip = document.createElement("button");
+    allChip.type = "button";
+    allChip.className = "boss-art-chip" + (selectedCats.length === 0 ? " active" : "");
+    allChip.textContent = "All";
+    allChip.addEventListener("click", () => {
+      this.state.selectedCategories = [];
+      this.updateCategoryChips();
+      this.refreshList();
+    });
+    chips.appendChild(allChip);
+    for (const cat of categories) {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "boss-art-chip" + (selectedCats.includes(cat) ? " active" : "");
+      chip.textContent = cat;
+      chip.dataset.cat = cat;
+      chip.addEventListener("click", () => {
+        const arr = this.state.selectedCategories || [];
+        const idx = arr.indexOf(cat);
+        if (idx >= 0) arr.splice(idx, 1);
+        else arr.push(cat);
+        this.updateCategoryChips();
+        this.refreshList();
+      });
+      chips.appendChild(chip);
+    }
+    wrap.appendChild(label);
+    wrap.appendChild(chips);
+    return wrap;
+  }
+
+  updateCategoryChips() {
+    if (!this.categoryChipsEl) return;
+    const selectedCats = this.state.selectedCategories || [];
+    this.categoryChipsEl.querySelectorAll(".boss-art-chip").forEach((chip) => {
+      if (chip.dataset.cat) {
+        chip.classList.toggle("active", selectedCats.includes(chip.dataset.cat));
+      } else {
+        chip.classList.toggle("active", selectedCats.length === 0);
+      }
+    });
+  }
+
+  createThumbPlaceholder() {
+    const el = document.createElement("div");
+    el.className = "boss-art-thumb-placeholder";
+    el.textContent = "?";
+    return el;
+  }
+
   filteredList() {
     const lib =
       this.data.library && typeof this.data.library === "object"
@@ -613,10 +761,25 @@ class ArtistEditor {
         const bKey = bi === -1 ? Number.POSITIVE_INFINITY : bi;
         return aKey - bKey || a.localeCompare(b);
       });
+    } else if (this.state.sortMode === "Popular") {
+      const counts = this.data.post_counts || {};
+      list.sort(
+        (a, b) =>
+          (counts[b] || 0) - (counts[a] || 0) || a.localeCompare(b),
+      );
     }
 
     const search = this.search.trim().toLowerCase();
     if (search) list = list.filter((n) => n.toLowerCase().includes(search));
+
+    const selectedCats = this.state.selectedCategories || [];
+    if (selectedCats.length > 0) {
+      const artistCats = this.data.artist_categories || {};
+      list = list.filter((n) => {
+        const cats = artistCats[n] || [];
+        return selectedCats.some((c) => cats.includes(c));
+      });
+    }
     return list;
   }
 
@@ -641,11 +804,51 @@ class ArtistEditor {
       const item = document.createElement("div");
       item.className =
         "boss-art-item" + (selected.has(name) ? " selected" : "");
-      const nameEl = document.createElement("span");
-      nameEl.className = "name";
+
+      const previews = this.data.previews || {};
+      const preview = previews[name];
+      if (preview) {
+        const img = document.createElement("img");
+        img.className = "boss-art-thumb";
+        img.src = preview;
+        img.alt = name;
+        img.addEventListener("error", () => {
+          img.replaceWith(this.createThumbPlaceholder());
+        });
+        item.appendChild(img);
+      } else {
+        item.appendChild(this.createThumbPlaceholder());
+      }
+
+      const info = document.createElement("div");
+      info.className = "boss-art-item-info";
+      const nameEl = document.createElement("div");
+      nameEl.className = "boss-art-item-name";
       nameEl.textContent = name;
       nameEl.title = name;
-      item.appendChild(nameEl);
+      info.appendChild(nameEl);
+
+      const meta = document.createElement("div");
+      meta.className = "boss-art-item-meta";
+      const artistCats = this.data.artist_categories || {};
+      const cats = artistCats[name] || [];
+      if (cats.length > 0) {
+        const catsEl = document.createElement("span");
+        catsEl.className = "boss-art-cats";
+        catsEl.textContent = cats.slice(0, 3).join(", ");
+        if (cats.length > 3) catsEl.textContent += "…";
+        meta.appendChild(catsEl);
+      }
+      const postCounts = this.data.post_counts || {};
+      const count = postCounts[name];
+      if (count != null) {
+        const postsEl = document.createElement("span");
+        postsEl.className = "boss-art-posts";
+        postsEl.textContent = `${count} posts`;
+        meta.appendChild(postsEl);
+      }
+      if (meta.childNodes.length > 0) info.appendChild(meta);
+      item.appendChild(info);
 
       const favBtn = document.createElement("button");
       favBtn.type = "button";
