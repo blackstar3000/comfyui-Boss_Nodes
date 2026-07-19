@@ -407,6 +407,7 @@ const VISIBLE_NATIVE_WIDGETS = [
   "category",
   "strength",
   "seed",
+  "control_after_generate",
   "force_refresh",
 ];
 
