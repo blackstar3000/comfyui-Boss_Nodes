@@ -296,6 +296,7 @@ const VISIBLE_NATIVE_WIDGETS = [
   "weight_format",
   "delimiter",
   "seed",
+  "control_after_generate",
   "force_refresh",
 ];
 
