@@ -518,6 +518,8 @@ def register_api_routes():
         categories = data.get("categories") or []
         custom_preview = (data.get("custom_preview") or "").strip()
 
+        print(f"[BossArtistSelector] save: name={name!r} prompt_len={len(prompt)} custom_preview={custom_preview!r}")
+
         if not name:
             return web.json_response({"error": "Artist name required"}, status=400)
         if not prompt:

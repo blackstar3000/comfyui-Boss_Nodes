@@ -779,7 +779,7 @@ class ArtistEditor {
   }
 
   async fetchData() {
-    const r = await fetch("/wai_artist/data");
+    const r = await fetch("/wai_artist/data?t=" + Date.now());
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     this.data = await r.json();
   }
