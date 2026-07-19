@@ -334,7 +334,7 @@ function hideCanvasWidget(widgets, name) {
   w.options.canvasOnly = true;
 }
 
-const VISIBLE_NATIVE_WIDGETS = ["mode", "intensity", "seed", "force_refresh"];
+const VISIBLE_NATIVE_WIDGETS = ["mode", "intensity", "seed", "control_after_generate", "force_refresh"];
 
 function escapeHtml(s) {
   return String(s)
