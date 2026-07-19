@@ -1,0 +1,126 @@
+{
+  "categories": [
+    "realistic",
+    "anime",
+    "manga",
+    "watercolor",
+    "pixel_art",
+    "3d",
+    "sketch",
+    "dark",
+    "cute",
+    "sexy",
+    "fantasy",
+    "scifi",
+    "horror",
+    "comedy",
+    "slice_of_life",
+    "painterly",
+    "cel_shaded",
+    "line_art",
+    "detailed",
+    "minimalist"
+  ],
+  "artist_categories": {
+    "wlop": [
+      "fantasy",
+      "detailed",
+      "painterly"
+    ],
+    "ebifurya": [
+      "anime",
+      "cute",
+      "detailed"
+    ],
+    "itomugi-kun": [
+      "anime",
+      "cute",
+      "slice_of_life"
+    ],
+    "ixy": [
+      "anime",
+      "sexy",
+      "detailed"
+    ],
+    "chihuri": [
+      "anime",
+      "detailed",
+      "painterly"
+    ],
+    "hews": [
+      "anime",
+      "cute",
+      "detailed"
+    ],
+    "hisahiko": [
+      "anime",
+      "slice_of_life",
+      "detailed"
+    ],
+    "nyantcha": [
+      "anime",
+      "cute",
+      "detailed"
+    ],
+    "sincos": [
+      "anime",
+      "sexy",
+      "detailed"
+    ],
+    "yohane": [
+      "anime",
+      "cute",
+      "detailed"
+    ],
+    "dagasi": [
+      "anime",
+      "cute",
+      "slice_of_life"
+    ],
+    "ramchi": [
+      "anime",
+      "cute",
+      "detailed"
+    ],
+    "mizumizuni": [
+      "anime",
+      "cute",
+      "slice_of_life"
+    ],
+    "zounose": [
+      "horror",
+      "dark",
+      "detailed"
+    ],
+    "takafumi": [
+      "anime",
+      "slice_of_life",
+      "detailed"
+    ],
+    "horosuke": [
+      "anime",
+      "sexy",
+      "detailed"
+    ],
+    "carnelian": [
+      "anime",
+      "sexy",
+      "detailed"
+    ],
+    "abubu": [
+      "anime",
+      "cute",
+      "detailed"
+    ],
+    "houtengeki": [
+      "anime",
+      "sexy",
+      "detailed"
+    ],
+    "kantoku": [
+      "anime",
+      "sexy",
+      "detailed"
+    ]
+  }
+}
