@@ -126,6 +126,117 @@ function injectCSS() {
     .boss-lr-preview-img.placeholder {
       opacity: 0.4;
     }
+
+    /* Civitai section */
+    .boss-lr-civitai-loading {
+      padding: 8px 10px;
+      color: var(--boss-text-muted);
+      font-size: 12px;
+      font-style: italic;
+      border-top: 1px solid var(--boss-border);
+      margin-top: 8px;
+    }
+    .boss-lr-civitai-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .boss-lr-civitai-model {
+      color: #fff;
+      font-weight: 600;
+      font-size: 13px;
+    }
+    .boss-lr-civitai-version {
+      color: var(--boss-text-muted);
+      font-size: 12px;
+    }
+    .boss-lr-civitai-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: var(--boss-bg-active);
+      color: var(--boss-brand);
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .boss-lr-civitai-stats {
+      color: var(--boss-text-muted);
+      font-size: 11px;
+      margin-bottom: 6px;
+    }
+    .boss-lr-civitai-rec-title {
+      color: var(--boss-brand);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin: 6px 0 4px;
+    }
+    .boss-lr-civitai-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+    .boss-lr-civitai-param {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 6px;
+      border-radius: 4px;
+      background: var(--boss-bg-section);
+      font-size: 11px;
+    }
+    .boss-lr-civitai-param .label { color: var(--boss-text-muted); }
+    .boss-lr-civitai-param .value { color: #fff; font-weight: 600; font-family: var(--boss-font-mono); }
+    .boss-lr-civitai-link {
+      display: block;
+      text-align: center;
+      color: var(--boss-brand);
+      font-size: 12px;
+      text-decoration: none;
+      padding: 6px;
+      border: 1px solid var(--boss-border-strong);
+      border-radius: var(--boss-radius-md);
+      margin-top: 6px;
+      transition: background 0.15s;
+    }
+    .boss-lr-civitai-link:hover { background: var(--boss-bg-hover); }
+    .boss-lr-civitai-thumb-wrap {
+      position: relative;
+    }
+
+    /* Civitai bar in preview card */
+    .boss-lr-civitai-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      margin: 8px 0;
+      border-radius: var(--boss-radius-md);
+      background: var(--boss-bg-active);
+      border-left: 3px solid var(--boss-brand);
+      font-size: 12px;
+    }
+    .boss-lr-civitai-bar-name {
+      color: #fff;
+      font-weight: 600;
+    }
+    .boss-lr-civitai-bar-ver {
+      color: var(--boss-text-muted);
+    }
+    .boss-lr-civitai-bar-base {
+      color: var(--boss-brand);
+      font-weight: 500;
+    }
+    .boss-lr-civitai-bar-link {
+      margin-left: auto;
+      color: var(--boss-brand);
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .boss-lr-civitai-bar-link:hover { text-decoration: underline; }
   `;
   const style = document.createElement("style");
   style.id = "boss-loader-css";
@@ -259,7 +370,7 @@ function setStatus(node, text, isError = false) {
 
 // ── Preview HTML ──────────────────────────────────────────────────────────
 
-function buildPreviewHTML(state, previewUrl) {
+function buildPreviewHTML(state, previewUrl, civitaiInfo) {
   const model = state.ckpt_name || "(none)";
   const dims = `${state.width}×${state.height}`;
   const imgHtml = previewUrl
@@ -267,11 +378,39 @@ function buildPreviewHTML(state, previewUrl) {
           onerror="console.warn('[UltimateLoader] Preview image failed to load:', this.src); this.style.display='none'; var f=this.nextElementSibling; if(f) f.style.display='flex';" />`
     : "";
   const fallbackHtml = `<div class="boss-lr-preview-img placeholder" style="display:${previewUrl ? "none" : "flex"};align-items:center;justify-content:center;color:#666;font-size:12px;height:60px;">⚠️ No preview available</div>`;
+
+  // Civitai thumbnail (override local preview if available)
+  let civitaiImgHtml = "";
+  if (civitaiInfo && civitaiInfo.found && civitaiInfo.thumbnail_url) {
+    civitaiImgHtml = `
+      <div class="boss-lr-civitai-thumb-wrap">
+        <img class="boss-lr-preview-img" src="${escapeHtml(civitaiInfo.thumbnail_url)}" alt="Civitai preview"
+          onerror="this.parentElement.style.display='none';" />
+      </div>`;
+  }
+
+  // Civitai info bar
+  let civitaiBarHtml = "";
+  if (civitaiInfo && civitaiInfo.found) {
+    const name = escapeHtml(civitaiInfo.model_name || "");
+    const ver = escapeHtml(civitaiInfo.version_name || "");
+    const base = escapeHtml(civitaiInfo.base_model || "");
+    const url = civitaiInfo.civitai_url || "#";
+    civitaiBarHtml = `
+      <div class="boss-lr-civitai-bar">
+        <span class="boss-lr-civitai-bar-name">${name}</span>
+        <span class="boss-lr-civitai-bar-ver">${ver}</span>
+        <span class="boss-lr-civitai-bar-base">${base}</span>
+        <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer" class="boss-lr-civitai-bar-link">Civitai ↗</a>
+      </div>`;
+  }
+
   return `
     <div class="boss-lr-card">
       <div class="boss-lr-card-title">📦 Ultimate Loader</div>
-      ${imgHtml}
-      ${fallbackHtml}
+      ${civitaiImgHtml || imgHtml}
+      ${!civitaiInfo?.found ? fallbackHtml : ""}
+      ${civitaiBarHtml}
       <div class="boss-lr-grid">
         <div class="boss-lr-item"><span class="label">Model</span><span class="value">${escapeHtml(model)}</span></div>
         <div class="boss-lr-item"><span class="label">VAE</span><span class="value">${escapeHtml(state.vae_name)}</span></div>
@@ -301,12 +440,33 @@ class LoaderEditor {
     };
     this.modal = null;
     this.previewUrl = null;
+    this.civitaiInfo = null;
+    this.civitaiLoading = false;
   }
 
   async fetchData() {
     const r = await fetch("/ultimate_loader/data");
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     this.data = await r.json();
+  }
+
+  async fetchCivitaiInfo(ckpt) {
+    if (!ckpt) { this.civitaiInfo = null; return; }
+    this.civitaiLoading = true;
+    this.civitaiInfo = null;
+    this.refreshCivitaiSection();
+    try {
+      const r = await fetch(`/ultimate_loader/civitai?ckpt=${encodeURIComponent(ckpt)}`);
+      if (!r.ok) throw new Error(`HTTP ${r.status}`);
+      const data = await r.json();
+      this.civitaiInfo = data;
+    } catch (err) {
+      console.warn("[UltimateLoader] Civitai lookup failed:", err.message);
+      this.civitaiInfo = { found: false, error: err.message };
+    } finally {
+      this.civitaiLoading = false;
+      this.refreshCivitaiSection();
+    }
   }
 
   async saveModelFavorite(name, ckpt) {
@@ -395,6 +555,9 @@ class LoaderEditor {
 
     // ── Model section ──────────────────────────────────────────────
     side.appendChild(this.buildModelSection());
+    // ── Civitai info ──────────────────────────────────────────────
+    this.civitaiSectionEl = document.createElement("div");
+    side.appendChild(this.civitaiSectionEl);
     // ── VAE & Clip ──────────────────────────────────────────────────
     side.appendChild(this.buildVAESection());
     side.appendChild(this.buildClipSkipSection());
@@ -455,6 +618,9 @@ class LoaderEditor {
         this.state.ckpt_name = val;
         this.previewUrl = this.previewImageUrl(this.state.ckpt_name);
         this.refreshPreview();
+        // Clear Civitai info when model changes (user must re-lookup)
+        this.civitaiInfo = null;
+        this.refreshCivitaiSection();
       },
     });
     wrap.appendChild(ckptDropdown.element);
@@ -509,6 +675,8 @@ class LoaderEditor {
             this.previewUrl = this.previewImageUrl(ckpt);
           }
         }
+        this.civitaiInfo = null;
+        this.refreshCivitaiSection();
         this.refreshPreview();
       },
     });
@@ -845,7 +1013,128 @@ class LoaderEditor {
 
   refreshPreview() {
     if (!this.previewEl) return;
-    this.previewEl.innerHTML = buildPreviewHTML(this.state, this.previewUrl);
+    this.previewEl.innerHTML = buildPreviewHTML(this.state, this.previewUrl, this.civitaiInfo);
+  }
+
+  refreshCivitaiSection() {
+    if (!this.civitaiSectionEl) return;
+    const el = this.civitaiSectionEl;
+    el.innerHTML = "";
+
+    if (this.civitaiLoading) {
+      const loading = document.createElement("div");
+      loading.className = "boss-lr-civitai-loading";
+      loading.textContent = "Looking up on Civitai...";
+      el.appendChild(loading);
+      return;
+    }
+
+    if (!this.civitaiInfo || !this.civitaiInfo.found) {
+      // Show "Look up" button
+      if (this.state.ckpt_name) {
+        el.style.display = "";
+        const label = document.createElement("span");
+        label.className = "boss-label";
+        label.textContent = "Civitai";
+        el.appendChild(label);
+
+        const lookupBtn = document.createElement("button");
+        lookupBtn.type = "button";
+        lookupBtn.className = "boss-ks-button";
+        lookupBtn.style.cssText = "width:100%;margin-top:4px;";
+        lookupBtn.textContent = this.civitaiInfo && this.civitaiInfo.error
+          ? "Retry Civitai Lookup"
+          : "Look up on Civitai";
+        lookupBtn.addEventListener("click", () => this.fetchCivitaiInfo(this.state.ckpt_name));
+        el.appendChild(lookupBtn);
+
+        if (this.civitaiInfo && this.civitaiInfo.error) {
+          const err = document.createElement("div");
+          err.className = "boss-lr-civitai-loading";
+          err.textContent = "Not found or error";
+          el.appendChild(err);
+        }
+      } else {
+        el.style.display = "none";
+      }
+      return;
+    }
+
+    el.style.display = "";
+    const info = this.civitaiInfo;
+
+    // Title
+    const title = document.createElement("span");
+    title.className = "boss-label";
+    title.textContent = "Civitai Info";
+    el.appendChild(title);
+
+    // Model name + version
+    const nameRow = document.createElement("div");
+    nameRow.className = "boss-lr-civitai-row";
+    nameRow.innerHTML = `<span class="boss-lr-civitai-model">${escapeHtml(info.model_name)}</span> <span class="boss-lr-civitai-version">${escapeHtml(info.version_name)}</span>`;
+    el.appendChild(nameRow);
+
+    // Base model badge
+    if (info.base_model) {
+      const badge = document.createElement("span");
+      badge.className = "boss-lr-civitai-badge";
+      badge.textContent = info.base_model;
+      el.appendChild(badge);
+    }
+
+    // Stats row
+    if (info.stats) {
+      const statsRow = document.createElement("div");
+      statsRow.className = "boss-lr-civitai-stats";
+      const dl = info.stats.downloadCount || 0;
+      const likes = info.stats.thumbsUpCount || 0;
+      statsRow.innerHTML = `⬇ ${(dl / 1000).toFixed(0)}k · 👍 ${(likes / 1000).toFixed(0)}k`;
+      el.appendChild(statsRow);
+    }
+
+    // Recommended params
+    const rec = info.recommended || {};
+    const hasRec = rec.sampler || rec.cfg || rec.steps || rec.clip_skip;
+    if (hasRec) {
+      const recTitle = document.createElement("div");
+      recTitle.className = "boss-lr-civitai-rec-title";
+      recTitle.textContent = "Recommended Settings";
+      el.appendChild(recTitle);
+
+      const recGrid = document.createElement("div");
+      recGrid.className = "boss-lr-civitai-grid";
+      if (rec.sampler) recGrid.innerHTML += `<div class="boss-lr-civitai-param"><span class="label">Sampler</span><span class="value">${escapeHtml(rec.sampler)}</span></div>`;
+      if (rec.cfg) recGrid.innerHTML += `<div class="boss-lr-civitai-param"><span class="label">CFG</span><span class="value">${rec.cfg}</span></div>`;
+      if (rec.steps) recGrid.innerHTML += `<div class="boss-lr-civitai-param"><span class="label">Steps</span><span class="value">${rec.steps}</span></div>`;
+      if (rec.clip_skip) recGrid.innerHTML += `<div class="boss-lr-civitai-param"><span class="label">Clip Skip</span><span class="value">${rec.clip_skip}</span></div>`;
+      el.appendChild(recGrid);
+
+      // Apply button
+      const applyBtn = document.createElement("button");
+      applyBtn.type = "button";
+      applyBtn.className = "boss-ks-button";
+      applyBtn.textContent = "Apply Recommended";
+      applyBtn.addEventListener("click", () => {
+        if (rec.sampler) this.state.sampler_name = rec.sampler;
+        if (rec.cfg) this.state.cfg = rec.cfg;
+        if (rec.steps) this.state.steps = rec.steps;
+        if (rec.clip_skip) this.state.clip_skip = rec.clip_skip;
+        this.refreshPreview();
+      });
+      el.appendChild(applyBtn);
+    }
+
+    // Open on Civitai link
+    if (info.civitai_url) {
+      const link = document.createElement("a");
+      link.href = info.civitai_url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.className = "boss-lr-civitai-link";
+      link.textContent = "Open on Civitai ↗";
+      el.appendChild(link);
+    }
   }
 
   save() {
