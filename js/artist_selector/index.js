@@ -150,9 +150,14 @@ function injectCSS() {
     }
 
     /* Artist list */
-    .boss-art-workspace { flex: 1; overflow: hidden; }
+    .boss-art-workspace {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
     .boss-art-list {
-      height: 100%;
+      flex: 1;
       overflow-y: auto;
       padding: 20px;
       box-sizing: border-box;
@@ -263,6 +268,39 @@ function injectCSS() {
       margin-top: 2px;
       flex-wrap: wrap;
     }
+    .boss-art-item-actions {
+      display: flex;
+      gap: 4px;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+    .boss-art-item:hover .boss-art-item-actions {
+      opacity: 1;
+    }
+    .boss-art-item-action {
+      width: 26px;
+      height: 26px;
+      border: 1px solid var(--boss-border-input);
+      border-radius: 4px;
+      background: var(--boss-bg-hover);
+      color: var(--boss-text-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      padding: 0;
+      line-height: 1;
+    }
+    .boss-art-item-action:hover {
+      border-color: var(--boss-border-strong);
+      color: var(--boss-text);
+      background: var(--boss-bg-active);
+    }
+    .boss-art-item-action.del:hover {
+      border-color: #e74c3c;
+      color: #e74c3c;
+    }
     .boss-art-cats {
       font-size: 10px;
       color: var(--boss-text-faint);
@@ -285,6 +323,7 @@ function injectCSS() {
       padding: 8px 20px;
       border-top: 1px solid var(--boss-border-input);
       background: var(--boss-bg-section);
+      flex-shrink: 0;
     }
     .boss-art-range-tab {
       padding: 4px 7px;
@@ -1488,6 +1527,30 @@ class ArtistEditor {
         }
       });
       item.appendChild(favBtn);
+
+      const actions = document.createElement("div");
+      actions.className = "boss-art-item-actions";
+      const editIcon = document.createElement("button");
+      editIcon.type = "button";
+      editIcon.className = "boss-art-item-action";
+      editIcon.textContent = "\u270E";
+      editIcon.title = "Edit artist";
+      editIcon.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.openEditModal(name);
+      });
+      const delIcon = document.createElement("button");
+      delIcon.type = "button";
+      delIcon.className = "boss-art-item-action del";
+      delIcon.textContent = "\u2715";
+      delIcon.title = "Delete artist";
+      delIcon.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.confirmDelete(name);
+      });
+      actions.appendChild(editIcon);
+      actions.appendChild(delIcon);
+      item.appendChild(actions);
 
       item.addEventListener("click", () => {
         const next = new Set(this.state.selectedNames || []);
