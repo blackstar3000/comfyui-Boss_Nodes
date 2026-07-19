@@ -213,6 +213,7 @@ const VISIBLE_NATIVE_WIDGETS = [
   "lens",
   "add_focal_aperture",
   "seed",
+  "control_after_generate",
   "force_refresh",
 ];
 
