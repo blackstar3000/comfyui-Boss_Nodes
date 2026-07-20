@@ -517,6 +517,12 @@ def register_api_routes():
         prompt = (data.get("prompt") or "").strip()
         categories = data.get("categories") or []
         custom_preview = (data.get("custom_preview") or "").strip()
+        post_count = data.get("post_count")
+        if post_count is not None:
+            try:
+                post_count = int(post_count)
+            except (ValueError, TypeError):
+                post_count = None
 
         if not name:
             return web.json_response({"error": "Artist name required"}, status=400)
@@ -540,7 +546,10 @@ def register_api_routes():
             }
 
             if is_new:
-                entry["post_count"] = _fetch_danbooru_post_count(name)
+                if post_count is not None:
+                    entry["post_count"] = post_count
+                else:
+                    entry["post_count"] = _fetch_danbooru_post_count(name)
             else:
                 existing = artists[name]
                 if isinstance(existing, dict):
@@ -549,6 +558,8 @@ def register_api_routes():
                         entry["custom_preview"] = existing["custom_preview"]
                 else:
                     entry["post_count"] = 0
+                if post_count is not None:
+                    entry["post_count"] = post_count
 
             artists[name] = entry
             raw["artists"] = artists

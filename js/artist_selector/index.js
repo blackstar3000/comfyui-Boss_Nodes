@@ -1222,10 +1222,12 @@ class ArtistEditor {
     let currentPrompt = "";
     let currentCategories = [];
     let currentPreview = "";
+    let currentPostCount = null;
     if (isEdit && library[existingName]) {
       const entry = library[existingName];
       currentPrompt = typeof entry === "string" ? entry : (entry.prompt || "");
       currentPreview = typeof entry === "object" ? (entry.custom_preview || "") : "";
+      currentPostCount = typeof entry === "object" ? (entry.post_count ?? null) : null;
       currentCategories = artistCats[existingName] || [];
     }
 
@@ -1279,6 +1281,19 @@ class ArtistEditor {
     previewField.appendChild(previewInput);
     modal.appendChild(previewField);
 
+    const postCountField = document.createElement("div");
+    postCountField.className = "field";
+    const postCountLabel = document.createElement("label");
+    postCountLabel.textContent = "Post count (optional)";
+    const postCountInput = document.createElement("input");
+    postCountInput.type = "number";
+    postCountInput.min = "0";
+    postCountInput.placeholder = "Auto-fetched from Danbooru if empty";
+    postCountInput.value = currentPostCount != null ? String(currentPostCount) : "";
+    postCountField.appendChild(postCountLabel);
+    postCountField.appendChild(postCountInput);
+    modal.appendChild(postCountField);
+
     if (allCategories.length > 0) {
       const catField = document.createElement("div");
       catField.className = "field";
@@ -1320,6 +1335,7 @@ class ArtistEditor {
       const prompt = promptInput.value.trim();
       const categories = Array.from(this._subSelectedCats);
       const custom_preview = previewInput.value.trim();
+      const post_count = postCountInput.value.trim() ? parseInt(postCountInput.value.trim(), 10) : null;
 
       if (!name) { showToast("Name required", "error"); return; }
       if (!prompt) { showToast("Prompt required", "error"); return; }
@@ -1327,7 +1343,7 @@ class ArtistEditor {
       saveBtn.disabled = true;
       saveBtn.textContent = "Saving...";
       try {
-        await this.saveArtist(name, prompt, categories, custom_preview);
+        await this.saveArtist(name, prompt, categories, custom_preview, post_count);
         overlay.remove();
         showToast(isEdit ? "Artist updated" : "Artist added", "success");
       } catch (e) {
@@ -1354,11 +1370,11 @@ class ArtistEditor {
     else promptInput.focus();
   }
 
-  async saveArtist(name, prompt, categories, custom_preview) {
+  async saveArtist(name, prompt, categories, custom_preview, post_count) {
     const r = await fetch("/wai_artist/save", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, prompt, categories, custom_preview }),
+      body: JSON.stringify({ name, prompt, categories, custom_preview, post_count }),
     });
     if (!r.ok) {
       const err = await r.json().catch(() => ({}));
