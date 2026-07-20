@@ -1647,6 +1647,117 @@ class CharEditor {
     });
   }
 
+  _thumbPlaceholder() {
+    const ph = document.createElement("div");
+    ph.className = "boss-char-thumb-placeholder";
+    return ph;
+  }
+
+  _buildListItem(type, name, isSelected, onClick) {
+    const item = document.createElement("div");
+    item.className = "boss-char-item" + (isSelected ? " selected" : "");
+    item.addEventListener("click", onClick);
+
+    const previews = this.libs.character_previews || {};
+    const libKey = type + "s";
+    const libData = this.libs[libKey] || {};
+    const entry = libData[name];
+    const customPreview = typeof entry === "object" ? (entry.custom_preview || "") : "";
+    const rawPreview = customPreview || previews[name] || "";
+    const preview = rawPreview
+      ? "/char_boss/proxy_image?url=" + encodeURIComponent(rawPreview)
+      : "";
+
+    if (preview) {
+      const img = document.createElement("img");
+      img.className = "boss-char-thumb";
+      img.src = preview;
+      img.alt = name;
+      img.addEventListener("error", () => {
+        img.replaceWith(this._thumbPlaceholder());
+      });
+      item.appendChild(img);
+    } else {
+      item.appendChild(this._thumbPlaceholder());
+    }
+
+    const label = document.createElement("span");
+    label.textContent = name;
+    label.style.flex = "1";
+    label.style.overflow = "hidden";
+    label.style.textOverflow = "ellipsis";
+    label.style.whiteSpace = "nowrap";
+    item.appendChild(label);
+
+    const actions = document.createElement("div");
+    actions.className = "boss-char-item-actions";
+
+    const editBtn = document.createElement("button");
+    editBtn.type = "button";
+    editBtn.textContent = "\u270E";
+    editBtn.title = "Edit";
+    editBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this._openItemModal(type, name);
+    });
+
+    const delBtn = document.createElement("button");
+    delBtn.type = "button";
+    delBtn.textContent = "\u2715";
+    delBtn.title = "Delete";
+    delBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this._confirmDelete(type, name);
+    });
+
+    actions.appendChild(editBtn);
+    actions.appendChild(delBtn);
+    item.appendChild(actions);
+
+    return item;
+  }
+
+  _rebuildAllLists() {
+    if (this._charListEl) {
+      this._rebuildList("character", this._charListEl, this._charSearchInput, this._charCatDropdown, this._charStrengthSlider);
+    }
+    if (this._exprListEl) {
+      this._rebuildList("expression", this._exprListEl, this._exprSearchInput, this._exprCatDropdown, this._exprStrengthSlider);
+    }
+    if (this._poseListEl) {
+      this._rebuildList("pose", this._poseListEl, this._poseSearchInput, this._poseCatDropdown, this._poseStrengthSlider);
+    }
+  }
+
+  _rebuildList(type, listEl, searchInput, catDropdown, strengthSlider) {
+    const libKey = type + "s";
+    const catKey = type + "Categories";
+    const libData = this.libs[libKey] || {};
+    const catData = this.libs[catKey] || {};
+    const selectedCat = catDropdown?.value || "All";
+
+    let list = Object.keys(libData);
+    if (selectedCat !== "All" && catData[selectedCat]) {
+      list = list.filter((n) => catData[selectedCat].includes(n));
+    }
+
+    const search = searchInput?.value?.toLowerCase() || "";
+    if (search) {
+      list = list.filter((n) => n.toLowerCase().includes(search));
+    }
+
+    list.sort((a, b) => a.localeCompare(b));
+
+    listEl.innerHTML = "";
+    for (const name of list) {
+      const item = this._buildListItem(type, name, this.state[`${type}`] === name, () => {
+        this.state[`${type}`] = name;
+        this._updateSelection(type);
+      });
+      listEl.appendChild(item);
+    }
+  }
+
   // ── Commit / cancel ───────────────────────────────────────────────────
   save() {
     writeState(this.node, this.state);
