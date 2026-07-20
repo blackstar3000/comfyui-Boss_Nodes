@@ -55,19 +55,21 @@ def save_json(path: Path, data, backup: bool = True) -> bool:
         return False
 
 
-def sanitize_entries(raw: dict) -> dict[str, str]:
-    """Keep only entries with non-empty string values.
+def sanitize_entries(raw: dict) -> dict:
+    """Keep only entries with non-empty string values or dict entries with prompt key.
 
     Args:
         raw: Dictionary of entries to sanitize
 
     Returns:
-        Cleaned dictionary with only valid string entries
+        Cleaned dictionary with only valid entries
     """
-    clean: dict[str, str] = {}
+    clean: dict = {}
     for k, v in raw.items():
         if isinstance(v, str) and v.strip():
             clean[k] = v.strip()
+        elif isinstance(v, dict) and v.get("prompt", "").strip():
+            clean[k] = v
     return clean
 
 
