@@ -1460,8 +1460,11 @@ class ArtistEditor {
     const selectedCats = this.state.selectedCategories || [];
     if (selectedCats.length > 0) {
       const artistCats = this.data.artist_categories || {};
+      const library = this.data.library || {};
       list = list.filter((n) => {
-        const cats = artistCats[n] || [];
+        const libEntry = library[n];
+        const libCats = typeof libEntry === "object" ? (libEntry?.categories || []) : [];
+        const cats = artistCats[n] || libCats;
         return selectedCats.some((c) => cats.includes(c));
       });
     }
@@ -1528,7 +1531,9 @@ class ArtistEditor {
       const meta = document.createElement("div");
       meta.className = "boss-art-item-meta";
       const artistCats = this.data.artist_categories || {};
-      const cats = artistCats[name] || [];
+      const libCatEntry = this.data.library?.[name];
+      const libCats = typeof libCatEntry === "object" ? (libCatEntry?.categories || []) : [];
+      const cats = artistCats[name] || libCats;
       if (cats.length > 0) {
         const catsEl = document.createElement("span");
         catsEl.className = "boss-art-cats";
