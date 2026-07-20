@@ -316,6 +316,8 @@ function injectCSS() {
       cursor: pointer;
       transition: background 0.15s;
       position: relative;
+      color: var(--boss-text-bright, #e0e0e0);
+      font-size: 13px;
     }
     .boss-char-item:hover {
       background: var(--boss-bg-hover);
@@ -1030,6 +1032,14 @@ class CharEditor {
     // Right preview
     const previewWrap = document.createElement("div");
     previewWrap.className = "boss-preview";
+
+    // Character preview image above the card
+    const charPreviewImg = document.createElement("img");
+    charPreviewImg.className = "boss-char-preview-hero";
+    charPreviewImg.style.cssText = "max-width:200px; max-height:200px; border-radius:8px; object-fit:contain; display:none; margin-bottom:12px;";
+    previewWrap.appendChild(charPreviewImg);
+    this._charPreviewHero = charPreviewImg;
+
     const card = document.createElement("div");
     card.className = "boss-card";
     previewWrap.appendChild(card);
@@ -1443,6 +1453,28 @@ class CharEditor {
   refreshPreview() {
     if (!this.cardEl) return;
     this.cardEl.innerHTML = buildPreviewHTML(this.state, this.libs);
+
+    // Update character hero image
+    if (this._charPreviewHero) {
+      const charName = this.state.character;
+      if (charName && charName !== "__RANDOM_CHARACTER__" && charName !== "__NONE__") {
+        const previews = this.libs.character_previews || {};
+        const libData = this.libs.characters || {};
+        const entry = libData[charName];
+        const customPreview = typeof entry === "object" ? (entry.custom_preview || "") : "";
+        const rawPreview = customPreview || previews[charName] || "";
+        if (rawPreview) {
+          this._charPreviewHero.src = "/char_boss/proxy_image?url=" + encodeURIComponent(rawPreview);
+          this._charPreviewHero.alt = charName;
+          this._charPreviewHero.style.display = "block";
+          this._charPreviewHero.onerror = () => { this._charPreviewHero.style.display = "none"; };
+        } else {
+          this._charPreviewHero.style.display = "none";
+        }
+      } else {
+        this._charPreviewHero.style.display = "none";
+      }
+    }
   }
 
   _buildCrudRow(type, listContainer, searchInput, categoryDropdown, strengthSlider) {
@@ -1683,27 +1715,28 @@ class CharEditor {
     item.className = "boss-char-item" + (isSelected ? " selected" : "");
     item.addEventListener("click", onClick);
 
-    const previews = this.libs.character_previews || {};
-    const libKey = type + "s";
-    const libData = this.libs[libKey] || {};
-    const entry = libData[name];
-    const customPreview = typeof entry === "object" ? (entry.custom_preview || "") : "";
-    const rawPreview = customPreview || previews[name] || "";
-    const preview = rawPreview
-      ? "/char_boss/proxy_image?url=" + encodeURIComponent(rawPreview)
-      : "";
+    if (type === "character") {
+      const previews = this.libs.character_previews || {};
+      const libData = this.libs.characters || {};
+      const entry = libData[name];
+      const customPreview = typeof entry === "object" ? (entry.custom_preview || "") : "";
+      const rawPreview = customPreview || previews[name] || "";
+      const preview = rawPreview
+        ? "/char_boss/proxy_image?url=" + encodeURIComponent(rawPreview)
+        : "";
 
-    if (preview) {
-      const img = document.createElement("img");
-      img.className = "boss-char-thumb";
-      img.src = preview;
-      img.alt = name;
-      img.addEventListener("error", () => {
-        img.replaceWith(this._thumbPlaceholder());
-      });
-      item.appendChild(img);
-    } else {
-      item.appendChild(this._thumbPlaceholder());
+      if (preview) {
+        const img = document.createElement("img");
+        img.className = "boss-char-thumb";
+        img.src = preview;
+        img.alt = name;
+        img.addEventListener("error", () => {
+          img.replaceWith(this._thumbPlaceholder());
+        });
+        item.appendChild(img);
+      } else {
+        item.appendChild(this._thumbPlaceholder());
+      }
     }
 
     const label = document.createElement("span");

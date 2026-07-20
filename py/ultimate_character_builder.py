@@ -411,23 +411,22 @@ def register_api_routes():
 
     @routes.get("/char_boss/proxy_image")
     async def proxy_image(request):
-        url = request.query.get("url", "")
-        if not url:
-            return web.json_response({"error": "Missing url parameter"}, status=400)
+        url = request.query.get("url", "").strip()
+        if not url or not url.startswith(("http://", "https://")):
+            return web.json_response({"error": "Invalid URL"}, status=400)
         try:
-            headers = {
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-                "Referer": "https://nax.moe/",
-            }
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as resp:
-                    if resp.status != 200:
-                        return web.json_response({"error": f"Upstream {resp.status}"}, status=502)
-                    data = await resp.read()
-                    content_type = resp.content_type or "image/jpeg"
-                    return web.Response(body=data, content_type=content_type)
+            import urllib.request
+            import urllib.error
+            req = urllib.request.Request(url, headers={
+                "User-Agent": "Mozilla/5.0 (compatible; BossNodes/1.0)",
+                "Referer": "https://danbooru.donmai.us/",
+            })
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                content_type = resp.headers.get("Content-Type", "image/jpeg")
+                data = resp.read()
+                return web.Response(body=data, content_type=content_type)
         except Exception as e:
-            return web.json_response({"error": str(e)}, status=500)
+            return web.json_response({"error": str(e)}, status=502)
 
 
 register_api_routes()
