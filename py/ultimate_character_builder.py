@@ -361,6 +361,40 @@ def register_api_routes():
         except Exception as e:
             return web.json_response({"error": str(e)}, status=500)
 
+    @routes.post("/char_boss/delete")
+    async def delete_char_entry(request):
+        try:
+            body = await request.json()
+            lib_type = body.get("type", "")
+            name = body.get("name", "").strip()
+
+            if lib_type not in ("characters", "expressions", "poses"):
+                return web.json_response({"error": "Invalid type"}, status=400)
+            if not name:
+                return web.json_response({"error": "Name required"}, status=400)
+
+            coll_map = {
+                "characters": _CHARACTERS,
+                "expressions": _EXPRESSIONS,
+                "poses": _POSES,
+            }
+            coll = coll_map[lib_type]
+
+            if name not in coll.items:
+                return web.json_response({"error": "Entry not found"}, status=404)
+
+            del coll.items[name]
+
+            for cat, members in coll.categories.items():
+                if name in members:
+                    members.remove(name)
+
+            coll.save()
+
+            return web.json_response({"name": name, "deleted": True})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
 
 register_api_routes()
 
