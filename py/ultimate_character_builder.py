@@ -417,6 +417,8 @@ def register_api_routes():
         try:
             import urllib.request
             import urllib.error
+            import urllib.parse
+            url = urllib.parse.unquote(url)
             req = urllib.request.Request(url, headers={
                 "User-Agent": "Mozilla/5.0 (compatible; BossNodes/1.0)",
                 "Referer": "https://danbooru.donmai.us/",
