@@ -1554,7 +1554,6 @@ class ArtistEditor {
         meta.appendChild(catsEl);
       }
       const postCounts = this.data.post_counts || {};
-      const libEntry = this.data.library?.[name];
       const libPostCount = typeof libEntry === "object" ? (libEntry?.post_count ?? null) : null;
       const count = postCounts[name] ?? libPostCount;
       if (count != null) {
