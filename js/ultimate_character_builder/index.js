@@ -266,6 +266,98 @@ function injectCSS() {
     }
     .boss-char-output .arrow { color: #ff66cc; font-weight: bold; }
     .boss-char-output.empty { color: var(--boss-text-faint); font-style: italic; }
+
+    .boss-char-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--boss-bg-card);
+      border: 1px solid var(--boss-border-subtle);
+      border-radius: 8px;
+      padding: 10px 20px;
+      color: var(--boss-text);
+      font-size: 13px;
+      z-index: 10000;
+      animation: boss-char-toast-in 0.2s ease;
+      pointer-events: auto;
+    }
+    .boss-char-toast.success { border-color: var(--boss-success); }
+    .boss-char-toast.error { border-color: var(--boss-danger); }
+    .boss-char-toast.confirm {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .boss-char-toast .boss-art-crud-btn {
+      padding: 4px 10px;
+      font-size: 11px;
+    }
+    @keyframes boss-char-toast-in {
+      from { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+    .boss-char-crud-row {
+      display: flex;
+      gap: 4px;
+      margin-top: 6px;
+    }
+    .boss-char-crud-row .boss-art-crud-btn {
+      flex: 1;
+      font-size: 10px;
+      padding: 4px 6px;
+    }
+    .boss-char-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.15s;
+      position: relative;
+    }
+    .boss-char-item:hover {
+      background: var(--boss-bg-hover);
+    }
+    .boss-char-item .boss-char-thumb {
+      width: 36px;
+      height: 36px;
+      border-radius: 4px;
+      object-fit: cover;
+      flex-shrink: 0;
+    }
+    .boss-char-item .boss-char-thumb-placeholder {
+      width: 36px;
+      height: 36px;
+      border-radius: 4px;
+      background: var(--boss-bg-hover);
+      flex-shrink: 0;
+    }
+    .boss-char-item-actions {
+      position: absolute;
+      right: 4px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: none;
+      gap: 2px;
+    }
+    .boss-char-item:hover .boss-char-item-actions {
+      display: flex;
+    }
+    .boss-char-item-actions button {
+      background: none;
+      border: none;
+      color: var(--boss-text-muted);
+      cursor: pointer;
+      font-size: 12px;
+      padding: 2px 4px;
+      border-radius: 3px;
+    }
+    .boss-char-item-actions button:hover {
+      color: var(--boss-text);
+      background: var(--boss-bg-hover);
+    }
   `;
   const style = document.createElement("style");
   style.id = "boss-char-css";
@@ -408,6 +500,44 @@ function escapeHtml(s) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function showToast(message, type = "info", duration = 3000) {
+  const existing = document.querySelectorAll(".boss-char-toast");
+  existing.forEach((e) => e.remove());
+  const toast = document.createElement("div");
+  toast.className = `boss-char-toast ${type}`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = "0";
+    toast.style.transition = "opacity 0.3s";
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+function showConfirmToast(message, onYes, onNo) {
+  const existing = document.querySelectorAll(".boss-char-toast");
+  existing.forEach((e) => e.remove());
+  const toast = document.createElement("div");
+  toast.className = "boss-char-toast confirm";
+  const msg = document.createElement("span");
+  msg.textContent = message;
+  toast.appendChild(msg);
+  const yesBtn = document.createElement("button");
+  yesBtn.type = "button";
+  yesBtn.className = "boss-art-crud-btn primary";
+  yesBtn.textContent = "Yes";
+  yesBtn.addEventListener("click", () => { toast.remove(); onYes?.(); });
+  toast.appendChild(yesBtn);
+  const noBtn = document.createElement("button");
+  noBtn.type = "button";
+  noBtn.className = "boss-art-crud-btn";
+  noBtn.textContent = "No";
+  noBtn.addEventListener("click", () => { toast.remove(); onNo?.(); });
+  toast.appendChild(noBtn);
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 8000);
 }
 
 // ── On-node body ───────────────────────────────────────────────────────────
@@ -1258,6 +1388,42 @@ class CharEditor {
   refreshPreview() {
     if (!this.cardEl) return;
     this.cardEl.innerHTML = buildPreviewHTML(this.state, this.libs);
+  }
+
+  _buildCrudRow(type, listContainer, searchInput, categoryDropdown, strengthSlider) {
+    const row = document.createElement("div");
+    row.className = "boss-char-crud-row";
+
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "boss-art-crud-btn primary";
+    addBtn.textContent = "+ Add";
+    addBtn.addEventListener("click", () => this._openItemModal(type, null));
+
+    const refreshBtn = document.createElement("button");
+    refreshBtn.type = "button";
+    refreshBtn.className = "boss-art-crud-btn";
+    refreshBtn.textContent = "Refresh";
+    refreshBtn.addEventListener("click", async () => {
+      try {
+        await this._refreshData();
+        this._rebuildList(type, listContainer, searchInput, categoryDropdown, strengthSlider);
+        showToast(`${type} library refreshed`, "success");
+      } catch (e) {
+        showToast("Refresh failed", "error");
+      }
+    });
+
+    row.appendChild(addBtn);
+    row.appendChild(refreshBtn);
+    return row;
+  }
+
+  async _refreshData() {
+    await fetch("/char_boss/refresh", { method: "POST" });
+    const r = await fetch("/char_boss/data?t=" + Date.now());
+    const data = await r.json();
+    this.libs = data;
   }
 
   // ── Commit / cancel ───────────────────────────────────────────────────
