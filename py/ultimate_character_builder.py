@@ -14,6 +14,7 @@ pattern (comfyui-pixaroma/nodes/node_seed.py):
   collection empty (no auto-creation).
 """
 
+import aiohttp
 import json
 import os
 import random
@@ -392,6 +393,26 @@ def register_api_routes():
             coll.save()
 
             return web.json_response({"name": name, "deleted": True})
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
+    @routes.get("/char_boss/proxy_image")
+    async def proxy_image(request):
+        url = request.query.get("url", "")
+        if not url:
+            return web.json_response({"error": "Missing url parameter"}, status=400)
+        try:
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                "Referer": "https://nax.moe/",
+            }
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as resp:
+                    if resp.status != 200:
+                        return web.json_response({"error": f"Upstream {resp.status}"}, status=502)
+                    data = await resp.read()
+                    content_type = resp.content_type or "image/jpeg"
+                    return web.Response(body=data, content_type=content_type)
         except Exception as e:
             return web.json_response({"error": str(e)}, status=500)
 
