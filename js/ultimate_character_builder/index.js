@@ -358,6 +358,36 @@ function injectCSS() {
       color: var(--boss-text);
       background: var(--boss-bg-hover);
     }
+    .boss-art-submodal .cat-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-bottom: 12px;
+    }
+    .boss-art-submodal .cat-chip {
+      padding: 4px 9px;
+      border: 1px solid var(--boss-border-input);
+      border-radius: 12px;
+      background: var(--boss-bg-hover);
+      color: var(--boss-text-muted);
+      font-size: 11px;
+      cursor: pointer;
+      user-select: none;
+    }
+    .boss-art-submodal .cat-chip:hover {
+      border-color: var(--boss-border-strong);
+    }
+    .boss-art-submodal .cat-chip.active {
+      background: var(--boss-brand);
+      border-color: var(--boss-brand);
+      color: #fff;
+    }
+    .boss-art-submodal .btn-row {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
   `;
   const style = document.createElement("style");
   style.id = "boss-char-css";
@@ -1424,6 +1454,197 @@ class CharEditor {
     const r = await fetch("/char_boss/data?t=" + Date.now());
     const data = await r.json();
     this.libs = data;
+  }
+
+  _openItemModal(type, existingName) {
+    const isEdit = existingName !== null;
+    const libKey = type + "s";
+    const libData = this.libs[libKey] || {};
+    const catKey = type + "Categories";
+    const allCats = this.libs[catKey] || [];
+
+    let currentPrompt = "";
+    let currentPreview = "";
+    let currentCategories = [];
+
+    if (isEdit && libData[existingName]) {
+      const entry = libData[existingName];
+      currentPrompt = typeof entry === "string" ? entry : (entry.prompt || "");
+      currentPreview = typeof entry === "object" ? (entry.custom_preview || "") : "";
+      const catData = this.libs[catKey] || {};
+      for (const [cat, members] of Object.entries(catData)) {
+        if (cat !== "All" && Array.isArray(members) && members.includes(existingName)) {
+          currentCategories.push(cat);
+        }
+      }
+    }
+
+    const overlay = document.createElement("div");
+    overlay.className = "boss-art-submodal-overlay";
+
+    const modal = document.createElement("div");
+    modal.className = "boss-art-submodal";
+
+    const title = document.createElement("h3");
+    title.textContent = isEdit ? `Edit: ${existingName}` : `Add ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+    modal.appendChild(title);
+
+    if (!isEdit) {
+      const nameField = document.createElement("div");
+      nameField.className = "field";
+      const nameLabel = document.createElement("label");
+      nameLabel.textContent = "Name";
+      const nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.placeholder = "character_tag_name";
+      nameInput.value = "";
+      nameField.appendChild(nameLabel);
+      nameField.appendChild(nameInput);
+      modal.appendChild(nameField);
+      this._subNameInput = nameInput;
+    } else {
+      this._subNameInput = null;
+    }
+
+    const promptField = document.createElement("div");
+    promptField.className = "field";
+    const promptLabel = document.createElement("label");
+    promptLabel.textContent = "Prompt";
+    const promptInput = document.createElement("textarea");
+    promptInput.rows = 4;
+    promptInput.value = currentPrompt;
+    promptField.appendChild(promptLabel);
+    promptField.appendChild(promptInput);
+    modal.appendChild(promptField);
+
+    const previewField = document.createElement("div");
+    previewField.className = "field";
+    const previewLabel = document.createElement("label");
+    previewLabel.textContent = "Preview Image URL (optional)";
+    const previewInput = document.createElement("input");
+    previewInput.type = "text";
+    previewInput.placeholder = "https://cdn.donmai.us/...";
+    previewInput.value = currentPreview;
+    previewField.appendChild(previewLabel);
+    previewField.appendChild(previewInput);
+    modal.appendChild(previewField);
+
+    if (allCats.length > 0) {
+      const catField = document.createElement("div");
+      catField.className = "field";
+      const catLabel = document.createElement("label");
+      catLabel.textContent = "Categories";
+      const catChips = document.createElement("div");
+      catChips.className = "cat-chips";
+      const selectedCats = new Set(currentCategories);
+
+      for (const cat of allCats) {
+        if (cat === "All") continue;
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "cat-chip" + (selectedCats.has(cat) ? " active" : "");
+        chip.textContent = cat;
+        chip.dataset.cat = cat;
+        chip.addEventListener("click", () => {
+          if (selectedCats.has(cat)) selectedCats.delete(cat);
+          else selectedCats.add(cat);
+          chip.classList.toggle("active");
+        });
+        catChips.appendChild(chip);
+      }
+      catField.appendChild(catLabel);
+      catField.appendChild(catChips);
+      modal.appendChild(catField);
+      this._subSelectedCats = selectedCats;
+    } else {
+      this._subSelectedCats = new Set(currentCategories);
+    }
+
+    const btnRow = document.createElement("div");
+    btnRow.className = "btn-row";
+    const saveBtn = document.createElement("button");
+    saveBtn.type = "button";
+    saveBtn.className = "boss-art-crud-btn primary";
+    saveBtn.textContent = "Save";
+    saveBtn.addEventListener("click", async () => {
+      const name = isEdit ? existingName : (this._subNameInput?.value || "").trim();
+      const prompt = promptInput.value.trim();
+      const categories = Array.from(this._subSelectedCats);
+      const custom_preview = previewInput.value.trim();
+
+      if (!name) { showToast("Name required", "error"); return; }
+      if (!prompt) { showToast("Prompt required", "error"); return; }
+
+      const oldCats = isEdit ? currentCategories : [];
+      const removed = oldCats.filter((c) => !categories.includes(c));
+      const added = categories.filter((c) => !oldCats.includes(c));
+
+      saveBtn.disabled = true;
+      saveBtn.textContent = "Saving...";
+      try {
+        const r = await fetch("/char_boss/save", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: libKey, name, prompt, categories, custom_preview }),
+        });
+        if (!r.ok) {
+          const err = await r.json();
+          throw new Error(err.error || "Save failed");
+        }
+        await this._refreshData();
+        this._rebuildAllLists();
+        overlay.remove();
+        if (isEdit && (removed.length > 0 || added.length > 0)) {
+          const parts = [];
+          if (added.length) parts.push(`added to: ${added.join(", ")}`);
+          if (removed.length) parts.push(`removed from: ${removed.join(", ")}`);
+          showToast(`${name}: ${parts.join("; ")}`, "success");
+        } else {
+          showToast(isEdit ? `${name} updated` : `${name} added`, "success");
+        }
+      } catch (e) {
+        showToast("Save failed: " + e.message, "error");
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save";
+      }
+    });
+
+    const cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className = "boss-art-crud-btn";
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.addEventListener("click", () => overlay.remove());
+
+    btnRow.appendChild(saveBtn);
+    btnRow.appendChild(cancelBtn);
+    modal.appendChild(btnRow);
+
+    overlay.appendChild(modal);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) overlay.remove(); });
+    document.body.appendChild(overlay);
+    if (this._subNameInput) this._subNameInput.focus();
+    else promptInput.focus();
+  }
+
+  _confirmDelete(type, name) {
+    showConfirmToast(`Delete ${name}?`, async () => {
+      try {
+        const r = await fetch("/char_boss/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ type: type + "s", name }),
+        });
+        if (!r.ok) {
+          const err = await r.json();
+          throw new Error(err.error || "Delete failed");
+        }
+        await this._refreshData();
+        this._rebuildAllLists();
+        showToast(`${name} deleted`, "success");
+      } catch (e) {
+        showToast("Delete failed: " + e.message, "error");
+      }
+    });
   }
 
   // ── Commit / cancel ───────────────────────────────────────────────────
