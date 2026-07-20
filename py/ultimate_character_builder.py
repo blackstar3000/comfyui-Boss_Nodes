@@ -60,6 +60,17 @@ _CHARACTERS  = Collection("characters.json",  "characters", "UltimateCharacterBu
 _POSES       = Collection("poses.json",        "poses", "UltimateCharacterBuilderPro")
 _EXPRESSIONS = Collection("expressions.json",  "expressions", "UltimateCharacterBuilderPro")
 
+_CHAR_PREVIEWS = {}
+def _load_char_previews():
+    global _CHAR_PREVIEWS
+    p = os.path.join(os.path.dirname(__file__), "character_previews.json")
+    if os.path.exists(p):
+        with open(p, "r", encoding="utf-8") as f:
+            _CHAR_PREVIEWS = json.load(f)
+    else:
+        _CHAR_PREVIEWS = {}
+
+_load_char_previews()
 
 _log = make_logger("UltimateCharacterBuilderPro")
 
@@ -286,6 +297,7 @@ def register_api_routes():
                 },
                 "noneSentinel": NONE_SENTINEL,
                 "allCategories": ALL_CATEGORIES,
+                "character_previews": _CHAR_PREVIEWS,
             })
         except Exception as e:
             _log(f"/char_boss/data failed: {e}")
@@ -295,6 +307,7 @@ def register_api_routes():
     async def refresh_char_data(request):
         try:
             _load_all(force=True)
+            _load_char_previews()
             return web.json_response({
                 "characters": len(_CHARACTERS.items),
                 "poses": len(_POSES.items),
