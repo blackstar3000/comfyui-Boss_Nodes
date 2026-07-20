@@ -939,14 +939,13 @@ class CharEditor {
         listVar: "_characterListEl",
       }),
     );
-    side.appendChild(
-      this.buildCategorySection({
-        title: "Character Category",
-        stateKey: "characterCat",
-        cats: this.libs.characterCategories,
-        which: "character",
-      }),
-    );
+    const charCatDropdown = this.buildCategorySection({
+      title: "Character Category",
+      stateKey: "characterCat",
+      cats: this.libs.characterCategories,
+      which: "character",
+    });
+    side.appendChild(charCatDropdown);
     side.appendChild(
       this.buildStrengthSection({
         title: "Character Strength",
@@ -954,6 +953,10 @@ class CharEditor {
         which: "character",
       }),
     );
+    this._charCatDropdown = charCatDropdown;
+    this._charStrengthSlider = null;
+    const charCrudRow = this._buildCrudRow("character", this._charListEl, this._charSearchInput, charCatDropdown, null);
+    this._charListEl.parentElement.insertBefore(charCrudRow, this._charListEl);
 
     side.appendChild(
       this.buildListSection({
@@ -968,14 +971,13 @@ class CharEditor {
         listVar: "_expressionListEl",
       }),
     );
-    side.appendChild(
-      this.buildCategorySection({
-        title: "Expression Category",
-        stateKey: "expressionCat",
-        cats: this.libs.expressionCategories,
-        which: "expression",
-      }),
-    );
+    const exprCatDropdown = this.buildCategorySection({
+      title: "Expression Category",
+      stateKey: "expressionCat",
+      cats: this.libs.expressionCategories,
+      which: "expression",
+    });
+    side.appendChild(exprCatDropdown);
     side.appendChild(
       this.buildStrengthSection({
         title: "Expression Strength",
@@ -983,6 +985,10 @@ class CharEditor {
         which: "expression",
       }),
     );
+    this._exprCatDropdown = exprCatDropdown;
+    this._exprStrengthSlider = null;
+    const exprCrudRow = this._buildCrudRow("expression", this._exprListEl, this._exprSearchInput, exprCatDropdown, null);
+    this._exprListEl.parentElement.insertBefore(exprCrudRow, this._exprListEl);
 
     side.appendChild(
       this.buildListSection({
@@ -997,14 +1003,13 @@ class CharEditor {
         listVar: "_poseListEl",
       }),
     );
-    side.appendChild(
-      this.buildCategorySection({
-        title: "Pose Category",
-        stateKey: "poseCat",
-        cats: this.libs.poseCategories,
-        which: "pose",
-      }),
-    );
+    const poseCatDropdown = this.buildCategorySection({
+      title: "Pose Category",
+      stateKey: "poseCat",
+      cats: this.libs.poseCategories,
+      which: "pose",
+    });
+    side.appendChild(poseCatDropdown);
     side.appendChild(
       this.buildStrengthSection({
         title: "Pose Strength",
@@ -1012,6 +1017,10 @@ class CharEditor {
         which: "pose",
       }),
     );
+    this._poseCatDropdown = poseCatDropdown;
+    this._poseStrengthSlider = null;
+    const poseCrudRow = this._buildCrudRow("pose", this._poseListEl, this._poseSearchInput, poseCatDropdown, null);
+    this._poseListEl.parentElement.insertBefore(poseCrudRow, this._poseListEl);
 
     side.appendChild(this.buildDelimiterSection());
     side.appendChild(this.buildSeedSection());
@@ -1085,6 +1094,17 @@ class CharEditor {
     this[searchVar] = "";
     this[listVar] = list;
 
+    if (which === "character") {
+      this._charListEl = list;
+      this._charSearchInput = search;
+    } else if (which === "expression") {
+      this._exprListEl = list;
+      this._exprSearchInput = search;
+    } else if (which === "pose") {
+      this._poseListEl = list;
+      this._poseSearchInput = search;
+    }
+
     search.addEventListener("input", (e) => {
       this[searchVar] = e.target.value;
       this.refreshList(which);
@@ -1125,10 +1145,32 @@ class CharEditor {
     const cats = this.libs[catsKey] || {};
     const randomSentinel = randomSentinelFor(which);
 
-    const items = [
+    const sentinels = [
       { name: randomSentinel, badge: "Random" },
       { name: NONE_SENTINEL, badge: "None" },
     ];
+
+    for (const it of sentinels) {
+      const row = document.createElement("div");
+      row.className =
+        "boss-char-list-item" +
+        (this.state[choiceKey] === it.name ? " selected" : "");
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "name";
+      nameSpan.textContent = it.name;
+      nameSpan.title = it.name;
+      row.appendChild(nameSpan);
+      const badge = document.createElement("span");
+      badge.className = "badge";
+      badge.textContent = it.badge;
+      row.appendChild(badge);
+      row.addEventListener("click", () => {
+        this.state[choiceKey] = it.name;
+        this.refreshList(which);
+        this.refreshPreview();
+      });
+      el.appendChild(row);
+    }
 
     let names;
     const cat = this.state[categoryKey];
@@ -1137,35 +1179,18 @@ class CharEditor {
     } else {
       names = ((cats || {})[cat] || []).filter((n) => n in data).sort();
     }
+
+    let dataCount = 0;
     for (const n of names) {
       if (search && !n.toLowerCase().includes(search)) continue;
-      items.push({ name: n, badge: "" });
-    }
-
-    for (const it of items) {
-      const row = document.createElement("div");
-      row.className =
-        "boss-char-list-item" +
-        (this.state[choiceKey] === it.name ? " selected" : "");
-      const name = document.createElement("span");
-      name.className = "name";
-      name.textContent = it.name;
-      name.title = it.name;
-      row.appendChild(name);
-      if (it.badge) {
-        const badge = document.createElement("span");
-        badge.className = "badge";
-        badge.textContent = it.badge;
-        row.appendChild(badge);
-      }
-      row.addEventListener("click", () => {
-        this.state[choiceKey] = it.name;
-        this.refreshList(which);
-        this.refreshPreview();
+      dataCount++;
+      const item = this._buildListItem(which, n, this.state[choiceKey] === n, () => {
+        this.state[choiceKey] = n;
+        this._updateSelection(which);
       });
-      el.appendChild(row);
+      el.appendChild(item);
     }
-    if (items.length === 0) {
+    if (dataCount === 0) {
       const empty = document.createElement("div");
       empty.className = "boss-char-list-item";
       empty.style.color = "#999";
@@ -1756,6 +1781,11 @@ class CharEditor {
       });
       listEl.appendChild(item);
     }
+  }
+
+  _updateSelection(type) {
+    this.refreshPreview();
+    this.refreshList(type);
   }
 
   // ── Commit / cancel ───────────────────────────────────────────────────
