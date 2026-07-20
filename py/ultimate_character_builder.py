@@ -302,6 +302,65 @@ def register_api_routes():
         except Exception:
             return web.json_response({"error": "Internal server error"}, status=500)
 
+    @routes.post("/char_boss/save")
+    async def save_char_entry(request):
+        try:
+            body = await request.json()
+            lib_type = body.get("type", "")
+            name = body.get("name", "").strip()
+            prompt = body.get("prompt", "").strip()
+            categories = body.get("categories", [])
+            custom_preview = body.get("custom_preview", "").strip()
+
+            if lib_type not in ("characters", "expressions", "poses"):
+                return web.json_response({"error": "Invalid type"}, status=400)
+            if not name:
+                return web.json_response({"error": "Name required"}, status=400)
+            if not prompt:
+                return web.json_response({"error": "Prompt required"}, status=400)
+
+            coll_map = {
+                "characters": _CHARACTERS,
+                "expressions": _EXPRESSIONS,
+                "poses": _POSES,
+            }
+            coll = coll_map[lib_type]
+
+            existing = coll.items.get(name)
+            is_new = existing is None
+
+            if is_new:
+                entry = {"prompt": prompt, "custom_preview": custom_preview}
+            else:
+                old_preview = ""
+                if isinstance(existing, dict):
+                    old_preview = existing.get("custom_preview", "")
+                entry = {
+                    "prompt": prompt,
+                    "custom_preview": custom_preview or old_preview,
+                }
+
+            coll.items[name] = entry
+
+            if categories:
+                for cat, members in coll.categories.items():
+                    if cat == "All":
+                        continue
+                    if name not in members:
+                        members.append(name)
+
+            coll.save()
+
+            return web.json_response({
+                "name": name,
+                "prompt": prompt,
+                "categories": categories,
+                "custom_preview": entry.get("custom_preview", ""),
+                "is_new": is_new,
+            })
+        except Exception as e:
+            return web.json_response({"error": str(e)}, status=500)
+
 
 register_api_routes()
 
