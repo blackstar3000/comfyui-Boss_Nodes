@@ -1228,7 +1228,8 @@ class ArtistEditor {
       currentPrompt = typeof entry === "string" ? entry : (entry.prompt || "");
       currentPreview = typeof entry === "object" ? (entry.custom_preview || "") : "";
       currentPostCount = typeof entry === "object" ? (entry.post_count ?? null) : null;
-      currentCategories = artistCats[existingName] || [];
+      const libCats = typeof entry === "object" ? (entry.categories || []) : [];
+      currentCategories = artistCats[existingName] || libCats;
     }
 
     const overlay = document.createElement("div");
@@ -1340,12 +1341,23 @@ class ArtistEditor {
       if (!name) { showToast("Name required", "error"); return; }
       if (!prompt) { showToast("Prompt required", "error"); return; }
 
+      const oldCats = isEdit ? currentCategories : [];
+      const removed = oldCats.filter((c) => !categories.includes(c));
+      const added = categories.filter((c) => !oldCats.includes(c));
+
       saveBtn.disabled = true;
       saveBtn.textContent = "Saving...";
       try {
         await this.saveArtist(name, prompt, categories, custom_preview, post_count);
         overlay.remove();
-        showToast(isEdit ? "Artist updated" : "Artist added", "success");
+        if (isEdit && (removed.length > 0 || added.length > 0)) {
+          const parts = [];
+          if (added.length) parts.push(`added to: ${added.join(", ")}`);
+          if (removed.length) parts.push(`removed from: ${removed.join(", ")}`);
+          showToast(`${name}: ${parts.join("; ")}`, "success");
+        } else {
+          showToast(isEdit ? "Artist updated" : "Artist added", "success");
+        }
       } catch (e) {
         showToast("Save failed: " + e.message, "error");
         saveBtn.disabled = false;
