@@ -242,6 +242,14 @@ function renderHeader(node) {
 
 function setupValidatorNode(node) {
   hideCanvasWidget(node.widgets, HIDDEN_INPUT_NAME);
+  for (const w of node.widgets || []) {
+    if (w.name !== HIDDEN_INPUT_NAME) {
+      w.hidden = true;
+      w.computeSize = () => [0, -4];
+      if (!w.options) w.options = {};
+      w.options.canvasOnly = true;
+    }
+  }
 
   const root = document.createElement("div");
   root.className = "boss-widget";
@@ -569,8 +577,7 @@ class DanbooruEditor {
   }
 
   replaceTag(oldTag, newTag) {
-    // Replace in prompt text
-    const regex = new RegExp(`\\b${oldTag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "i");
+    const regex = new RegExp(`\\b${oldTag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\b`, "gi");
     this.state.prompt = this.state.prompt.replace(regex, newTag);
     this._textarea.value = this.state.prompt;
     this.runValidation();
