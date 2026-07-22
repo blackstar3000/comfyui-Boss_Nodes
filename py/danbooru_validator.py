@@ -35,11 +35,13 @@ CATEGORY_NAMES = set(CATEGORY_MAP.values())
 
 # Module-level cache
 _db_cache = None
+_trigram_index = None  # {trigram: [tag_name, ...]} for fast substring suggest
+_allowed_cache = {}    # {category_filter: set_of_allowed_tags}
 
 
 def _load_db():
     """Load the Danbooru tag database from disk."""
-    global _db_cache
+    global _db_cache, _trigram_index, _allowed_cache
     if _db_cache is not None:
         return _db_cache
     if not TAGS_FILE.exists():
@@ -53,6 +55,16 @@ def _load_db():
             print(f"[DanbooruValidator] WARNING: tags dict is empty in {TAGS_FILE}")
             return {}
         _db_cache = tags
+        # Build trigram index for fast substring matching in suggest_tag
+        _trigram_index = {}
+        for name in _db_cache:
+            low = name.lower()
+            for i in range(len(low) - 2):
+                tri = low[i:i + 3]
+                if tri not in _trigram_index:
+                    _trigram_index[tri] = []
+                _trigram_index[tri].append(name)
+        _allowed_cache = {}
         print(f"[DanbooruValidator] Loaded {len(tags)} tags from {TAGS_FILE.name}")
         return _db_cache
     except Exception as e:
@@ -136,17 +148,32 @@ def suggest_tag(tag, db_tags, n=3):
     """Find similar tags for a misspelled/invalid tag."""
     tag_lower = tag.lower()
 
-    # 1. Exact substring match (most useful)
-    substring_matches = [
-        t for t in db_tags
-        if tag_lower in t or t in tag_lower
-    ]
-    if substring_matches:
-        # Sort by relevance: shorter tags first (closer match)
-        substring_matches.sort(key=lambda t: abs(len(t) - len(tag_lower)))
-        return substring_matches[:n]
+    # 1. Trigram substring index (fast — pre-built on DB load)
+    if _trigram_index and len(tag_lower) >= 3:
+        candidates = set()
+        for i in range(len(tag_lower) - 2):
+            tri = tag_lower[i:i + 3]
+            matches = _trigram_index.get(tri)
+            if matches:
+                for m in matches:
+                    candidates.add(m)
+        substring_matches = [
+            t for t in candidates
+            if tag_lower in t.lower() or t in tag_lower
+        ]
+        if substring_matches:
+            substring_matches.sort(key=lambda t: abs(len(t) - len(tag_lower)))
+            return substring_matches[:n]
+    elif _trigram_index and len(tag_lower) < 3:
+        substring_matches = [
+            t for t in db_tags
+            if tag_lower in t or t in tag_lower
+        ]
+        if substring_matches:
+            substring_matches.sort(key=lambda t: abs(len(t) - len(tag_lower)))
+            return substring_matches[:n]
 
-    # 2. Fuzzy match
+    # 2. Fuzzy match (slower, only if trigram found nothing)
     return get_close_matches(tag_lower, db_tags, n=n, cutoff=0.6)
 
 
@@ -170,13 +197,12 @@ def validate_prompt(text, category_filter="all"):
 
     # Filter by category if needed
     if category_filter and category_filter != "all":
-        allowed = {
-            name for name, info in db.items()
-            if CATEGORY_MAP.get(info.get("category", -1)) == category_filter
-        }
-        # Always allow common general tags regardless of filter
-        always_allow = {"1girl", "1boy", "solo", "no_humans", "multiple_girls"}
-        allowed |= always_allow
+        if category_filter not in _allowed_cache:
+            _allowed_cache[category_filter] = {
+                name for name, info in db.items()
+                if CATEGORY_MAP.get(info.get("category", -1)) == category_filter
+            } | {"1girl", "1boy", "solo", "no_humans", "multiple_girls"}
+        allowed = _allowed_cache[category_filter]
     else:
         allowed = db_tag_names
 
@@ -184,6 +210,7 @@ def validate_prompt(text, category_filter="all"):
     invalid_tags = []
     suggestions = {}
     rare_count = 0
+    filtered_count = 0
 
     for tag in tags:
         tag_lower = tag.lower()
@@ -192,7 +219,7 @@ def validate_prompt(text, category_filter="all"):
             cat = CATEGORY_MAP.get(info.get("category", -1), "unknown")
             # If filtering, check category
             if category_filter != "all" and cat != category_filter:
-                # Skip tags outside filter but don't mark as invalid
+                filtered_count += 1
                 continue
             post_count = info.get("post_count", 0)
             if post_count < 10:
@@ -209,6 +236,7 @@ def validate_prompt(text, category_filter="all"):
         "valid": len(valid_tags),
         "invalid": len(invalid_tags),
         "rare": rare_count,
+        "filtered": filtered_count,
         "total": len(tags),
         "db_loaded": bool(db),
         "db_size": len(db),
@@ -218,14 +246,18 @@ def validate_prompt(text, category_filter="all"):
 
 
 def clean_prompt(text, invalid_tags):
-    """Remove invalid tags from a prompt string."""
+    """Remove invalid tags from a prompt string, preserving formatting."""
     if not invalid_tags:
         return text
-    # Build a set for fast lookup
-    invalid_set = {t.lower() for t in invalid_tags}
-    tags = parse_tags(text)
-    cleaned = [t for t in tags if t.lower() not in invalid_set]
-    return ", ".join(cleaned)
+    result = text
+    for tag in invalid_tags:
+        pattern = re.compile(r"\b" + re.escape(tag) + r"\b", re.IGNORECASE)
+        result = pattern.sub("", result)
+    result = re.sub(r",\s*,", ",", result)
+    result = re.sub(r"^\s*,\s*", "", result)
+    result = re.sub(r"\s*,\s*$", "", result)
+    result = re.sub(r"\s{2,}", " ", result).strip()
+    return result
 
 
 # ── Node class ──────────────────────────────────────────────────────────────
@@ -306,7 +338,9 @@ class DanbooruTagValidator:
 
         stats_str = (
             f"{stats['valid']} valid, {stats['invalid']} invalid, "
-            f"{stats['rare']} rare | DB: {stats.get('db_size', 0)} tags"
+            f"{stats['rare']} rare"
+            + (f", {stats['filtered']} filtered" if stats.get('filtered') else "")
+            + f" | DB: {stats.get('db_size', 0)} tags"
         )
 
         return (cleaned, valid_str, invalid_str, suggestions_str, stats_str)
