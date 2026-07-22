@@ -13,16 +13,7 @@ const STATE_PROP = "tagState";
 const HIDDEN_INPUT_NAME = "TagState";
 
 // List of visible native widgets (we hide them and use DOM)
-const VISIBLE_NATIVE_WIDGETS = [
-  "characters",
-  "quality_tags",
-  "custom_tags",
-  "use_wildcards",
-  "wildcard_format",
-  "randomize",
-  "random_min",
-  "random_max",
-];
+const VISIBLE_NATIVE_WIDGETS = [];
 
 // ── CSS ──────────────────────────────────────────────────────────────────
 
