@@ -19,7 +19,7 @@
 // delimiter.
 
 import { app } from "/scripts/app.js";
-import { BossDropdown } from "../boss_theme/index.js";
+import { BossDropdown, escapeHtml } from "../boss_theme/index.js";
 
 // ── Constants ──────────────────────────────────────────────────────────────
 const STATE_PROP = "characterState";
@@ -33,6 +33,7 @@ const RANDOM_EXPRESSION = "__RANDOM_EXPRESSION__";
 const RANDOM_POSE = "__RANDOM_POSE__";
 const NONE_SENTINEL = "__NONE__";
 const ALL_CATEGORIES = "All";
+const LIST_PAGE_SIZE = 80;
 
 // Strength bounds — character can go bolder (matches v3.2 ceiling of
 // 2.5), expression + pose cap at 2.0 (matches v3.2 defaults).
@@ -525,15 +526,6 @@ const VISIBLE_NATIVE_WIDGETS = [
   "delimiter",
 ];
 
-function escapeHtml(s) {
-  return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
 function showToast(message, type = "info", duration = 3000) {
   const existing = document.querySelectorAll(".boss-char-toast");
   existing.forEach((e) => e.remove());
@@ -728,6 +720,10 @@ function rngFromSeed(seed) {
 
 function resolveJS(rng, choice, data, cats, category) {
   if (choice === NONE_SENTINEL) return { key: "", text: "" };
+  function extractPrompt(v) {
+    if (v && typeof v === "object") return v.prompt || "";
+    return v || "";
+  }
   if (choice && choice.startsWith("__RANDOM_")) {
     let pool;
     if (category === ALL_CATEGORIES || !category) {
@@ -738,9 +734,23 @@ function resolveJS(rng, choice, data, cats, category) {
     }
     if (!pool.length) return { key: "", text: "" };
     const key = rng.pick(pool);
-    return { key, text: data[key] || "" };
+    return { key, text: extractPrompt(data[key]) };
   }
-  return { key: choice || "", text: (data && data[choice]) || "" };
+  return { key: choice || "", text: extractPrompt(data && data[choice]) };
+}
+
+function resolveWildcardsJS(text, rng) {
+  if (!text || !text.includes("{")) return text;
+  let prev = null;
+  while (prev !== text) {
+    prev = text;
+    text = text.replace(/\{([^{}]*)\}/g, (match, content) => {
+      const options = content.split("|");
+      const pick = rng.pick(options);
+      return pick === undefined ? "" : pick;
+    });
+  }
+  return text;
 }
 
 function applyWeightJS(text, strength) {
@@ -775,9 +785,17 @@ function previewComposeJS(state, libs, seed) {
     state.poseCat,
   );
 
-  const cW = applyWeightJS(c.text, state.characterStrength);
-  const eW = applyWeightJS(e.text, state.expressionStrength);
-  const pW = applyWeightJS(p.text, state.poseStrength);
+  // Resolve {a|b|c} wildcard groups before weighting - mirrors
+  // resolve_wildcards() in py/ultimate_character_builder.py, sharing `rng`
+  // across all three fields so a fixed seed's wildcard picks form one
+  // sequence, same as the pool-selection picks above.
+  const cResolved = resolveWildcardsJS(c.text, rng);
+  const eResolved = resolveWildcardsJS(e.text, rng);
+  const pResolved = resolveWildcardsJS(p.text, rng);
+
+  const cW = applyWeightJS(cResolved, state.characterStrength);
+  const eW = applyWeightJS(eResolved, state.expressionStrength);
+  const pW = applyWeightJS(pResolved, state.poseStrength);
 
   const parts = [cW, eW, pW].filter(Boolean);
   const final = parts.length ? parts.join(state.delimiter ?? ", ") : "";
@@ -1115,9 +1133,11 @@ class CharEditor {
       this._poseSearchInput = search;
     }
 
+    let _debounce;
     search.addEventListener("input", (e) => {
       this[searchVar] = e.target.value;
-      this.refreshList(which);
+      clearTimeout(_debounce);
+      _debounce = setTimeout(() => this.refreshList(which), 150);
     });
 
     return wrap;
@@ -1190,17 +1210,47 @@ class CharEditor {
       names = ((cats || {})[cat] || []).filter((n) => n in data).sort();
     }
 
-    let dataCount = 0;
-    for (const n of names) {
-      if (search && !n.toLowerCase().includes(search)) continue;
-      dataCount++;
+    if (search) {
+      names = names.filter((n) => n.toLowerCase().includes(search));
+    }
+
+    const renderCount = Math.min(names.length, LIST_PAGE_SIZE);
+    for (let i = 0; i < renderCount; i++) {
+      const n = names[i];
       const item = this._buildListItem(which, n, this.state[choiceKey] === n, () => {
         this.state[choiceKey] = n;
         this._updateSelection(which);
       });
       el.appendChild(item);
     }
-    if (dataCount === 0) {
+    if (names.length > LIST_PAGE_SIZE) {
+      const more = document.createElement("div");
+      more.className = "boss-char-list-item";
+      more.style.color = "#8B5CF6";
+      more.style.cursor = "pointer";
+      more.style.textAlign = "center";
+      more.textContent = `Show more (${names.length - LIST_PAGE_SIZE} remaining)`;
+      let offset = LIST_PAGE_SIZE;
+      more.addEventListener("click", () => {
+        const batch = Math.min(names.length - offset, LIST_PAGE_SIZE);
+        for (let i = offset; i < offset + batch; i++) {
+          const n = names[i];
+          const item = this._buildListItem(which, n, this.state[choiceKey] === n, () => {
+            this.state[choiceKey] = n;
+            this._updateSelection(which);
+          });
+          el.insertBefore(item, more);
+        }
+        offset += batch;
+        if (offset >= names.length) {
+          more.remove();
+        } else {
+          more.textContent = `Show more (${names.length - offset} remaining)`;
+        }
+      });
+      el.appendChild(more);
+    }
+    if (names.length === 0) {
       const empty = document.createElement("div");
       empty.className = "boss-char-list-item";
       empty.style.color = "#999";
@@ -1226,6 +1276,9 @@ class CharEditor {
         this.refreshPreview();
       },
     });
+
+    if (!this._dropdowns) this._dropdowns = [];
+    this._dropdowns.push(dropdown);
 
     return dropdown.element;
   }
@@ -1509,8 +1562,22 @@ class CharEditor {
   async _refreshData() {
     await fetch("/char_boss/refresh", { method: "POST" });
     const r = await fetch("/char_boss/data?t=" + Date.now());
+    if (!r.ok) throw new Error("Failed to refresh data");
     const data = await r.json();
-    this.libs = data;
+    this.libs = {
+      characters: data.characters || {},
+      poses: data.poses || {},
+      expressions: data.expressions || {},
+      characterCategories: data.characterCategories || {},
+      poseCategories: data.poseCategories || {},
+      expressionCategories: data.expressionCategories || {},
+      delimiterDefault: data.delimiterDefault ?? ", ",
+      strengthRange: data.strengthRange || {},
+      randomSentinels: data.randomSentinels || {},
+      noneSentinel: data.noneSentinel || "__NONE__",
+      allCategories: data.allCategories || "All",
+      character_previews: data.character_previews || {},
+    };
   }
 
   _openItemModal(type, existingName) {
@@ -1518,7 +1585,8 @@ class CharEditor {
     const libKey = type + "s";
     const libData = this.libs[libKey] || {};
     const catKey = type + "Categories";
-    const allCats = this.libs[catKey] || [];
+    const allCatsRaw = this.libs[catKey] || {};
+    const allCats = Array.isArray(allCatsRaw) ? allCatsRaw : Object.keys(allCatsRaw);
 
     let currentPrompt = "";
     let currentPreview = "";
@@ -1728,6 +1796,7 @@ class CharEditor {
       if (preview) {
         const img = document.createElement("img");
         img.className = "boss-char-thumb";
+        img.loading = "lazy";
         img.src = preview;
         img.alt = name;
         img.addEventListener("error", () => {
@@ -1776,23 +1845,48 @@ class CharEditor {
   }
 
   _rebuildAllLists() {
-    if (this._charListEl) {
-      this._rebuildList("character", this._charListEl, this._charSearchInput, this._charCatDropdown, this._charStrengthSlider);
-    }
-    if (this._exprListEl) {
-      this._rebuildList("expression", this._exprListEl, this._exprSearchInput, this._exprCatDropdown, this._exprStrengthSlider);
-    }
-    if (this._poseListEl) {
-      this._rebuildList("pose", this._poseListEl, this._poseSearchInput, this._poseCatDropdown, this._poseStrengthSlider);
+    for (const type of ["character", "expression", "pose"]) {
+      const listKey = `_${type}ListEl`;
+      const el = this[listKey];
+      if (el) this._rebuildList(type, el, this[`_${type}SearchInput`]);
     }
   }
 
-  _rebuildList(type, listEl, searchInput, catDropdown, strengthSlider) {
+  _rebuildList(type, listEl, searchInput) {
     const libKey = type + "s";
     const catKey = type + "Categories";
+    const catStateKey = type + "Cat";
     const libData = this.libs[libKey] || {};
     const catData = this.libs[catKey] || {};
-    const selectedCat = catDropdown?.value || "All";
+    const selectedCat = this.state[catStateKey] || "All";
+
+    const randomSentinel = type === "character" ? "__RANDOM_CHARACTER__"
+      : type === "expression" ? "__RANDOM_EXPRESSION__"
+      : "__RANDOM_POSE__";
+
+    listEl.innerHTML = "";
+
+    for (const it of [
+      { name: randomSentinel, badge: "Random" },
+      { name: NONE_SENTINEL, badge: "None" },
+    ]) {
+      const row = document.createElement("div");
+      row.className = "boss-char-list-item" + (this.state[type] === it.name ? " selected" : "");
+      const nameSpan = document.createElement("span");
+      nameSpan.className = "name";
+      nameSpan.textContent = it.name;
+      nameSpan.title = it.name;
+      row.appendChild(nameSpan);
+      const badge = document.createElement("span");
+      badge.className = "badge";
+      badge.textContent = it.badge;
+      row.appendChild(badge);
+      row.addEventListener("click", () => {
+        this.state[type] = it.name;
+        this._updateSelection(type);
+      });
+      listEl.appendChild(row);
+    }
 
     let list = Object.keys(libData);
     if (selectedCat !== "All" && catData[selectedCat]) {
@@ -1806,14 +1900,44 @@ class CharEditor {
 
     list.sort((a, b) => a.localeCompare(b));
 
-    listEl.innerHTML = "";
-    for (const name of list) {
-      const item = this._buildListItem(type, name, this.state[`${type}`] === name, () => {
-        this.state[`${type}`] = name;
+    const renderCount = Math.min(list.length, LIST_PAGE_SIZE);
+    let moreBtn = null;
+    let offset = renderCount;
+    if (list.length > LIST_PAGE_SIZE) {
+      moreBtn = document.createElement("div");
+      moreBtn.className = "boss-char-list-item";
+      moreBtn.style.color = "#8B5CF6";
+      moreBtn.style.cursor = "pointer";
+      moreBtn.style.textAlign = "center";
+      moreBtn.textContent = `Show more (${list.length - LIST_PAGE_SIZE} remaining)`;
+      moreBtn.addEventListener("click", () => {
+        const batch = Math.min(list.length - offset, LIST_PAGE_SIZE);
+        for (let i = offset; i < offset + batch; i++) {
+          const name = list[i];
+          const item = this._buildListItem(type, name, this.state[type] === name, () => {
+            this.state[type] = name;
+            this._updateSelection(type);
+          });
+          listEl.insertBefore(item, moreBtn);
+        }
+        offset += batch;
+        if (offset >= list.length) {
+          moreBtn.remove();
+        } else {
+          moreBtn.textContent = `Show more (${list.length - offset} remaining)`;
+        }
+      });
+    }
+
+    for (let i = 0; i < renderCount; i++) {
+      const name = list[i];
+      const item = this._buildListItem(type, name, this.state[type] === name, () => {
+        this.state[type] = name;
         this._updateSelection(type);
       });
       listEl.appendChild(item);
     }
+    if (moreBtn) listEl.appendChild(moreBtn);
   }
 
   _updateSelection(type) {
@@ -1834,6 +1958,12 @@ class CharEditor {
     this.close();
   }
   close() {
+    if (this._dropdowns) {
+      for (const d of this._dropdowns) {
+        if (d && typeof d.destroy === "function") d.destroy();
+      }
+      this._dropdowns = null;
+    }
     if (this.modal) {
       this.modal.remove();
       this.modal = null;
