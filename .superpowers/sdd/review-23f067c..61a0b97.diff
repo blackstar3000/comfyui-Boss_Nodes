@@ -1,0 +1,2 @@
+﻿ echo "# Review package: $base..$head"; echo; echo "## Commits"; git log --oneline "$base..$head"; echo; echo "## 
+Files changed"; git diff --stat "$base..$head"; echo; echo "## Diff"; git diff -U10 "$base..$head" 
