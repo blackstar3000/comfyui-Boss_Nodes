@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(__file__)
 MODEL_FAV_FILE = os.path.join(BASE_DIR, "checkpoint_favorites.json")
 SIZE_PRESET_FILE = os.path.join(BASE_DIR, "size_presets.json")
 CIVITAI_CACHE_FILE = os.path.join(BASE_DIR, "civitai_cache.json")
-CIVITAI_API_KEY = "27c4e6d514250557d843be021a98b681"
+CIVITAI_API_KEY = os.environ.get("CIVITAI_API_KEY", "")
 CIVITAI_API_BASE = "https://civitai.com/api/v1"
 
 # Thread pool for background hashing (avoids blocking the event loop)
