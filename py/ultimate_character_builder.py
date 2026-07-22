@@ -15,17 +15,41 @@ pattern (comfyui-pixaroma/nodes/node_seed.py):
 """
 
 import aiohttp
+import ipaddress
 import json
 import os
 import random
+import socket
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urlparse
 
 from utils.constants import SEED_MAX, ALL_CATEGORIES, DELIMITER_DEFAULT
 from utils.prompt_utils import apply_weight, clamp_strength
 from utils.logging_utils import make_logger
 from utils.json_utils import sanitize_entries, sanitize_categories
 from utils.cache_utils import Collection
+
+# ── Proxy SSRF protection ───────────────────────────────────────────────────
+_PROXY_MAX_BYTES = 5 * 1024 * 1024  # 5 MB max response
+
+def _is_safe_proxy_url(url: str) -> str | None:
+    """Return None if URL is safe to fetch, else an error reason string."""
+    try:
+        parsed = urlparse(url)
+    except Exception:
+        return "Malformed URL"
+    if parsed.hostname is None:
+        return "No hostname"
+    try:
+        infos = socket.getaddrinfo(parsed.hostname, None)
+        for family, _, _, _, sockaddr in infos:
+            ip = ipaddress.ip_address(sockaddr[0])
+            if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast:
+                return f"Blocked internal address: {ip}"
+    except (socket.gaierror, ValueError):
+        pass
+    return None
 
 # ── File paths ──────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).parent
@@ -414,19 +438,30 @@ def register_api_routes():
         url = request.query.get("url", "").strip()
         if not url or not url.startswith(("http://", "https://")):
             return web.json_response({"error": "Invalid URL"}, status=400)
+        block_reason = _is_safe_proxy_url(url)
+        if block_reason:
+            return web.json_response({"error": block_reason}, status=400)
         try:
-            import urllib.request
-            import urllib.error
-            req = urllib.request.Request(url, headers={
+            headers = {
                 "User-Agent": "Mozilla/5.0 (compatible; BossNodes/1.0)",
                 "Referer": "https://danbooru.donmai.us/",
-            })
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                content_type = resp.headers.get("Content-Type", "image/jpeg")
-                data = resp.read()
-                return web.Response(body=data, content_type=content_type)
-        except Exception as e:
-            return web.json_response({"error": str(e)}, status=502)
+            }
+            timeout = aiohttp.ClientTimeout(total=10)
+            conn = aiohttp.TCPConnector(ssl=False)
+            async with aiohttp.ClientSession(connector=conn) as session:
+                async with session.get(
+                    url, headers=headers, timeout=timeout,
+                    max_redirects=3, allow_redirects=True,
+                ) as resp:
+                    if resp.status != 200:
+                        return web.json_response({"error": f"Upstream {resp.status}"}, status=502)
+                    data = await resp.read()
+                    if len(data) > _PROXY_MAX_BYTES:
+                        return web.json_response({"error": "Response too large"}, status=502)
+                    content_type = resp.content_type or "image/jpeg"
+                    return web.Response(body=data, content_type=content_type)
+        except Exception:
+            return web.json_response({"error": "Proxy fetch failed"}, status=502)
 
 
 register_api_routes()
