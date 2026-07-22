@@ -32,9 +32,15 @@
     "Lying on Back Legs Up": "lying on back, legs raised and spread, missionary position, pussy visible, explicit",
     "Kneeling Blowjob": "kneeling, oral sex, fellatio, looking up, explicit, penis in mouth",
     "Cowgirl Position": "straddling, cowgirl position, riding, breasts bouncing, on top, explicit sex",
-    "Doggystyle": "doggystyle, bent over, from behind, ass focus, penetration, explicit",
+    "Doggystyle": {
+      "prompt": "{doggystyle, bent over, from behind, ass focus, penetration, explicit|vaginal sex from behind, side view, view from side, BREAK Standing position, leaning forward, hands on bed, arched back, eyes closed, moaning in pleasure, open mouth, head tilted up, bed, purple wall, man standing partially out of frame, huge penis, vaginal sex, bouncing breasts}",
+      "custom_preview": ""
+    },
     "Missionary": "missionary position, lying on back, legs wrapped around, intimate sex, explicit",
-    "Reverse Cowgirl": "reverse cowgirl, facing away, ass focus, riding, explicit",
+    "Reverse Cowgirl": {
+      "prompt": "{reverse cowgirl, facing away, ass focus, riding, explicit|vaginal sex, deep penetration, side view, view from side, BREAK Reverse cowgirl position, kneeling, girl straddles the man, sitting on penis, leaning back, arm support, hands on man's chest, eyes closed, moaning in pleasure, open mouth, head tilted up, bed, purple wall, man partially out of frame, huge penis, vaginal sex, bouncing breasts}",
+      "custom_preview": ""
+    },
     "Squatting Cowgirl": "squatting cowgirl position, thighs focus, bouncing, explicit",
     "Spooning Sex": "spooning position, side view, intimate, penetration from behind, explicit",
     "Standing Sex": "standing sex, lifted leg, against wall, passionate, explicit",
@@ -45,8 +51,19 @@
     "Anal Focus": "anal sex, ass focus, from behind, explicit penetration",
     "Double Penetration": "double penetration, sandwiched, explicit sex, multiple partners",
     "Tentacle Sex": "tentacles, tentacle penetration, wrapped around body, explicit",
-    "Masturbation": "masturbating, fingers in pussy, solo pleasure, explicit",
-    "Pinup Tease": "pinup pose, topless, hands on breasts, seductive, nsfw tease"
+    "Masturbation": {
+      "prompt": "{masturbating, fingers in pussy, solo pleasure, explicit|female masturbation, fingering pussy, 2 fingers inserted in pussy|Hand in lap, female masturbation|hand in lap, rubbing clitoris}",
+      "custom_preview": ""
+    },
+    "Pinup Tease": "pinup pose, topless, hands on breasts, seductive, nsfw tease",
+    "Anal": {
+      "prompt": "{((anal_fingering)), spread ass, swollen anus, wet fingers|((anal_fingering)), thong panties pulled aside, cute pussy}",
+      "custom_preview": ""
+    },
+    "Toying Pussy": {
+      "prompt": "{legs spread, dildo sitting, object insertion, vaginal object insertion, huge dildo, large insertion, clitoris|splits, sitting, from behind, ass, on floor, legs spread wide, hands on floor, rear view, ass focus, looking back, female masturbation, vaginal dildo, riding dildo, deep penetration, cute pink asshole|lying on side, vaginal object insertion, inserting huge dildo, clitoris|Vaginal dildo inserted, sitting on huge dildo, full vaginal penetration, deep penetration, kneeling, rear view, ((anal fingering, 2 fingers in anus))|lying in bed, female masturbation, huge object insertion, huge dildo grab, arched back>, <lying on side, spread legs, sexy pose>, perfect feet, toes}",
+      "custom_preview": ""
+    }
   },
   "categories": {
     "Standing": [
@@ -110,7 +127,8 @@
       "Ahegao Face",
       "Breast Grab",
       "Pinup Tease",
-      "Kneeling"
+      "Kneeling",
+      "Toying Pussy"
     ],
     "NSFW Oral": [
       "Kneeling Blowjob",
