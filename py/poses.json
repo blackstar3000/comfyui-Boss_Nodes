@@ -6,7 +6,10 @@
     "One Hand in Hair": "one hand in hair, standing, casual pose, looking at viewer",
     "Sitting on Chair": "sitting, sitting on chair, legs crossed, elegant pose",
     "Sitting on Floor": "sitting on floor, knees hugged, cute pose, from above",
-    "Kneeling": "kneeling, on knees, looking up at viewer, submissive pose",
+    "Kneeling": {
+      "prompt": "{kneeling, on knees, looking up at viewer, submissive pose|kneeling}",
+      "custom_preview": ""
+    },
     "Lying on Bed": "lying on bed, on back, looking at viewer, seductive pose",
     "From Behind": "from behind, back view, looking back at viewer, ass focus",
     "Dynamic Action": "dynamic pose, jumping, action pose, motion blur, wind",
@@ -46,17 +49,89 @@
     "Pinup Tease": "pinup pose, topless, hands on breasts, seductive, nsfw tease"
   },
   "categories": {
-    "All": [],
-    "Standing": ["Standing Neutral", "Standing Confident", "Hands on Hips", "One Hand in Hair", "Leaning Against Wall"],
-    "Sitting": ["Sitting on Chair", "Sitting on Floor", "Spread Legs"],
-    "Lying/Kneeling": ["Lying on Bed", "Kneeling", "All Fours"],
-    "Action/Dynamic": ["Dynamic Action", "Fighting Stance", "Magic Casting", "Dancing"],
-    "Cute/Idol": ["Peace Sign", "Heart Hands", "Waving", "Blowing Kiss", "Hugging Self"],
-    "Seductive": ["From Behind", "Squatting", "All Fours", "Spread Legs", "Lying on Bed", "Arms Up", "Blowing Kiss"],
-    "Casual": ["Standing Neutral", "One Hand in Hair", "Leaning Against Wall", "Pointing at Viewer", "Waving"],
-    "NSFW Solo": ["Spread Legs M Pose", "All Fours From Behind", "Lying on Back Legs Up", "Pussy Spread", "Masturbation", "Ahegao Face", "Breast Grab", "Pinup Tease"],
-    "NSFW Oral": ["Kneeling Blowjob"],
-    "NSFW Sex Positions": ["Cowgirl Position", "Doggystyle", "Missionary", "Reverse Cowgirl", "Squatting Cowgirl", "Spooning Sex", "Standing Sex"],
-    "NSFW Kinky": ["Bondage Shibari", "Tentacle Sex", "Double Penetration", "Anal Focus"]
+    "Standing": [
+      "Standing Neutral",
+      "Standing Confident",
+      "Hands on Hips",
+      "One Hand in Hair",
+      "Leaning Against Wall",
+      "Kneeling"
+    ],
+    "Sitting": [
+      "Sitting on Chair",
+      "Sitting on Floor",
+      "Spread Legs",
+      "Kneeling"
+    ],
+    "Lying/Kneeling": [
+      "Lying on Bed",
+      "Kneeling",
+      "All Fours"
+    ],
+    "Action/Dynamic": [
+      "Dynamic Action",
+      "Fighting Stance",
+      "Magic Casting",
+      "Dancing",
+      "Kneeling"
+    ],
+    "Cute/Idol": [
+      "Peace Sign",
+      "Heart Hands",
+      "Waving",
+      "Blowing Kiss",
+      "Hugging Self",
+      "Kneeling"
+    ],
+    "Seductive": [
+      "From Behind",
+      "Squatting",
+      "All Fours",
+      "Spread Legs",
+      "Lying on Bed",
+      "Arms Up",
+      "Blowing Kiss",
+      "Kneeling"
+    ],
+    "Casual": [
+      "Standing Neutral",
+      "One Hand in Hair",
+      "Leaning Against Wall",
+      "Pointing at Viewer",
+      "Waving",
+      "Kneeling"
+    ],
+    "NSFW Solo": [
+      "Spread Legs M Pose",
+      "All Fours From Behind",
+      "Lying on Back Legs Up",
+      "Pussy Spread",
+      "Masturbation",
+      "Ahegao Face",
+      "Breast Grab",
+      "Pinup Tease",
+      "Kneeling"
+    ],
+    "NSFW Oral": [
+      "Kneeling Blowjob",
+      "Kneeling"
+    ],
+    "NSFW Sex Positions": [
+      "Cowgirl Position",
+      "Doggystyle",
+      "Missionary",
+      "Reverse Cowgirl",
+      "Squatting Cowgirl",
+      "Spooning Sex",
+      "Standing Sex",
+      "Kneeling"
+    ],
+    "NSFW Kinky": [
+      "Bondage Shibari",
+      "Tentacle Sex",
+      "Double Penetration",
+      "Anal Focus",
+      "Kneeling"
+    ]
   }
 }
