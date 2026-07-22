@@ -62,6 +62,18 @@ export const BOSS = {
   fontMono: 'ui-monospace, "Cascadia Code", "Fira Code", monospace',
 };
 
+// ── Shared utilities ────────────────────────────────────────────────────────
+
+export function escapeHtml(s) {
+  if (!s) return "";
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 // ── BossDropdown Component ──────────────────────────────────────────────────
 // Replaces native <select> with glassmorphism-styled searchable dropdown.
 
