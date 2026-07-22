@@ -1262,7 +1262,8 @@ class CharEditor {
 
   // ── Category dropdown ─────────────────────────────────────────────────
   buildCategorySection({ title, stateKey, cats, which }) {
-    const opts = [ALL_CATEGORIES, ...Object.keys(cats || {}).sort()];
+    const catObj = (cats && typeof cats === "object" && !Array.isArray(cats)) ? cats : {};
+    const opts = [ALL_CATEGORIES, ...Object.keys(catObj).sort()];
     const options = opts.map((c) => ({ value: c, label: c }));
 
     const dropdown = new BossDropdown({
