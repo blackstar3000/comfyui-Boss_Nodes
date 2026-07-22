@@ -19,10 +19,11 @@ import ipaddress
 import json
 import os
 import random
+import re
 import socket
 from datetime import datetime
-from pathlib import Path
 from urllib.parse import urlparse
+from pathlib import Path
 
 from utils.constants import SEED_MAX, ALL_CATEGORIES, DELIMITER_DEFAULT
 from utils.prompt_utils import apply_weight, clamp_strength
@@ -48,7 +49,7 @@ def _is_safe_proxy_url(url: str) -> str | None:
             if ip.is_private or ip.is_loopback or ip.is_link_local or ip.is_reserved or ip.is_multicast:
                 return f"Blocked internal address: {ip}"
     except (socket.gaierror, ValueError):
-        pass
+        pass  # hostname unresolvable — let the fetch attempt fail naturally
     return None
 
 # ── File paths ──────────────────────────────────────────────────────────────
@@ -106,11 +107,39 @@ def _load_all(force: bool = False) -> None:
     _EXPRESSIONS.load(force)
 
 
+# ── Wildcard resolution ──────────────────────────────────────────────────────
+# Minimal, dependency-free {a|b|c} resolver so characters.json/poses.json/
+# expressions.json entries can embed alternation groups without needing an
+# external wildcard node. Same approach as py/outfit_selector.py and
+# py/scene_maker_pro.py. Unlike scene_maker_pro, this node has no {token}
+# placeholder-substitution system, so no reserved-token guard is needed here.
+
+_WILDCARD_RE = re.compile(r"\{([^{}]*)\}")
+
+
+def resolve_wildcards(text: str, rng: random.Random) -> str:
+    """Resolve {a|b|c} alternation groups in `text` using the given rng.
+    Handles nesting ({a|{b|c}}) by re-scanning until stable."""
+    if not text or "{" not in text:
+        return text
+
+    def _pick(match):
+        options = match.group(1).split("|")
+        return rng.choice(options) if options else ""
+
+    prev = None
+    while prev != text:
+        prev = text
+        text = _WILDCARD_RE.sub(_pick, text)
+
+    return text
+
+
 # ── Resolve + weight helpers ───────────────────────────────────────────────
 
 def _resolve(
     rng: random.Random, choice: str,
-    items: dict[str, str], cats: dict[str, list[str]], category: str,
+    items: dict[str, str | dict], cats: dict[str, list[str]], category: str,
 ) -> tuple[str, str]:
     """Resolve a dropdown choice to (key, prompt_text). Handles Random,
     None, and explicit keys uniformly."""
@@ -125,20 +154,29 @@ def _resolve(
             _log(f"Empty pool for category '{category}' — skipping.")
             return "", ""
         key = rng.choice(pool)
-        return key, items[key]
+        val = items[key]
+        if isinstance(val, dict):
+            val = val.get("prompt", "")
+        return key, val
     text = items.get(choice)
     if text is None:
         _log(f"Key '{choice}' not found in library — skipping.")
         return "", ""
+    if isinstance(text, dict):
+        text = text.get("prompt", "")
     return choice, text
 
 
-def _collection_payload(items: dict[str, str], cats: dict[str, list[str]]) -> tuple[dict, list[str]]:
+def _collection_payload(items: dict[str, str | dict], cats: dict[str, list[str]]) -> tuple[dict, dict[str, list[str]]]:
     """Flatten + sort so the editor can render one big searchable list."""
     flat: dict[str, str] = {}
     for cat in sorted(items):
         flat[cat] = items[cat]
-    return flat, sorted(cats.keys())
+    # Ensure categories is always a dict with string keys
+    if not isinstance(cats, dict):
+        cats = {}
+    normalized = {str(k): v for k, v in cats.items() if isinstance(v, list)}
+    return flat, normalized
 
 
 # ── Node class ──────────────────────────────────────────────────────────────
@@ -266,6 +304,14 @@ class UltimateCharacterBuilderPRO:
         e_key, e_text = _resolve(rng, expression, _EXPRESSIONS.items, _EXPRESSIONS.categories, expression_cat)
         p_key, p_text = _resolve(rng, pose,      _POSES.items,       _POSES.categories,       pose_cat)
 
+        # Resolve {a|b|c} wildcard groups embedded in each fragment. Shares
+        # `rng` with the pool-selection above, so a fixed seed reproduces
+        # the character/expression/pose choice AND every wildcard pick, in
+        # one deterministic sequence.
+        c_text = resolve_wildcards(c_text, rng)
+        e_text = resolve_wildcards(e_text, rng)
+        p_text = resolve_wildcards(p_text, rng)
+
         cs = clamp_strength(character_strength, CHARACTER_STRENGTH_MIN, CHARACTER_STRENGTH_MAX, CHARACTER_STRENGTH_DEFAULT)
         es = clamp_strength(expression_strength, SUB_STRENGTH_MIN, SUB_STRENGTH_MAX, EXPRESSION_STRENGTH_DEFAULT)
         ps = clamp_strength(pose_strength,      SUB_STRENGTH_MIN, SUB_STRENGTH_MAX, POSE_STRENGTH_DEFAULT)
@@ -350,6 +396,9 @@ def register_api_routes():
             categories = body.get("categories", [])
             custom_preview = body.get("custom_preview", "").strip()
 
+            if not isinstance(categories, list):
+                categories = []
+
             if lib_type not in ("characters", "expressions", "poses"):
                 return web.json_response({"error": "Invalid type"}, status=400)
             if not name:
@@ -380,12 +429,18 @@ def register_api_routes():
 
             coll.items[name] = entry
 
-            if categories:
-                for cat, members in coll.categories.items():
-                    if cat == "All":
-                        continue
-                    if name not in members:
-                        members.append(name)
+            # Ensure all requested categories exist, then update membership.
+            for cat in categories:
+                if cat and cat != "All" and cat not in coll.categories:
+                    coll.categories[cat] = []
+
+            for cat, members in coll.categories.items():
+                if cat == "All":
+                    continue
+                if name in members and cat not in categories:
+                    members.remove(name)
+                elif name not in members and cat in categories:
+                    members.append(name)
 
             coll.save()
 
