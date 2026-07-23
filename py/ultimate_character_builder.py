@@ -108,31 +108,8 @@ def _load_all(force: bool = False) -> None:
 
 
 # ── Wildcard resolution ──────────────────────────────────────────────────────
-# Minimal, dependency-free {a|b|c} resolver so characters.json/poses.json/
-# expressions.json entries can embed alternation groups without needing an
-# external wildcard node. Same approach as py/outfit_selector.py and
-# py/scene_maker_pro.py. Unlike scene_maker_pro, this node has no {token}
-# placeholder-substitution system, so no reserved-token guard is needed here.
-
-_WILDCARD_RE = re.compile(r"\{([^{}]*)\}")
-
-
-def resolve_wildcards(text: str, rng: random.Random) -> str:
-    """Resolve {a|b|c} alternation groups in `text` using the given rng.
-    Handles nesting ({a|{b|c}}) by re-scanning until stable."""
-    if not text or "{" not in text:
-        return text
-
-    def _pick(match):
-        options = match.group(1).split("|")
-        return rng.choice(options) if options else ""
-
-    prev = None
-    while prev != text:
-        prev = text
-        text = _WILDCARD_RE.sub(_pick, text)
-
-    return text
+# Re-exported from shared utils. Kept here for backward compatibility.
+from utils.prompt_utils import resolve_wildcards  # noqa: F401
 
 
 # ── Resolve + weight helpers ───────────────────────────────────────────────
