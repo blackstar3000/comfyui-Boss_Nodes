@@ -58,43 +58,14 @@ def _load_all(force: bool = False) -> None:
 
 
 # ── Wildcard resolution ──────────────────────────────────────────────────────
-# Minimal, dependency-free {a|b|c} resolver so girls.json/males.json/scenes.json
-# entries can embed alternation groups without needing an external wildcard node.
-# Same approach as py/outfit_selector.py's resolve_wildcards, but here it takes
-# a shared `rng` (rather than reseeding per call) so that with a fixed seed,
-# girl/male/scene wildcard picks form one deterministic sequence instead of
-# three independent ones that would otherwise all pick the "first" option.
-
-_WILDCARD_RE = re.compile(r"\{([^{}]*)\}")
+# Re-exported from shared utils. _RESERVED_PLACEHOLDERS kept here since
+# it's specific to scene_maker's {girl}/{male} substitution system.
+from utils.prompt_utils import resolve_wildcards  # noqa: F401
 
 # {girl}/{girls}/{male}/{males} are scene placeholders, not wildcard groups -
 # they must survive resolve_wildcards untouched so _substitute_placeholders
-# can still find them afterward. Without this guard, {girl} (a single
-# "option" with no "|") would silently collapse to the bare word `girl`,
-# breaking substitution with no visible error.
+# can still find them afterward.
 _RESERVED_PLACEHOLDERS = {"girl", "girls", "male", "males"}
-
-
-def resolve_wildcards(text: str, rng: random.Random) -> str:
-    """Resolve {a|b|c} alternation groups in `text` using the given rng.
-    Handles nesting ({a|{b|c}}) by re-scanning until stable. Leaves
-    {girl}/{girls}/{male}/{males} placeholder tokens untouched."""
-    if not text or "{" not in text:
-        return text
-
-    def _pick(match):
-        content = match.group(1)
-        if content in _RESERVED_PLACEHOLDERS:
-            return match.group(0)  # leave the placeholder as-is
-        options = content.split("|")
-        return rng.choice(options) if options else ""
-
-    prev = None
-    while prev != text:
-        prev = text
-        text = _WILDCARD_RE.sub(_pick, text)
-
-    return text
 
 
 # ── Resolve + weight helpers ───────────────────────────────────────────────
@@ -310,9 +281,9 @@ class SceneMakerGOD:
         # the girl/male/scene choice AND every wildcard pick, in one
         # deterministic sequence. {girl}/{male}/etc. placeholders in
         # scene_text are protected and pass through untouched.
-        girl_text = resolve_wildcards(girl_text, rng)
-        male_text = resolve_wildcards(male_text, rng)
-        scene_text = resolve_wildcards(scene_text, rng)
+        girl_text = resolve_wildcards(girl_text, rng, reserved=_RESERVED_PLACEHOLDERS)
+        male_text = resolve_wildcards(male_text, rng, reserved=_RESERVED_PLACEHOLDERS)
+        scene_text = resolve_wildcards(scene_text, rng, reserved=_RESERVED_PLACEHOLDERS)
 
         girl_w = clamp_strength(girl_w, STRENGTH_MIN, STRENGTH_MAX, 1.0)
         male_w = clamp_strength(male_w, STRENGTH_MIN, STRENGTH_MAX, 1.0)
