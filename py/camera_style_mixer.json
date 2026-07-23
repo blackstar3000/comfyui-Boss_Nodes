@@ -1,300 +1,1385 @@
 {
   "camera_angles": {
-    "Extreme Low Angle": "extreme low angle, worm's eye view, heroic dramatic pose, looking up",
-    "Low Angle": "low angle, powerful perspective, looking up, cinematic hero shot",
-    "High Angle": "high angle, bird's eye perspective, looking down, subject appears small or vulnerable",
-    "Extreme High Angle": "extreme high angle, top-down overhead, god's eye view, dramatic scale",
-    "Dutch Tilt": "dutch angle, tilted camera, dynamic tension, unsettling or energetic",
-    "Straight On": "perfectly straight-on, symmetrical front view, fashion portrait style",
-    "Eye Level": "eye level shot, natural perspective, intimate and relatable",
-    "¾ View": "three-quarter view, classic portrait angle, most flattering",
-    "Profile View": "side profile, sharp silhouette, elegant and dramatic",
-    "Back View": "from behind, over shoulder, mysterious, cinematic reveal",
-    "Over the Shoulder": "over the shoulder shot, intimate POV, narrative tension",
-    "Fisheye Extreme": "fisheye lens, heavy distortion, surreal exaggerated perspective",
-    "Selfie POV": "selfie style, first person POV, phone camera aesthetic",
-    "Proper Selfie Look": "straight-on, upper body, looking at viewer, (from above:1.2), reaching out to viewer, foreshortening",
-    "Upper-body selfie": "upper-body selfie, looking at viewer, (from above:1.2)"
+    "extreme_low_angle": {
+      "name": "Extreme Low Angle",
+      "prompt": "extreme low angle, worm's eye view, heroic dramatic pose, looking up",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "low_angle": {
+      "name": "Low Angle",
+      "prompt": "low angle, powerful perspective, looking up, cinematic hero shot",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "high_angle": {
+      "name": "High Angle",
+      "prompt": "high angle, bird's eye perspective, looking down, subject appears small or vulnerable",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "extreme_high_angle": {
+      "name": "Extreme High Angle",
+      "prompt": "extreme high angle, top-down overhead, god's eye view, dramatic scale",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "dutch_tilt": {
+      "name": "Dutch Tilt",
+      "prompt": "dutch angle, tilted camera, dynamic tension, unsettling or energetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "straight_on": {
+      "name": "Straight On",
+      "prompt": "perfectly straight-on, symmetrical front view, fashion portrait style",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "eye_level": {
+      "name": "Eye Level",
+      "prompt": "eye level shot, natural perspective, intimate and relatable",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "view": {
+      "name": "¾ View",
+      "prompt": "three-quarter view, classic portrait angle, most flattering",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "profile_view": {
+      "name": "Profile View",
+      "prompt": "side profile, sharp silhouette, elegant and dramatic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "back_view": {
+      "name": "Back View",
+      "prompt": "from behind, over shoulder, mysterious, cinematic reveal",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "over_the_shoulder": {
+      "name": "Over the Shoulder",
+      "prompt": "over the shoulder shot, intimate POV, narrative tension",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "fisheye_extreme": {
+      "name": "Fisheye Extreme",
+      "prompt": "fisheye lens, heavy distortion, surreal exaggerated perspective",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "selfie_pov": {
+      "name": "Selfie POV",
+      "prompt": "selfie style, first person POV, phone camera aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "proper_selfie_look": {
+      "name": "Proper Selfie Look",
+      "prompt": "straight-on, upper body, looking at viewer, (from above:1.2), reaching out to viewer, foreshortening",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "upper_body_selfie": {
+      "name": "Upper-body selfie",
+      "prompt": "upper-body selfie, looking at viewer, (from above:1.2)",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    }
   },
   "camera_framings": {
-    "Extreme Close-Up": "extreme close-up, eyes and lips only, maximum intensity",
-    "Close-Up": "tight close-up, intense emotion, detailed face",
-    "Head Shot": "head shot, face fills the frame",
-    "Portrait": "portrait framing, head and shoulders",
-    "Bust Shot": "bust shot, shoulders and upper chest",
-    "Shoulders Up": "shoulders up composition",
-    "Chest Up": "chest up portrait",
-    "Medium Close-Up": "medium close-up, chest and face",
-    "Medium Shot": "medium shot, waist up, emotional connection",
-    "Hip Shot": "hip shot, hips upward",
-    "Waist Shot": "waist-up composition",
-    "Three Quarter Body": "three-quarter body, thighs visible",
-    "Cowboy Shot": "cowboy shot, mid-thigh up, western film classic, perfect for action",
-    "American Shot": "american shot, knees up, classic cinema framing",
-    "Knee Shot": "knee-up framing",
-    "Full Body": "full body shot, entire figure visible, fashion or character showcase",
-    "Long Shot": "long shot, full figure with surroundings",
-    "Wide Shot": "wide shot, subject with environment",
-    "Extreme Wide": "extreme wide shot, vast scenery",
-    "Establishing Shot": "establishing shot, epic environment, cinematic scale",
-    "Group Shot": "group composition, multiple subjects",
-    "Overhead Composition": "top-down composition",
-    "Macro Detail": "macro photography, tiny details",
-    "Silhouette": "silhouette composition",
-    "Environmental Portrait": "environmental portrait, subject integrated with surroundings",
-    "Fashion Editorial": "fashion editorial composition",
-    "Magazine Cover": "centered magazine cover composition",
-    "Character Sheet": "full character reference sheet framing",
-    "Action Frame": "dynamic action framing",
-    "Cinematic Frame": "cinematic composition, balanced framing"
+    "extreme_close_up": {
+      "name": "Extreme Close-Up",
+      "prompt": "extreme close-up, eyes and lips only, maximum intensity",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "close_up": {
+      "name": "Close-Up",
+      "prompt": "tight close-up, intense emotion, detailed face",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "head_shot": {
+      "name": "Head Shot",
+      "prompt": "head shot, face fills the frame",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "portrait": {
+      "name": "Portrait",
+      "prompt": "portrait framing, head and shoulders",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "bust_shot": {
+      "name": "Bust Shot",
+      "prompt": "bust shot, shoulders and upper chest",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "shoulders_up": {
+      "name": "Shoulders Up",
+      "prompt": "shoulders up composition",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "chest_up": {
+      "name": "Chest Up",
+      "prompt": "chest up portrait",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "medium_close_up": {
+      "name": "Medium Close-Up",
+      "prompt": "medium close-up, chest and face",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "medium_shot": {
+      "name": "Medium Shot",
+      "prompt": "medium shot, waist up, emotional connection",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "hip_shot": {
+      "name": "Hip Shot",
+      "prompt": "hip shot, hips upward",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "waist_shot": {
+      "name": "Waist Shot",
+      "prompt": "waist-up composition",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "three_quarter_body": {
+      "name": "Three Quarter Body",
+      "prompt": "three-quarter body, thighs visible",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "cowboy_shot": {
+      "name": "Cowboy Shot",
+      "prompt": "cowboy shot, mid-thigh up, western film classic, perfect for action",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "american_shot": {
+      "name": "American Shot",
+      "prompt": "american shot, knees up, classic cinema framing",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "knee_shot": {
+      "name": "Knee Shot",
+      "prompt": "knee-up framing",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "full_body": {
+      "name": "Full Body",
+      "prompt": "full body shot, entire figure visible, fashion or character showcase",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "long_shot": {
+      "name": "Long Shot",
+      "prompt": "long shot, full figure with surroundings",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "wide_shot": {
+      "name": "Wide Shot",
+      "prompt": "wide shot, subject with environment",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "extreme_wide": {
+      "name": "Extreme Wide",
+      "prompt": "extreme wide shot, vast scenery",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "establishing_shot": {
+      "name": "Establishing Shot",
+      "prompt": "establishing shot, epic environment, cinematic scale",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "group_shot": {
+      "name": "Group Shot",
+      "prompt": "group composition, multiple subjects",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "overhead_composition": {
+      "name": "Overhead Composition",
+      "prompt": "top-down composition",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "macro_detail": {
+      "name": "Macro Detail",
+      "prompt": "macro photography, tiny details",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "silhouette": {
+      "name": "Silhouette",
+      "prompt": "silhouette composition",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "environmental_portrait": {
+      "name": "Environmental Portrait",
+      "prompt": "environmental portrait, subject integrated with surroundings",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "fashion_editorial": {
+      "name": "Fashion Editorial",
+      "prompt": "fashion editorial composition",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "magazine_cover": {
+      "name": "Magazine Cover",
+      "prompt": "centered magazine cover composition",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "character_sheet": {
+      "name": "Character Sheet",
+      "prompt": "full character reference sheet framing",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "action_frame": {
+      "name": "Action Frame",
+      "prompt": "dynamic action framing",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "cinematic_frame": {
+      "name": "Cinematic Frame",
+      "prompt": "cinematic composition, balanced framing",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    }
   },
   "art_styles": {
-    "Greg Rutkowski": "greg rutkowski, epic fantasy, ultra detailed, dramatic lighting, trending on artstation",
-    "Alphonse Mucha": "alphonse mucha, art nouveau, flowing lines, elegant feminine beauty",
-    "Makoto Shinkai": "makoto shinkai, breathtaking sky, glowing particles, emotional atmosphere",
-    "Studio Ghibli": "studio ghibli, whimsical, soft colors, hand-drawn warmth, magical realism",
-    "Hayao Miyazaki": "hayao miyazaki style, lush nature, flying machines, gentle wonder",
-    "Artgerm": "artgerm, ultra smooth digital art, vibrant colors, perfect face",
-    "Sakimichan": "sakimichan, glossy fantasy illustration, beautiful lighting, seductive",
-    "WLOP": "wlop, emotional fantasy, soft rim lighting, ghostly beautiful",
-    "Loish": "loish, loose expressive brushwork, vibrant colors, joyful energy",
-    "Ross Tran": "ross tran, cinematic fantasy, rich colors, magical atmosphere",
-    "Ilya Kuvshinov": "ilya kuvshinov, clean anime aesthetic, expressive eyes, soft shading",
-    "Guweiz": "guweiz, dynamic urban fantasy, moody lighting, strong silhouettes",
-    "Kyoto Animation": "kyoto animation style, fluid movement, detailed backgrounds, emotional",
-    "Shigenori Soejima": "persona 5 style, bold colors, stylish character design",
-    "Tetsuya Nomura": "final fantasy style, dramatic poses, intricate details",
-    "Akihiko Yoshida": "akihiko yoshida, final fantasy tactics, painterly medieval fantasy",
-    "Oil Painting Master": "masterpiece oil painting, rich texture, dramatic brush strokes",
-    "Hyperrealistic": "hyperrealistic, photorealistic, 8k, ultra detailed, lifelike",
-    "CGSociety Masterpiece": "trending on cgsociety, breathtaking detail, cinematic composition",
-    "Surreal Dream": "surrealism, salvador dali inspired, dreamlike, impossible geometry",
-    "Cyberpunk 2077": "cyberpunk 2077 style, neon drenched, futuristic, blade runner aesthetic",
-    "Dark Souls": "dark souls atmosphere, desolate beauty, dramatic fog, haunting",
-    "1950s": "1950s (style), vintage illustration, retro advertising, mid-century design, classic color palette",
-    "1960s": "1960s (style), pop art influence, psychedelic colors, bold graphic design, retro aesthetic",
-    "1970s": "1970s (style), earthy tones, vintage print style, disco era aesthetic, retro illustration",
-    "1980s": "1980s (style), neon colors, synthwave aesthetic, vibrant retro style, arcade era",
-    "1990s": "1990s (style), bold comic aesthetic, colorful design, nostalgic 90s vibe, classic anime influence",
-    "2000s": "2000s (style), digital illustration, glossy colors, vibrant anime aesthetic, modern pop culture",
-    "Retro Art": "retro artstyle, vintage illustration, nostalgic design, classic aesthetic, timeless colors",
-    "Art Nouveau": "art nouveau, flowing lines, ornate floral motifs, decorative elegance, Alphonse Mucha inspired",
-    "Art Deco": "art deco, geometric elegance, luxurious design, metallic accents, roaring twenties aesthetic",
-    "Minimalism": "minimalism, clean composition, simple shapes, negative space, modern design",
-    "Western Comics": "western comics (style), bold ink, dynamic action, comic book shading, expressive panels",
-    "Official Art": "official art, polished illustration, promotional artwork, clean rendering, high-quality finish",
-    "Cave Paintings": "cave paintings, prehistoric art, primitive pigments, ancient symbols, rock wall texture",
-    "3D": "3d rendering, realistic lighting, volumetric shading, physically based materials, depth",
-    "Emo Art": "emo art, dark aesthetic, emotional atmosphere, muted palette, expressive mood",
-    "Glitch Art": "glitch art, digital corruption, RGB split, datamosh effects, distorted visuals",
-    "Impressionism": "impressionism, painterly brushstrokes, soft lighting, vibrant color blending, Claude Monet inspired",
-    "Ligne Claire": "ligne claire, clean outlines, flat colors, European comic style, Hergé inspired",
-    "Low Poly": "low poly, geometric models, faceted surfaces, simple polygons, stylized 3d",
-    "Ukiyo-e": "ukiyo-e, Japanese woodblock print, flat colors, traditional composition, Edo period aesthetic",
-    "Sumi-e": "sumi-e, Japanese ink wash painting, expressive brushwork, monochrome elegance, Zen aesthetic",
-    "Nihonga": "nihonga, traditional Japanese painting, mineral pigments, refined brushwork, elegant composition",
-    "Akira Toriyama": "toriyama akira (style), expressive faces, clean manga linework, playful proportions, Dragon Ball aesthetic",
-    "Tite Kubo": "kubo tite (style), stylish character design, sharp fashion, bold contrast, Bleach aesthetic",
-    "Toon": "toon (style), exaggerated features, cartoon proportions, bold colors, playful animation style",
-    "Vanripper": "vanripper (style), bold cel shading, expressive characters, clean linework, stylized anime",
-    "Bikkuriman": "bikkuriman, chibi proportions, sticker art, metallic foil aesthetic, colorful mascot style",
-    "Friday Night Funkin'": "Friday Night Funkin', chunky outlines, rhythm game style, vibrant colors, expressive cartoon animation",
-    "Granblue Fantasy": "Granblue Fantasy, high fantasy illustration, ornate costumes, painterly anime, Cygames aesthetic",
-    "Pokemon RGBY": "Pokemon RGBY, Game Boy era, Ken Sugimori style, classic Pokémon design, nostalgic retro game art",
-    "Elden Ring": "elden ring, fromsoftware, epic scale, golden order, mystical ruins",
-    "Abstract": "abstract art, non-representational forms, expressive composition, bold shapes, conceptual design",
-    "Acid Graphics": "acid graphics, experimental typography, distorted visuals, neon gradients, Y2K underground aesthetic",
-    "Biopunk": "biopunk, bioengineered technology, organic machinery, genetic experimentation, futuristic dystopia",
-    "Cyberpunk": "cyberpunk, neon cityscape, high-tech low-life, futuristic technology, dystopian atmosphere",
-    "Dunhuang Style": "dunhuang style, ancient Chinese mural art, flowing robes, Buddhist motifs, elegant earth tones",
-    "Frutiger Aero": "frutiger aero, glossy UI, glassmorphism, blue skies, green landscapes, bubbles, clean futuristic design",
-    "Frutiger Metro": "frutiger metro, flat UI, colorful geometric icons, modern interface, Windows Metro aesthetic",
-    "Heisei Retro": "heisei retro, nostalgic Japanese 1990s aesthetic, colorful pop design, vintage anime, playful charm",
-    "Retrofuturism": "retrofuturism, vintage future, retro technology, optimistic sci-fi, classic space age design",
-    "Solarpunk": "solarpunk, sustainable future, lush greenery, renewable energy, eco-friendly architecture",
-    "Steampunk": "steampunk, brass machinery, Victorian fashion, gears, steam-powered technology",
-    "Surreal": "surrealism, dreamlike imagery, impossible landscapes, symbolic composition, Salvador Dalí inspired",
-    "Synthwave": "synthwave, neon sunset, purple and pink gradients, retro grid, 1980s outrun aesthetic",
-    "Tenshi Kaiwai": "tenshi kaiwai, angelic fashion, pastel colors, futuristic medical aesthetic, soft cyber design",
-    "Weirdcore": "weirdcore, unsettling nostalgia, liminal imagery, dreamlike atmosphere, surreal internet aesthetic",
-    "Vaporwave": "vaporwave, pastel gradients, classical statues, nostalgic digital aesthetic, retro consumer culture",
-    "Yami Kawaii": "yami kawaii, cute yet dark aesthetic, medical accessories, pastel colors, emotional themes",
-    "Yume Kawaii": "yume kawaii, dreamy pastel palette, magical motifs, soft clouds, whimsical fantasy",
-    "Cyber Sigilism": "cyber sigilism, futuristic sigils, intricate metallic tattoos, biomechanical symbols, techno-occult aesthetic",
-    "Flourish": "flourish (design), decorative ornaments, elegant swirls, ornamental filigree, intricate embellishments",
-    "Halftone": "halftone, comic print dots, vintage printing texture, screen tone, graphic design",
-    "Liminal Space": "liminal space, empty architecture, eerie atmosphere, transitional environment, uncanny nostalgia",
-    "Optical Illusion": "optical illusion, impossible geometry, visual trickery, mind-bending patterns, perceptual effects",
-    "Chromatic Aberration": "chromatic aberration, RGB color fringing, lens distortion, cinematic optics, subtle color separation",
-    "Chromatic Aberration Abuse": "chromatic aberration abuse, exaggerated RGB split, heavy lens distortion, psychedelic color fringing",
-    "Diffraction Spikes": "diffraction spikes, starburst lighting, bright highlights, cinematic lens effects, sparkling illumination",
-    "Drop Shadow": "drop shadow, layered depth, graphic design effect, floating elements, dimensional composition",
-    "Glitch": "glitch, digital corruption, datamosh artifacts, broken pixels, distorted signal",
-    "Dithering": "dithering, pixel color approximation, retro digital texture, limited color palette, vintage graphics",
-    "Anaglyph": "anaglyph, red-cyan 3D effect, stereoscopic illusion, offset colors, retro 3D aesthetic",
-    "Scanlines": "scanlines, CRT monitor effect, retro television display, analog screen texture, nostalgic electronics",
-    "Spot Color": "spot color, limited color palette, bold graphic printing, selective color emphasis, poster design",
-    "Collage": "collage, mixed media, layered paper textures, cut-and-paste composition, handmade aesthetic",
-    "Isometric": "isometric, three-quarter perspective, architectural projection, geometric layout, game asset style",
-    "Zoom Layer": "zoom layer, infinite recursion, Droste effect, layered depth illusion, recursive composition",
-    "Acrylic Paint": "acrylic paint (medium), vibrant pigments, textured brushstrokes, matte finish, traditional painting",
-    "Airbrush": "airbrush (medium), smooth gradients, soft transitions, polished illustration, spray-painted effect",
-    "Ballpoint Pen": "ballpoint pen (medium), fine ink lines, crosshatching, detailed sketch, blue ink aesthetic",
-    "Brush": "brush (medium), expressive brushwork, painterly strokes, organic texture, hand-painted look",
-    "Chalk": "chalk (medium), powdery texture, soft edges, blackboard drawing, dusty finish",
-    "Calligraphy Brush": "calligraphy brush (medium), elegant brush strokes, expressive ink flow, East Asian brushwork, dynamic line variation",
-    "Painting": "painting, hand-painted artwork, visible brushstrokes, artistic composition, traditional fine art",
-    "Charcoal": "charcoal (medium), dramatic shading, rough texture, expressive sketch, monochrome artwork",
-    "Colored Pencil": "colored pencil (medium), layered pigments, textured paper, soft blending, hand-drawn illustration",
-    "Color Ink": "color ink (medium), vibrant ink washes, rich saturation, crisp outlines, traditional illustration",
-    "Coupy Pencil": "coupy pencil (medium), waxy coloring, soft texture, vibrant children's illustration, nostalgic drawing",
-    "Crayon": "crayon (medium), wax texture, bold colors, childlike illustration, rough strokes",
-    "Gouache": "gouache (medium), opaque watercolor, matte finish, vibrant pigments, painterly illustration",
-    "Graphite": "graphite (medium), pencil sketch, realistic shading, fine detail, monochrome drawing",
-    "Ink": "ink (medium), bold black lines, high contrast, traditional illustration, expressive linework",
-    "Marker": "marker (medium), alcohol marker rendering, vibrant colors, smooth blending, concept art style",
-    "Millipen": "millipen (medium), technical pen, precise linework, stippling, architectural illustration",
-    "Nib Pen": "nib pen (medium), fountain pen drawing, elegant ink lines, crosshatching, classic illustration",
-    "Oil Painting": "oil painting (medium), rich texture, visible brushstrokes, classical realism, deep color blending",
-    "Pastel": "pastel (medium), soft pigments, velvety texture, gentle blending, fine art illustration",
-    "Photo": "photo (medium), photorealistic, natural lighting, realistic textures, DSLR quality",
-    "Tempera": "tempera (medium), egg tempera painting, flat matte colors, Renaissance style, fine detail",
-    "Watercolor": "watercolor (medium), translucent washes, soft gradients, textured paper, delicate painting",
-    "Watercolor Pencil": "watercolor pencil (medium), sketch with watercolor washes, soft pigments, mixed media illustration",
-    "Faux Traditional Media": "faux traditional media, digital painting mimicking real materials, authentic paper texture, handmade appearance",
-    "Traditional Media": "traditional media, hand-crafted artwork, natural materials, painterly texture, authentic artistic finish",
-    "Filmmaker": "source filmmaker (medium), Source Filmmaker render, Valve engine, cinematic lighting, 3D animation",
-    "Photoshop": "photoshop (medium), digital painting, polished rendering, advanced compositing, professional illustration"
+    "greg_rutkowski": {
+      "name": "Greg Rutkowski",
+      "prompt": "greg rutkowski, epic fantasy, ultra detailed, dramatic lighting, trending on artstation",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "alphonse_mucha": {
+      "name": "Alphonse Mucha",
+      "prompt": "alphonse mucha, art nouveau, flowing lines, elegant feminine beauty",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "makoto_shinkai": {
+      "name": "Makoto Shinkai",
+      "prompt": "makoto shinkai, breathtaking sky, glowing particles, emotional atmosphere",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "studio_ghibli": {
+      "name": "Studio Ghibli",
+      "prompt": "studio ghibli, whimsical, soft colors, hand-drawn warmth, magical realism",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "hayao_miyazaki": {
+      "name": "Hayao Miyazaki",
+      "prompt": "hayao miyazaki style, lush nature, flying machines, gentle wonder",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "artgerm": {
+      "name": "Artgerm",
+      "prompt": "artgerm, ultra smooth digital art, vibrant colors, perfect face",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "sakimichan": {
+      "name": "Sakimichan",
+      "prompt": "sakimichan, glossy fantasy illustration, beautiful lighting, seductive",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "wlop": {
+      "name": "WLOP",
+      "prompt": "wlop, emotional fantasy, soft rim lighting, ghostly beautiful",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "loish": {
+      "name": "Loish",
+      "prompt": "loish, loose expressive brushwork, vibrant colors, joyful energy",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "ross_tran": {
+      "name": "Ross Tran",
+      "prompt": "ross tran, cinematic fantasy, rich colors, magical atmosphere",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "ilya_kuvshinov": {
+      "name": "Ilya Kuvshinov",
+      "prompt": "ilya kuvshinov, clean anime aesthetic, expressive eyes, soft shading",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "guweiz": {
+      "name": "Guweiz",
+      "prompt": "guweiz, dynamic urban fantasy, moody lighting, strong silhouettes",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "kyoto_animation": {
+      "name": "Kyoto Animation",
+      "prompt": "kyoto animation style, fluid movement, detailed backgrounds, emotional",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "shigenori_soejima": {
+      "name": "Shigenori Soejima",
+      "prompt": "persona 5 style, bold colors, stylish character design",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "tetsuya_nomura": {
+      "name": "Tetsuya Nomura",
+      "prompt": "final fantasy style, dramatic poses, intricate details",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "akihiko_yoshida": {
+      "name": "Akihiko Yoshida",
+      "prompt": "akihiko yoshida, final fantasy tactics, painterly medieval fantasy",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "oil_painting_master": {
+      "name": "Oil Painting Master",
+      "prompt": "masterpiece oil painting, rich texture, dramatic brush strokes",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "hyperrealistic": {
+      "name": "Hyperrealistic",
+      "prompt": "hyperrealistic, photorealistic, 8k, ultra detailed, lifelike",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "cgsociety_masterpiece": {
+      "name": "CGSociety Masterpiece",
+      "prompt": "trending on cgsociety, breathtaking detail, cinematic composition",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "surreal_dream": {
+      "name": "Surreal Dream",
+      "prompt": "surrealism, salvador dali inspired, dreamlike, impossible geometry",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "cyberpunk_2077": {
+      "name": "Cyberpunk 2077",
+      "prompt": "cyberpunk 2077 style, neon drenched, futuristic, blade runner aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "dark_souls": {
+      "name": "Dark Souls",
+      "prompt": "dark souls atmosphere, desolate beauty, dramatic fog, haunting",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "1950s": {
+      "name": "1950s",
+      "prompt": "1950s (style), vintage illustration, retro advertising, mid-century design, classic color palette",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "1960s": {
+      "name": "1960s",
+      "prompt": "1960s (style), pop art influence, psychedelic colors, bold graphic design, retro aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "1970s": {
+      "name": "1970s",
+      "prompt": "1970s (style), earthy tones, vintage print style, disco era aesthetic, retro illustration",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "1980s": {
+      "name": "1980s",
+      "prompt": "1980s (style), neon colors, synthwave aesthetic, vibrant retro style, arcade era",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "1990s": {
+      "name": "1990s",
+      "prompt": "1990s (style), bold comic aesthetic, colorful design, nostalgic 90s vibe, classic anime influence",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "2000s": {
+      "name": "2000s",
+      "prompt": "2000s (style), digital illustration, glossy colors, vibrant anime aesthetic, modern pop culture",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "retro_art": {
+      "name": "Retro Art",
+      "prompt": "retro artstyle, vintage illustration, nostalgic design, classic aesthetic, timeless colors",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "art_nouveau": {
+      "name": "Art Nouveau",
+      "prompt": "art nouveau, flowing lines, ornate floral motifs, decorative elegance, Alphonse Mucha inspired",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "art_deco": {
+      "name": "Art Deco",
+      "prompt": "art deco, geometric elegance, luxurious design, metallic accents, roaring twenties aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "minimalism": {
+      "name": "Minimalism",
+      "prompt": "minimalism, clean composition, simple shapes, negative space, modern design",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "western_comics": {
+      "name": "Western Comics",
+      "prompt": "western comics (style), bold ink, dynamic action, comic book shading, expressive panels",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "official_art": {
+      "name": "Official Art",
+      "prompt": "official art, polished illustration, promotional artwork, clean rendering, high-quality finish",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "cave_paintings": {
+      "name": "Cave Paintings",
+      "prompt": "cave paintings, prehistoric art, primitive pigments, ancient symbols, rock wall texture",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "3d": {
+      "name": "3D",
+      "prompt": "3d rendering, realistic lighting, volumetric shading, physically based materials, depth",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "emo_art": {
+      "name": "Emo Art",
+      "prompt": "emo art, dark aesthetic, emotional atmosphere, muted palette, expressive mood",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "glitch_art": {
+      "name": "Glitch Art",
+      "prompt": "glitch art, digital corruption, RGB split, datamosh effects, distorted visuals",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "impressionism": {
+      "name": "Impressionism",
+      "prompt": "impressionism, painterly brushstrokes, soft lighting, vibrant color blending, Claude Monet inspired",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "ligne_claire": {
+      "name": "Ligne Claire",
+      "prompt": "ligne claire, clean outlines, flat colors, European comic style, Hergé inspired",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "low_poly": {
+      "name": "Low Poly",
+      "prompt": "low poly, geometric models, faceted surfaces, simple polygons, stylized 3d",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "ukiyo_e": {
+      "name": "Ukiyo-e",
+      "prompt": "ukiyo-e, Japanese woodblock print, flat colors, traditional composition, Edo period aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "sumi_e": {
+      "name": "Sumi-e",
+      "prompt": "sumi-e, Japanese ink wash painting, expressive brushwork, monochrome elegance, Zen aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "nihonga": {
+      "name": "Nihonga",
+      "prompt": "nihonga, traditional Japanese painting, mineral pigments, refined brushwork, elegant composition",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "akira_toriyama": {
+      "name": "Akira Toriyama",
+      "prompt": "toriyama akira (style), expressive faces, clean manga linework, playful proportions, Dragon Ball aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "tite_kubo": {
+      "name": "Tite Kubo",
+      "prompt": "kubo tite (style), stylish character design, sharp fashion, bold contrast, Bleach aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "toon": {
+      "name": "Toon",
+      "prompt": "toon (style), exaggerated features, cartoon proportions, bold colors, playful animation style",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "vanripper": {
+      "name": "Vanripper",
+      "prompt": "vanripper (style), bold cel shading, expressive characters, clean linework, stylized anime",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "bikkuriman": {
+      "name": "Bikkuriman",
+      "prompt": "bikkuriman, chibi proportions, sticker art, metallic foil aesthetic, colorful mascot style",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "friday_night_funkin": {
+      "name": "Friday Night Funkin'",
+      "prompt": "Friday Night Funkin', chunky outlines, rhythm game style, vibrant colors, expressive cartoon animation",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "granblue_fantasy": {
+      "name": "Granblue Fantasy",
+      "prompt": "Granblue Fantasy, high fantasy illustration, ornate costumes, painterly anime, Cygames aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "pokemon_rgby": {
+      "name": "Pokemon RGBY",
+      "prompt": "Pokemon RGBY, Game Boy era, Ken Sugimori style, classic Pokémon design, nostalgic retro game art",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "elden_ring": {
+      "name": "Elden Ring",
+      "prompt": "elden ring, fromsoftware, epic scale, golden order, mystical ruins",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "abstract": {
+      "name": "Abstract",
+      "prompt": "abstract art, non-representational forms, expressive composition, bold shapes, conceptual design",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "acid_graphics": {
+      "name": "Acid Graphics",
+      "prompt": "acid graphics, experimental typography, distorted visuals, neon gradients, Y2K underground aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "biopunk": {
+      "name": "Biopunk",
+      "prompt": "biopunk, bioengineered technology, organic machinery, genetic experimentation, futuristic dystopia",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "cyberpunk": {
+      "name": "Cyberpunk",
+      "prompt": "cyberpunk, neon cityscape, high-tech low-life, futuristic technology, dystopian atmosphere",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "dunhuang_style": {
+      "name": "Dunhuang Style",
+      "prompt": "dunhuang style, ancient Chinese mural art, flowing robes, Buddhist motifs, elegant earth tones",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "frutiger_aero": {
+      "name": "Frutiger Aero",
+      "prompt": "frutiger aero, glossy UI, glassmorphism, blue skies, green landscapes, bubbles, clean futuristic design",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "frutiger_metro": {
+      "name": "Frutiger Metro",
+      "prompt": "frutiger metro, flat UI, colorful geometric icons, modern interface, Windows Metro aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "heisei_retro": {
+      "name": "Heisei Retro",
+      "prompt": "heisei retro, nostalgic Japanese 1990s aesthetic, colorful pop design, vintage anime, playful charm",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "retrofuturism": {
+      "name": "Retrofuturism",
+      "prompt": "retrofuturism, vintage future, retro technology, optimistic sci-fi, classic space age design",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "solarpunk": {
+      "name": "Solarpunk",
+      "prompt": "solarpunk, sustainable future, lush greenery, renewable energy, eco-friendly architecture",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "steampunk": {
+      "name": "Steampunk",
+      "prompt": "steampunk, brass machinery, Victorian fashion, gears, steam-powered technology",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "surreal": {
+      "name": "Surreal",
+      "prompt": "surrealism, dreamlike imagery, impossible landscapes, symbolic composition, Salvador Dalí inspired",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "synthwave": {
+      "name": "Synthwave",
+      "prompt": "synthwave, neon sunset, purple and pink gradients, retro grid, 1980s outrun aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "tenshi_kaiwai": {
+      "name": "Tenshi Kaiwai",
+      "prompt": "tenshi kaiwai, angelic fashion, pastel colors, futuristic medical aesthetic, soft cyber design",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "weirdcore": {
+      "name": "Weirdcore",
+      "prompt": "weirdcore, unsettling nostalgia, liminal imagery, dreamlike atmosphere, surreal internet aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "vaporwave": {
+      "name": "Vaporwave",
+      "prompt": "vaporwave, pastel gradients, classical statues, nostalgic digital aesthetic, retro consumer culture",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "yami_kawaii": {
+      "name": "Yami Kawaii",
+      "prompt": "yami kawaii, cute yet dark aesthetic, medical accessories, pastel colors, emotional themes",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "yume_kawaii": {
+      "name": "Yume Kawaii",
+      "prompt": "yume kawaii, dreamy pastel palette, magical motifs, soft clouds, whimsical fantasy",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "cyber_sigilism": {
+      "name": "Cyber Sigilism",
+      "prompt": "cyber sigilism, futuristic sigils, intricate metallic tattoos, biomechanical symbols, techno-occult aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "flourish": {
+      "name": "Flourish",
+      "prompt": "flourish (design), decorative ornaments, elegant swirls, ornamental filigree, intricate embellishments",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "halftone": {
+      "name": "Halftone",
+      "prompt": "halftone, comic print dots, vintage printing texture, screen tone, graphic design",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "liminal_space": {
+      "name": "Liminal Space",
+      "prompt": "liminal space, empty architecture, eerie atmosphere, transitional environment, uncanny nostalgia",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "optical_illusion": {
+      "name": "Optical Illusion",
+      "prompt": "optical illusion, impossible geometry, visual trickery, mind-bending patterns, perceptual effects",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "chromatic_aberration": {
+      "name": "Chromatic Aberration",
+      "prompt": "chromatic aberration, RGB color fringing, lens distortion, cinematic optics, subtle color separation",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "chromatic_aberration_abuse": {
+      "name": "Chromatic Aberration Abuse",
+      "prompt": "chromatic aberration abuse, exaggerated RGB split, heavy lens distortion, psychedelic color fringing",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "diffraction_spikes": {
+      "name": "Diffraction Spikes",
+      "prompt": "diffraction spikes, starburst lighting, bright highlights, cinematic lens effects, sparkling illumination",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "drop_shadow": {
+      "name": "Drop Shadow",
+      "prompt": "drop shadow, layered depth, graphic design effect, floating elements, dimensional composition",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "glitch": {
+      "name": "Glitch",
+      "prompt": "glitch, digital corruption, datamosh artifacts, broken pixels, distorted signal",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "dithering": {
+      "name": "Dithering",
+      "prompt": "dithering, pixel color approximation, retro digital texture, limited color palette, vintage graphics",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "anaglyph": {
+      "name": "Anaglyph",
+      "prompt": "anaglyph, red-cyan 3D effect, stereoscopic illusion, offset colors, retro 3D aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "scanlines": {
+      "name": "Scanlines",
+      "prompt": "scanlines, CRT monitor effect, retro television display, analog screen texture, nostalgic electronics",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "spot_color": {
+      "name": "Spot Color",
+      "prompt": "spot color, limited color palette, bold graphic printing, selective color emphasis, poster design",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "collage": {
+      "name": "Collage",
+      "prompt": "collage, mixed media, layered paper textures, cut-and-paste composition, handmade aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "isometric": {
+      "name": "Isometric",
+      "prompt": "isometric, three-quarter perspective, architectural projection, geometric layout, game asset style",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "zoom_layer": {
+      "name": "Zoom Layer",
+      "prompt": "zoom layer, infinite recursion, Droste effect, layered depth illusion, recursive composition",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "acrylic_paint": {
+      "name": "Acrylic Paint",
+      "prompt": "acrylic paint (medium), vibrant pigments, textured brushstrokes, matte finish, traditional painting",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "airbrush": {
+      "name": "Airbrush",
+      "prompt": "airbrush (medium), smooth gradients, soft transitions, polished illustration, spray-painted effect",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "ballpoint_pen": {
+      "name": "Ballpoint Pen",
+      "prompt": "ballpoint pen (medium), fine ink lines, crosshatching, detailed sketch, blue ink aesthetic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "brush": {
+      "name": "Brush",
+      "prompt": "brush (medium), expressive brushwork, painterly strokes, organic texture, hand-painted look",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "chalk": {
+      "name": "Chalk",
+      "prompt": "chalk (medium), powdery texture, soft edges, blackboard drawing, dusty finish",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "calligraphy_brush": {
+      "name": "Calligraphy Brush",
+      "prompt": "calligraphy brush (medium), elegant brush strokes, expressive ink flow, East Asian brushwork, dynamic line variation",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "painting": {
+      "name": "Painting",
+      "prompt": "painting, hand-painted artwork, visible brushstrokes, artistic composition, traditional fine art",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "charcoal": {
+      "name": "Charcoal",
+      "prompt": "charcoal (medium), dramatic shading, rough texture, expressive sketch, monochrome artwork",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "colored_pencil": {
+      "name": "Colored Pencil",
+      "prompt": "colored pencil (medium), layered pigments, textured paper, soft blending, hand-drawn illustration",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "color_ink": {
+      "name": "Color Ink",
+      "prompt": "color ink (medium), vibrant ink washes, rich saturation, crisp outlines, traditional illustration",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "coupy_pencil": {
+      "name": "Coupy Pencil",
+      "prompt": "coupy pencil (medium), waxy coloring, soft texture, vibrant children's illustration, nostalgic drawing",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "crayon": {
+      "name": "Crayon",
+      "prompt": "crayon (medium), wax texture, bold colors, childlike illustration, rough strokes",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "gouache": {
+      "name": "Gouache",
+      "prompt": "gouache (medium), opaque watercolor, matte finish, vibrant pigments, painterly illustration",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "graphite": {
+      "name": "Graphite",
+      "prompt": "graphite (medium), pencil sketch, realistic shading, fine detail, monochrome drawing",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "ink": {
+      "name": "Ink",
+      "prompt": "ink (medium), bold black lines, high contrast, traditional illustration, expressive linework",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "marker": {
+      "name": "Marker",
+      "prompt": "marker (medium), alcohol marker rendering, vibrant colors, smooth blending, concept art style",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "millipen": {
+      "name": "Millipen",
+      "prompt": "millipen (medium), technical pen, precise linework, stippling, architectural illustration",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "nib_pen": {
+      "name": "Nib Pen",
+      "prompt": "nib pen (medium), fountain pen drawing, elegant ink lines, crosshatching, classic illustration",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "oil_painting": {
+      "name": "Oil Painting",
+      "prompt": "oil painting (medium), rich texture, visible brushstrokes, classical realism, deep color blending",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "pastel": {
+      "name": "Pastel",
+      "prompt": "pastel (medium), soft pigments, velvety texture, gentle blending, fine art illustration",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "photo": {
+      "name": "Photo",
+      "prompt": "photo (medium), photorealistic, natural lighting, realistic textures, DSLR quality",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "tempera": {
+      "name": "Tempera",
+      "prompt": "tempera (medium), egg tempera painting, flat matte colors, Renaissance style, fine detail",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "watercolor": {
+      "name": "Watercolor",
+      "prompt": "watercolor (medium), translucent washes, soft gradients, textured paper, delicate painting",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "watercolor_pencil": {
+      "name": "Watercolor Pencil",
+      "prompt": "watercolor pencil (medium), sketch with watercolor washes, soft pigments, mixed media illustration",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "faux_traditional_media": {
+      "name": "Faux Traditional Media",
+      "prompt": "faux traditional media, digital painting mimicking real materials, authentic paper texture, handmade appearance",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "traditional_media": {
+      "name": "Traditional Media",
+      "prompt": "traditional media, hand-crafted artwork, natural materials, painterly texture, authentic artistic finish",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "filmmaker": {
+      "name": "Filmmaker",
+      "prompt": "source filmmaker (medium), Source Filmmaker render, Valve engine, cinematic lighting, 3D animation",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "photoshop": {
+      "name": "Photoshop",
+      "prompt": "photoshop (medium), digital painting, polished rendering, advanced compositing, professional illustration",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    }
   },
   "camera_lenses": {
-    "85mm Portrait": "shot on 85mm lens, creamy bokeh, perfect subject isolation",
-    "50mm Natural": "shot on 50mm prime, natural human eye perspective, filmic",
-    "35mm Cinematic": "shot on 35mm lens, immersive storytelling, environmental portrait",
-    "35mm Storytelling": "shot on 35mm lens, environmental portrait, immersive wide feel",
-    "24mm Wide Drama": "shot on 24mm wide angle, dramatic perspective, slight distortion",
-    "135mm Compression": "shot on 135mm telephoto, background compression, dreamy stacked look",
-    "Macro Detail": "macro lens, extreme detail, shallow depth of field",
-    "Anamorphic": "anamorphic lens, cinematic oval bokeh, horizontal flares, hollywood",
-    "Tilt-Shift": "tilt-shift lens, miniature effect, selective focus, toy-like world",
-    "Arri Alexa Look": "Arri Alexa 65, cinematic color science, filmic tones, hollywood quality",
-    "8K Film Scan": "shot on 70mm IMAX, scanned at 8K, ultra detailed, reference quality"
+    "85mm_portrait": {
+      "name": "85mm Portrait",
+      "prompt": "shot on 85mm lens, creamy bokeh, perfect subject isolation",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "50mm_natural": {
+      "name": "50mm Natural",
+      "prompt": "shot on 50mm prime, natural human eye perspective, filmic",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "35mm_cinematic": {
+      "name": "35mm Cinematic",
+      "prompt": "shot on 35mm lens, immersive storytelling, environmental portrait",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "35mm_storytelling": {
+      "name": "35mm Storytelling",
+      "prompt": "shot on 35mm lens, environmental portrait, immersive wide feel",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "24mm_wide_drama": {
+      "name": "24mm Wide Drama",
+      "prompt": "shot on 24mm wide angle, dramatic perspective, slight distortion",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "135mm_compression": {
+      "name": "135mm Compression",
+      "prompt": "shot on 135mm telephoto, background compression, dreamy stacked look",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "macro_detail_2": {
+      "name": "Macro Detail",
+      "prompt": "macro lens, extreme detail, shallow depth of field",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "anamorphic": {
+      "name": "Anamorphic",
+      "prompt": "anamorphic lens, cinematic oval bokeh, horizontal flares, hollywood",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "tilt_shift": {
+      "name": "Tilt-Shift",
+      "prompt": "tilt-shift lens, miniature effect, selective focus, toy-like world",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "arri_alexa_look": {
+      "name": "Arri Alexa Look",
+      "prompt": "Arri Alexa 65, cinematic color science, filmic tones, hollywood quality",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "8k_film_scan": {
+      "name": "8K Film Scan",
+      "prompt": "shot on 70mm IMAX, scanned at 8K, ultra detailed, reference quality",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    }
   },
   "quality_boosters": {
-    "Ultra Quality": "masterpiece, best quality, ultra-detailed, absurdres, intricate details",
-    "8K Perfection": "8k, extremely detailed, sharp focus, perfect anatomy, flawless",
-    "Cinematic Masterpiece": "cinematic masterpiece, award-winning, national geographic, breathtaking",
-    "Trending Boost": "trending on artstation, trending on pixiv, featured artwork",
-    "Depth & Volume": "volumetric lighting, ray tracing, global illumination, unreal engine 5",
-    "Professional Photo": "professional photography, canon eos r5, 85mm f1.2, studio lighting",
-    "Fashion Editorial": "vogue editorial, high fashion, perfect skin, dramatic pose",
-    "Negative Prompt Safe": "(worst quality, low quality:1.4), (deformed, bad anatomy:1.3), text, watermark"
+    "ultra_quality": {
+      "name": "Ultra Quality",
+      "prompt": "masterpiece, best quality, ultra-detailed, absurdres, intricate details",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "8k_perfection": {
+      "name": "8K Perfection",
+      "prompt": "8k, extremely detailed, sharp focus, perfect anatomy, flawless",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "cinematic_masterpiece": {
+      "name": "Cinematic Masterpiece",
+      "prompt": "cinematic masterpiece, award-winning, national geographic, breathtaking",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "trending_boost": {
+      "name": "Trending Boost",
+      "prompt": "trending on artstation, trending on pixiv, featured artwork",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "depth_volume": {
+      "name": "Depth & Volume",
+      "prompt": "volumetric lighting, ray tracing, global illumination, unreal engine 5",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "professional_photo": {
+      "name": "Professional Photo",
+      "prompt": "professional photography, canon eos r5, 85mm f1.2, studio lighting",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "fashion_editorial_2": {
+      "name": "Fashion Editorial",
+      "prompt": "vogue editorial, high fashion, perfect skin, dramatic pose",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    },
+    "negative_prompt_safe": {
+      "name": "Negative Prompt Safe",
+      "prompt": "(worst quality, low quality:1.4), (deformed, bad anatomy:1.3), text, watermark",
+      "description": "",
+      "favorite": false,
+      "preview": ""
+    }
   },
   "categories": {
     "All Angles": [],
     "All Framings": [],
     "All Styles": [],
     "Most Dramatic": [
-      "Extreme Low Angle",
-      "Low Angle",
-      "Dutch Tilt",
-      "Back View"
+      "extreme_low_angle",
+      "low_angle",
+      "dutch_tilt",
+      "back_view"
     ],
     "Most Flattering": [
-      "¾ View",
-      "Eye Level",
-      "High Angle",
-      "Portrait",
-      "Head Shot"
+      "view",
+      "eye_level",
+      "high_angle",
+      "portrait",
+      "head_shot"
     ],
     "Sexiest": [
-      "Over the Shoulder",
-      "Close-Up",
-      "Extreme Close-Up",
-      "Hip Shot",
-      "Waist Shot"
+      "over_the_shoulder",
+      "close_up",
+      "extreme_close_up",
+      "hip_shot",
+      "waist_shot"
     ],
     "Epic Cinematic": [
       "Wide Establishing",
-      "Establishing Shot",
-      "Extreme Wide",
-      "Low Angle",
-      "Cinematic Frame"
+      "establishing_shot",
+      "extreme_wide",
+      "low_angle",
+      "cinematic_frame"
     ],
     "Action & Dynamic": [
-      "Cowboy Shot",
-      "Action Frame",
-      "Dutch Tilt",
-      "American Shot",
-      "Fisheye Extreme"
+      "cowboy_shot",
+      "action_frame",
+      "dutch_tilt",
+      "american_shot",
+      "fisheye_extreme"
     ],
     "Intimate & Emotional": [
-      "Eye Level",
-      "Close-Up",
-      "Medium Close-Up",
-      "Over the Shoulder",
-      "Silhouette"
+      "eye_level",
+      "close_up",
+      "medium_close_up",
+      "over_the_shoulder",
+      "silhouette"
     ],
     "Fashion & Editorial": [
-      "Full Body",
-      "Fashion Editorial",
-      "Straight On",
-      "Magazine Cover",
-      "Bust Shot"
+      "full_body",
+      "fashion_editorial_2",
+      "straight_on",
+      "magazine_cover",
+      "bust_shot"
     ],
     "Wide & Environmental": [
-      "Wide Shot",
-      "Extreme Wide",
-      "Long Shot",
-      "Environmental Portrait",
-      "Establishing Shot"
+      "wide_shot",
+      "extreme_wide",
+      "long_shot",
+      "environmental_portrait",
+      "establishing_shot"
     ],
     "Best Artists": [
-      "Greg Rutkowski",
-      "Alphonse Mucha",
-      "Makoto Shinkai",
-      "Artgerm",
-      "WLOP",
-      "Sakimichan"
+      "greg_rutkowski",
+      "alphonse_mucha",
+      "makoto_shinkai",
+      "artgerm",
+      "wlop",
+      "sakimichan"
     ],
     "Anime Gods": [
-      "Ilya Kuvshinov",
-      "Kyoto Animation",
-      "Shigenori Soejima",
-      "Tetsuya Nomura"
+      "ilya_kuvshinov",
+      "kyoto_animation",
+      "shigenori_soejima",
+      "tetsuya_nomura"
     ],
     "Fantasy Legends": [
-      "Ross Tran",
-      "Guweiz",
-      "Akihiko Yoshida",
-      "Elden Ring",
-      "Dark Souls"
+      "ross_tran",
+      "guweiz",
+      "akihiko_yoshida",
+      "elden_ring",
+      "dark_souls"
     ],
     "Cinematic Masters": [
-      "CGSociety Masterpiece",
-      "Cinematic Masterpiece",
-      "Hyperrealistic",
-      "Oil Painting Master"
+      "cgsociety_masterpiece",
+      "cinematic_masterpiece",
+      "hyperrealistic",
+      "oil_painting_master"
     ],
     "Vibrant & Colorful": [
-      "Loish",
-      "Artgerm",
-      "Cyberpunk 2077",
-      "Surreal Dream"
+      "loish",
+      "artgerm",
+      "cyberpunk_2077",
+      "surreal_dream"
     ],
-    "Dark & Moody": ["Dark Souls", "WLOP", "Guweiz", "Elden Ring"],
+    "Dark & Moody": [
+      "dark_souls",
+      "wlop",
+      "guweiz",
+      "elden_ring"
+    ],
     "Anime & Manga": [
-      "Makoto Shinkai",
-      "Studio Ghibli",
-      "Hayao Miyazaki",
-      "Kyoto Animation",
-      "Ilya Kuvshinov"
+      "makoto_shinkai",
+      "studio_ghibli",
+      "hayao_miyazaki",
+      "kyoto_animation",
+      "ilya_kuvshinov"
     ],
     "Instant Masterpiece": [
-      "Ultra Quality",
-      "8K Perfection",
-      "Cinematic Masterpiece",
-      "Trending Boost",
-      "Professional Photo"
+      "ultra_quality",
+      "8k_perfection",
+      "cinematic_masterpiece",
+      "trending_boost",
+      "professional_photo"
     ]
   }
 }
