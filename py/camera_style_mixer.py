@@ -169,9 +169,30 @@ def _load_library(force: bool = False) -> _LibraryState:
         _log("'art_styles' must be a dict — skipped.")
         raw_styles = {}
 
-    angles = sanitize_entries(raw_angles)
-    framings = sanitize_entries(raw_framings)
-    styles = sanitize_entries(raw_styles)
+    def _normalize_entries(raw: dict) -> dict[str, dict]:
+        """Convert legacy string values to objects, keep objects as-is."""
+        out = {}
+        for key, value in raw.items():
+            if isinstance(value, str):
+                out[key] = {
+                    "name": key,
+                    "prompt": value,
+                    "description": "",
+                    "favorite": False,
+                    "preview": "",
+                }
+            elif isinstance(value, dict):
+                value.setdefault("name", key)
+                value.setdefault("prompt", "")
+                value.setdefault("description", "")
+                value.setdefault("favorite", False)
+                value.setdefault("preview", "")
+                out[key] = value
+        return out
+
+    angles = _normalize_entries(raw_angles)
+    framings = _normalize_entries(raw_framings)
+    styles = _normalize_entries(raw_styles)
 
     # Prefer the explicit split keys; fall back to splitting the unified
     # `categories` block (matches the v3.0 backwards-compat path).
