@@ -226,12 +226,20 @@ def _load_library(force: bool = False) -> _LibraryState:
 
 def _resolve(
     rng: random.Random, choice: str, random_sentinel: str,
-    data: dict[str, str], cat_dict: dict[str, list[str]], category: str,
+    data: dict[str, dict], cat_dict: dict[str, list[str]], category: str,
 ) -> tuple[str, str]:
     """Resolve a dropdown choice to (key, prompt_text). Handles the random
     sentinel, the none sentinel, and explicit keys uniformly."""
     if choice == NONE_SENTINEL:
         return "", ""
+
+    def _prompt(val):
+        """Extract prompt string from entry (handles both str and dict)."""
+        if isinstance(val, str):
+            return val
+        if isinstance(val, dict):
+            return val.get("prompt", "")
+        return ""
 
     if choice == random_sentinel:
         if category == ALL_CATEGORIES or not category:
@@ -242,13 +250,13 @@ def _resolve(
             _log(f"Empty pool for category '{category}' — skipping.")
             return "", ""
         key = rng.choice(pool)
-        return key, data[key]
+        return key, _prompt(data[key])
 
-    text = data.get(choice)
-    if text is None:
+    entry = data.get(choice)
+    if entry is None:
         _log(f"Key '{choice}' not found in library — skipping.")
         return "", ""
-    return choice, text
+    return choice, _prompt(entry)
 
 
 # ── Node class ──────────────────────────────────────────────────────────────
