@@ -695,6 +695,178 @@ class CollectionCRUDWidget {
   }
 }
 
+class CollectionEditorDialog {
+  constructor({ title, item, isEdit, existingSlugs, onSave, onCancel }) {
+    this.title = title;
+    this.item = item || { name: "", prompt: "", description: "", favorite: false };
+    this.isEdit = isEdit;
+    this.existingSlugs = existingSlugs || new Map();
+    this.onSave = onSave || (() => {});
+    this.onCancel = onCancel || (() => {});
+    this.modal = null;
+    this.errorEl = null;
+  }
+
+  open() {
+    return new Promise((resolve) => {
+      this._resolve = resolve;
+      this._build();
+    });
+  }
+
+  _build() {
+    const modal = document.createElement("div");
+    modal.className = "boss-modal";
+
+    const bar = document.createElement("div");
+    bar.className = "boss-bar";
+    bar.innerHTML = `<div class="boss-bar-title">${escapeHtml(this.isEdit ? "Edit" : "Add")} ${escapeHtml(this.title)}</div>`;
+    const closeBtn = document.createElement("button");
+    closeBtn.type = "button";
+    closeBtn.className = "boss-btn-close";
+    closeBtn.textContent = "CLOSE";
+    closeBtn.addEventListener("click", () => this._cancel());
+    bar.appendChild(closeBtn);
+    modal.appendChild(bar);
+
+    const body = document.createElement("div");
+    body.className = "boss-body";
+    body.style.padding = "16px";
+    body.style.display = "flex";
+    body.style.flexDirection = "column";
+    body.style.gap = "12px";
+
+    const nameGroup = this._makeField("Name", "text", this.item.name, "e.g. Dutch Angle");
+    this._nameInput = nameGroup.input;
+    body.appendChild(nameGroup.wrap);
+
+    const promptGroup = this._makeField("Prompt", "textarea", this.item.prompt, "Prompt text sent to the model…");
+    this._promptInput = promptGroup.input;
+    body.appendChild(promptGroup.wrap);
+
+    const descGroup = this._makeField("Description (optional)", "textarea", this.item.description || "", "Notes about this entry…");
+    this._descInput = descGroup.input;
+    body.appendChild(descGroup.wrap);
+
+    const favWrap = document.createElement("div");
+    favWrap.style.display = "flex";
+    favWrap.style.alignItems = "center";
+    favWrap.style.gap = "8px";
+    const favLabel = document.createElement("span");
+    favLabel.className = "boss-label";
+    favLabel.textContent = "Favorite";
+    const favToggle = document.createElement("button");
+    favToggle.type = "button";
+    favToggle.className = "boss-crd-star" + (this.item.favorite ? " active" : "");
+    favToggle.textContent = this.item.favorite ? "★ Yes" : "☆ No";
+    favToggle.style.fontSize = "13px";
+    favToggle.style.padding = "4px 8px";
+    favToggle.style.border = "1px solid var(--boss-border)";
+    favToggle.style.borderRadius = "var(--boss-radius-md)";
+    favToggle.style.background = "var(--boss-bg-input)";
+    favToggle.style.cursor = "pointer";
+    let isFav = !!this.item.favorite;
+    favToggle.addEventListener("click", () => {
+      isFav = !isFav;
+      favToggle.className = "boss-crd-star" + (isFav ? " active" : "");
+      favToggle.textContent = isFav ? "★ Yes" : "☆ No";
+    });
+    favWrap.appendChild(favLabel);
+    favWrap.appendChild(favToggle);
+    body.appendChild(favWrap);
+    this._favToggle = () => isFav;
+
+    const errorEl = document.createElement("div");
+    errorEl.style.color = "#e74c3c";
+    errorEl.style.fontSize = "12px";
+    errorEl.style.minHeight = "16px";
+    body.appendChild(errorEl);
+    this.errorEl = errorEl;
+
+    modal.appendChild(body);
+
+    const footer = document.createElement("div");
+    footer.className = "boss-footer";
+    const saveBtn = document.createElement("button");
+    saveBtn.type = "button";
+    saveBtn.className = "boss-btn-primary";
+    saveBtn.textContent = this.isEdit ? "Save Changes" : "Add Entry";
+    saveBtn.addEventListener("click", () => this._save());
+    const cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className = "boss-btn-ghost";
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.addEventListener("click", () => this._cancel());
+    footer.appendChild(saveBtn);
+    footer.appendChild(cancelBtn);
+    modal.appendChild(footer);
+
+    document.body.appendChild(modal);
+    this.modal = modal;
+
+    modal.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") this._cancel();
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) this._save();
+    });
+
+    this._nameInput.focus();
+  }
+
+  _makeField(label, type, value, placeholder) {
+    const wrap = document.createElement("div");
+    const lbl = document.createElement("span");
+    lbl.className = "boss-label";
+    lbl.textContent = label;
+    wrap.appendChild(lbl);
+
+    let input;
+    if (type === "textarea") {
+      input = document.createElement("textarea");
+      input.rows = 3;
+      input.style.resize = "vertical";
+    } else {
+      input = document.createElement("input");
+      input.type = type;
+    }
+    input.className = "boss-input";
+    input.value = value;
+    input.placeholder = placeholder || "";
+    wrap.appendChild(input);
+    return { wrap, input };
+  }
+
+  _save() {
+    const name = this._nameInput.value.trim();
+    const prompt = this._promptInput.value.trim();
+    const description = this._descInput.value.trim();
+    const favorite = this._favToggle();
+
+    const slug = CollectionModel.toSlug(name, this.existingSlugs);
+    const item = { name, prompt, description, favorite };
+    const excludeSlug = this.isEdit ? this.item._slug : null;
+    const result = CollectionModel.validate(item, this.existingSlugs, excludeSlug);
+
+    if (!result.ok) {
+      this.errorEl.textContent = result.error;
+      return;
+    }
+
+    this.modal.remove();
+    this.modal = null;
+    this.onSave({ slug, item });
+    this._resolve({ slug, item });
+  }
+
+  _cancel() {
+    if (this.modal) {
+      this.modal.remove();
+      this.modal = null;
+    }
+    this.onCancel();
+    this._resolve(null);
+  }
+}
+
 // ── Extension registration ────────────────────────────────────────────────
 
 app.registerExtension({
@@ -704,4 +876,4 @@ app.registerExtension({
   },
 });
 
-export { CollectionModel, CollectionController, CollectionCRUDWidget };
+export { CollectionModel, CollectionController, CollectionCRUDWidget, CollectionEditorDialog };
