@@ -486,11 +486,11 @@ class CameraStyleMixer:
 
 # ── HTTP API routes ─────────────────────────────────────────────────────────
 
-# Mapping from API type name to (data_key, category_key, library_attr)
+# Mapping from API type name to (data_key, category_key, library_attr, cat_attr)
 _COLLECTION_MAP = {
-    "angles":  ("camera_angles",  "angle_categories",  "angles"),
-    "framings": ("camera_framings", "framing_categories", "framings"),
-    "styles":  ("art_styles",     "style_categories",  "styles"),
+    "angles":   ("camera_angles",   "angle_categories",   "angles",   "cat_angle"),
+    "framings": ("camera_framings", "framing_categories", "framings", "cat_framing"),
+    "styles":   ("art_styles",      "style_categories",   "styles",   "cat_style"),
 }
 
 
@@ -557,7 +557,7 @@ def register_api_routes():
             if not prompt:
                 return web.json_response({"error": "Prompt required"}, status=400)
 
-            data_key, cat_key, lib_attr = _COLLECTION_MAP[lib_type]
+            data_key, cat_key, lib_attr, cat_attr = _COLLECTION_MAP[lib_type]
             lib = _load_library()
             collection = getattr(lib, lib_attr)
 
@@ -583,7 +583,7 @@ def register_api_routes():
             collection[slug] = entry
 
             # Update categories
-            cat_dict = getattr(lib, f"cat_{lib_attr.split('s')[0] if lib_attr.endswith('s') else lib_attr}")
+            cat_dict = getattr(lib, cat_attr)
             # Ensure all requested categories exist
             for cat in categories:
                 if cat and cat != ALL_CATEGORIES and cat not in cat_dict:
@@ -633,7 +633,7 @@ def register_api_routes():
             if not slug:
                 return web.json_response({"error": "Slug required"}, status=400)
 
-            data_key, cat_key, lib_attr = _COLLECTION_MAP[lib_type]
+            data_key, cat_key, lib_attr, cat_attr = _COLLECTION_MAP[lib_type]
             lib = _load_library()
             collection = getattr(lib, lib_attr)
 
@@ -643,7 +643,7 @@ def register_api_routes():
             del collection[slug]
 
             # Remove from all categories
-            cat_dict = getattr(lib, f"cat_{lib_attr.split('s')[0] if lib_attr.endswith('s') else lib_attr}")
+            cat_dict = getattr(lib, cat_attr)
             for members in cat_dict.values():
                 if isinstance(members, list) and slug in members:
                     members.remove(slug)
