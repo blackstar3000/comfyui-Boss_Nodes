@@ -488,9 +488,9 @@ class CameraStyleMixer:
 
 # Mapping from API type name to (data_key, category_key, library_attr, cat_attr)
 _COLLECTION_MAP = {
-    "angles":   ("camera_angles",   "angle_categories",   "angles",   "cat_angle"),
-    "framings": ("camera_framings", "framing_categories", "framings", "cat_framing"),
-    "styles":   ("art_styles",      "style_categories",   "styles",   "cat_style"),
+    "angles":   ("camera_angles",   "categories", "angles",   "cat_angle"),
+    "framings": ("camera_framings", "categories", "framings", "cat_framing"),
+    "styles":   ("art_styles",      "categories", "styles",   "cat_style"),
 }
 
 
@@ -605,7 +605,12 @@ def register_api_routes():
                 disk_data = {}
 
             disk_data[data_key] = {k: v if isinstance(v, dict) else v for k, v in collection.items()}
-            disk_data[cat_key] = cat_dict
+            # For unified `categories` dict, merge instead of overwrite
+            if cat_key == "categories":
+                disk_cats = disk_data.setdefault("categories", {})
+                disk_cats.update(cat_dict)
+            else:
+                disk_data[cat_key] = cat_dict
             _save_json(JSON_FILE, disk_data)
 
             # Bust mtime cache
@@ -656,7 +661,12 @@ def register_api_routes():
                 disk_data = {}
 
             disk_data[data_key] = dict(collection)
-            disk_data[cat_key] = cat_dict
+            # For unified `categories` dict, merge instead of overwrite
+            if cat_key == "categories":
+                disk_cats = disk_data.setdefault("categories", {})
+                disk_cats.update(cat_dict)
+            else:
+                disk_data[cat_key] = cat_dict
             _save_json(JSON_FILE, disk_data)
 
             # Bust mtime cache
