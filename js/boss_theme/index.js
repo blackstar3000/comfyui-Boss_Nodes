@@ -519,6 +519,182 @@ class CollectionController {
   }
 }
 
+class CollectionCRUDWidget {
+  constructor({ title, data, categories, selectedSlug, onAdd, onSelect, onEdit, onDelete, onToggleFavorite }) {
+    this.title = title;
+    this.data = data || {};
+    this.categories = categories || {};
+    this.selectedSlug = selectedSlug || null;
+    this.onAdd = onAdd || (() => {});
+    this.onSelect = onSelect || (() => {});
+    this.onEdit = onEdit || (() => {});
+    this.onDelete = onDelete || (() => {});
+    this.onToggleFavorite = onToggleFavorite || (() => {});
+    this.root = null;
+    this.listEl = null;
+    this.searchInput = null;
+    this._search = "";
+  }
+
+  render() {
+    const wrap = document.createElement("div");
+    wrap.className = "boss-crd-wrap";
+
+    const head = document.createElement("div");
+    head.className = "boss-crd-head";
+    head.innerHTML = `<span class="boss-crd-title">${escapeHtml(this.title)}</span>`;
+    wrap.appendChild(head);
+
+    const search = document.createElement("input");
+    search.type = "text";
+    search.className = "boss-input";
+    search.placeholder = `Search ${this.title.toLowerCase()}…`;
+    search.addEventListener("input", (e) => {
+      this._search = e.target.value;
+      this._renderList();
+    });
+    wrap.appendChild(search);
+    this.searchInput = search;
+
+    const list = document.createElement("div");
+    list.className = "boss-crd-list";
+    wrap.appendChild(list);
+    this.listEl = list;
+
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "boss-crd-add";
+    addBtn.textContent = `＋ Add ${this.title}`;
+    addBtn.addEventListener("click", () => this.onAdd());
+    wrap.appendChild(addBtn);
+
+    this.root = wrap;
+    this._renderList();
+    return wrap;
+  }
+
+  _renderList() {
+    if (!this.listEl) return;
+    this.listEl.innerHTML = "";
+    const search = this._search.toLowerCase();
+
+    const entries = Object.entries(this.data)
+      .filter(([slug, item]) => {
+        if (!item || typeof item !== "object") return false;
+        if (search && !item.name?.toLowerCase().includes(search) && !item.prompt?.toLowerCase().includes(search)) return false;
+        return true;
+      })
+      .sort((a, b) => (a[1].name || "").localeCompare(b[1].name || ""));
+
+    for (const [slug, item] of entries) {
+      const row = document.createElement("div");
+      row.className = "boss-crd-item" + (this.selectedSlug === slug ? " selected" : "");
+
+      const star = document.createElement("span");
+      star.className = "boss-crd-star" + (item.favorite ? " active" : "");
+      star.textContent = item.favorite ? "★" : "☆";
+      star.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.onToggleFavorite(slug);
+      });
+      row.appendChild(star);
+
+      const name = document.createElement("span");
+      name.className = "boss-crd-name";
+      name.textContent = item.name || slug;
+      row.appendChild(name);
+
+      const editBtn = document.createElement("button");
+      editBtn.type = "button";
+      editBtn.className = "boss-crd-icon";
+      editBtn.textContent = "✎";
+      editBtn.title = "Edit";
+      editBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.onEdit(slug);
+      });
+      row.appendChild(editBtn);
+
+      const delBtn = document.createElement("button");
+      delBtn.type = "button";
+      delBtn.className = "boss-crd-icon boss-crd-icon-danger";
+      delBtn.textContent = "✕";
+      delBtn.title = "Delete";
+      delBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        this.onDelete(slug);
+      });
+      row.appendChild(delBtn);
+
+      row.addEventListener("click", () => this.onSelect(slug));
+
+      row.addEventListener("contextmenu", (e) => {
+        e.preventDefault();
+        this._showContextMenu(e, slug);
+      });
+
+      this.listEl.appendChild(row);
+    }
+
+    if (entries.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "boss-crd-empty";
+      empty.textContent = search ? "No matches." : "No entries yet.";
+      this.listEl.appendChild(empty);
+    }
+  }
+
+  _showContextMenu(e, slug) {
+    document.querySelectorAll(".boss-crd-context").forEach((m) => m.remove());
+
+    const menu = document.createElement("div");
+    menu.className = "boss-crd-context";
+
+    const item = this.data[slug];
+    const items = [
+      { label: "Edit", action: () => this.onEdit(slug) },
+      { label: item?.favorite ? "Unfavorite" : "Favorite", action: () => this.onToggleFavorite(slug) },
+      { label: "Delete", action: () => this.onDelete(slug), cls: "danger" },
+    ];
+
+    for (const it of items) {
+      const btn = document.createElement("div");
+      btn.className = "boss-crd-ctx-item" + (it.cls ? ` ${it.cls}` : "");
+      btn.textContent = it.label;
+      btn.addEventListener("click", () => {
+        menu.remove();
+        it.action();
+      });
+      menu.appendChild(btn);
+    }
+
+    menu.style.position = "fixed";
+    menu.style.left = `${e.clientX}px`;
+    menu.style.top = `${e.clientY}px`;
+    document.body.appendChild(menu);
+
+    const close = (ev) => {
+      if (!menu.contains(ev.target)) {
+        menu.remove();
+        document.removeEventListener("click", close);
+      }
+    };
+    setTimeout(() => document.addEventListener("click", close), 0);
+  }
+
+  refresh(newData, newCategories, newSelectedSlug) {
+    this.data = newData || this.data;
+    this.categories = newCategories || this.categories;
+    if (newSelectedSlug !== undefined) this.selectedSlug = newSelectedSlug;
+    this._renderList();
+  }
+
+  setSelected(slug) {
+    this.selectedSlug = slug;
+    this._renderList();
+  }
+}
+
 // ── Extension registration ────────────────────────────────────────────────
 
 app.registerExtension({
@@ -528,4 +704,4 @@ app.registerExtension({
   },
 });
 
-export { CollectionModel, CollectionController };
+export { CollectionModel, CollectionController, CollectionCRUDWidget };

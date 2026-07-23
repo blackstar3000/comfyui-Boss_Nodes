@@ -604,6 +604,51 @@
   font-size: var(--boss-font-size);
 }
 
+/* ── CRUD widget ──────────────────────────────────────────────────────── */
+.boss-crd-wrap { display: flex; flex-direction: column; gap: 4px; margin-bottom: 8px; }
+.boss-crd-head { display: flex; align-items: center; justify-content: space-between; }
+.boss-crd-title { font-size: 12px; font-weight: 600; color: var(--boss-text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+.boss-crd-list {
+  max-height: 140px; overflow-y: auto;
+  background: var(--boss-bg-input); border: 1px solid var(--boss-border-input);
+  border-radius: var(--boss-radius-md);
+}
+.boss-crd-item {
+  padding: 5px 8px; font-size: 12px; color: var(--boss-text); cursor: pointer;
+  border-bottom: 1px solid var(--boss-border); display: flex; align-items: center; gap: 6px;
+}
+.boss-crd-item:last-child { border-bottom: none; }
+.boss-crd-item:hover { background: var(--boss-bg-hover); }
+.boss-crd-item.selected { background: var(--boss-bg-active); box-shadow: inset 2px 0 0 var(--boss-brand); }
+.boss-crd-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.boss-crd-star { cursor: pointer; color: var(--boss-text-dim); font-size: 14px; }
+.boss-crd-star.active { color: #f5a623; }
+.boss-crd-star:hover { color: #f5a623; }
+.boss-crd-icon {
+  background: none; border: none; color: var(--boss-text-dim); cursor: pointer;
+  font-size: 13px; padding: 2px 4px; border-radius: 3px; line-height: 1;
+}
+.boss-crd-icon:hover { background: var(--boss-bg-hover); color: var(--boss-text); }
+.boss-crd-icon-danger:hover { color: #e74c3c; }
+.boss-crd-add {
+  background: none; border: 1px dashed var(--boss-border); color: var(--boss-text-muted);
+  padding: 5px; border-radius: var(--boss-radius-md); cursor: pointer; font-size: 12px;
+  text-align: center; transition: border-color 0.15s, color 0.15s;
+}
+.boss-crd-add:hover { border-color: var(--boss-brand); color: var(--boss-brand); }
+.boss-crd-empty { padding: 8px; text-align: center; color: var(--boss-text-dim); font-size: 12px; font-style: italic; }
+.boss-crd-context {
+  background: var(--boss-bg-section); border: 1px solid var(--boss-border-strong);
+  border-radius: var(--boss-radius-md); padding: 4px 0; z-index: 9999;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3); min-width: 120px;
+}
+.boss-crd-ctx-item {
+  padding: 6px 12px; font-size: 12px; color: var(--boss-text); cursor: pointer;
+}
+.boss-crd-ctx-item:hover { background: var(--boss-bg-hover); }
+.boss-crd-ctx-item.danger { color: #e74c3c; }
+.boss-crd-ctx-item.danger:hover { background: rgba(231,76,60,0.1); }
+
 /* ── Responsive: stack sidebar below 1200px ───────────────────────────── */
 @media (max-width: 1200px) {
   .boss-body { flex-direction: column; }
