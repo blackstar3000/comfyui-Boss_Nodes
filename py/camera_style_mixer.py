@@ -15,6 +15,7 @@ pattern (comfyui-pixaroma/nodes/node_seed.py):
 import json
 import os
 import random
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -75,6 +76,30 @@ _LIB = _LibraryState()
 
 
 _log = make_logger("CameraStyleMixer")
+
+
+def _to_slug(name: str) -> str:
+    """Lowercase, spaces→underscores, strip non-alphanumeric."""
+    slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+    return slug or "entry"
+
+
+def _unique_slug(slug: str, existing: set[str]) -> str:
+    """Append _2, _3, ... until unique."""
+    if slug not in existing:
+        return slug
+    n = 2
+    while f"{slug}_{n}" in existing:
+        n += 1
+    return f"{slug}_{n}"
+
+
+def _save_json(path: Path, data: dict) -> None:
+    """Atomic write: write to .tmp then os.replace."""
+    tmp = path.with_suffix(".tmp")
+    with tmp.open("w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    os.replace(tmp, path)
 
 
 def _split_unified_categories(
