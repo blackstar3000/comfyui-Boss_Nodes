@@ -15,8 +15,9 @@
     "23 (real xxiii)": "by 23 (real xxiii)",
     "286c": {
       "prompt": "by 286c",
-      "post_count": 60,
-      "categories": []
+      "categories": [],
+      "custom_preview": "https://cdn.donmai.us/sample/5a/34/__masaki_funaho_jurai_tenchi_muyou_and_1_more_drawn_by_286c__sample-5a3400853d7d5669ac78ef89c96f28e8.jpg",
+      "post_count": 60
     },
     "2dswirl": {
       "prompt": "by 2dswirl",
@@ -65,8 +66,9 @@
     },
     "a.x.": {
       "prompt": "by a.x.",
-      "post_count": 588,
-      "categories": []
+      "categories": [],
+      "custom_preview": "https://cdn.donmai.us/sample/ce/f7/__original_drawn_by_a_x__sample-cef7caef828920cbbaaaaa44d31cc8d7.jpg",
+      "post_count": 588
     },
     "aaaa (quad-a)": "by aaaa (quad-a)",
     "aaru (tenrake chaya)": "by aaru (tenrake chaya)",
@@ -94,8 +96,12 @@
     },
     "acefish": {
       "prompt": "by acefish",
-      "post_count": 106,
-      "categories": []
+      "categories": [
+        "anime",
+        "cel_shaded"
+      ],
+      "custom_preview": "https://cdn.donmai.us/original/26/bd/__firefly_honkai_and_1_more_drawn_by_acefish__26bd210caca458d96118f8635e38d116.jpg",
+      "post_count": 106
     },
     "achromaru": {
       "prompt": "by achromaru",
@@ -104,8 +110,14 @@
     },
     "adoohay": {
       "prompt": "by adoohay",
-      "post_count": 78,
-      "categories": []
+      "categories": [
+        "line_art",
+        "anime",
+        "realistic",
+        "comedy"
+      ],
+      "custom_preview": "https://cdn.donmai.us/sample/ea/c2/__ada_wong_resident_evil_and_1_more_drawn_by_adoohay__sample-eac282d73b6c42ea28f908b4c7a973be.jpg",
+      "post_count": 78
     },
     "adsouto": {
       "prompt": "by adsouto",
@@ -7734,9 +7746,14 @@
       "categories": []
     },
     "wlop": {
-      "prompt": "by wlop",
-      "post_count": 398,
-      "categories": []
+      "prompt": "(by wlop:1.1)",
+      "categories": [
+        "fantasy",
+        "detailed",
+        "painterly"
+      ],
+      "custom_preview": "",
+      "post_count": 398
     },
     "wokada": {
       "prompt": "by wokada",
@@ -8254,6 +8271,17 @@
       "prompt": "by ^jj^",
       "post_count": 229,
       "categories": []
+    },
+    "derrick_chew": {
+      "prompt": "by derrick_chew",
+      "categories": [
+        "anime",
+        "fantasy",
+        "3d",
+        "detailed"
+      ],
+      "custom_preview": "https://cdn.donmai.us/sample/b0/b7/__spider_gwen_marvel_and_1_more_drawn_by_derrick_chew__sample-b0b7027dcaf73e2656458a754a852c0a.jpg",
+      "post_count": 322
     }
   }
 }
