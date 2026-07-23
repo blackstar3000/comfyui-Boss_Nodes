@@ -93,33 +93,7 @@ def _category_pool(outfits: dict, categories: dict, category: str):
 # Not supported (by design, to keep this dependency-free): __file__ wildcard
 # lookups, weighted options (a::2|b), or quantifiers like {2$$a|b|c}. If you
 # need those later, this is the function to extend.
-
-_WILDCARD_RE = re.compile(r"\{([^{}]*)\}")
-
-
-def resolve_wildcards(text: str, seed=None) -> str:
-    """Resolve {a|b|c} alternation groups in `text` using a seeded RNG so the
-    same seed always reproduces the same picks (mirrors the outfit picker's
-    own seeded random.Random usage below)."""
-    if not text or "{" not in text:
-        return text
-
-    rng = random.Random(seed)
-
-    def _pick(match):
-        options = match.group(1).split("|")
-        return rng.choice(options) if options else ""
-
-    # Resolve repeatedly so nested {a|{b|c}} groups work: each pass collapses
-    # the innermost {...} (the regex can't match across an outer brace while
-    # an inner one is still present), so looping until nothing changes
-    # unwinds nesting from the inside out.
-    prev = None
-    while prev != text:
-        prev = text
-        text = _WILDCARD_RE.sub(_pick, text)
-
-    return text
+from utils.prompt_utils import resolve_wildcards  # noqa: F401
 
 
 # ── Node class ──────────────────────────────────────────────────────────────
@@ -302,7 +276,7 @@ class BossOutfitSelector:
         # Resolve any {a|b|c} wildcard groups embedded in the outfit text.
         # Uses the same seed as outfit selection above, so a fixed seed
         # reproduces both the outfit choice AND its wildcard picks.
-        text = resolve_wildcards(text, int(seed) if seed else None)
+        text = resolve_wildcards(text, random.Random(int(seed) if seed else None))
 
         if strength <= 0.01 or not text:
             prompt = ""
