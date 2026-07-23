@@ -1,16 +1,21 @@
 """Shared prompt formatting utilities for the Boss Nodes ComfyUI custom node pack.
 
 This module contains extracted helper functions for prompt weighting,
-strength clamping, and boolean parsing that were previously duplicated
-across multiple node modules.
+strength clamping, boolean parsing, and wildcard resolution that were
+previously duplicated across multiple node modules.
 
 Functions:
     apply_weight(text, strength, fmt) -- Apply attention weighting to prompt text
     clamp_strength(value, min, max, default) -- Clamp a strength value
     to_bool(value, fallback) -- Parse a value as boolean
+    resolve_wildcards(text, rng, reserved) -- Resolve {a|b|c} alternation groups
 """
 
+import re
+import random
 from utils.constants import STRENGTH_MIN, STRENGTH_MAX, STRENGTH_DEFAULT
+
+_WILDCARD_RE = re.compile(r"\{([^{}]*)\}")
 
 
 def apply_weight(text: str, strength: float, fmt: str = "comfyui") -> str:
@@ -88,3 +93,25 @@ def to_bool(value, fallback: bool = False) -> bool:
     if isinstance(value, str):
         return value.strip().lower() in ("true", "1", "yes", "on")
     return fallback
+
+
+def resolve_wildcards(text: str, rng: random.Random, reserved: set[str] | None = None) -> str:
+    """Resolve {a|b|c} alternation groups in `text` using the given rng.
+    Handles nesting ({a|{b|c}}) by re-scanning until stable.
+    Optional `reserved` set keeps specific placeholders untouched (e.g. {girl})."""
+    if not text or "{" not in text:
+        return text
+
+    def _pick(match):
+        content = match.group(1)
+        if reserved and content in reserved:
+            return match.group(0)
+        options = content.split("|")
+        return rng.choice(options) if options else ""
+
+    prev = None
+    while prev != text:
+        prev = text
+        text = _WILDCARD_RE.sub(_pick, text)
+
+    return text
