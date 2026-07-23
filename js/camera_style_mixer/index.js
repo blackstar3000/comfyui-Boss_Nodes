@@ -15,7 +15,7 @@
 // UPDATED: Added Camera Framing as a third independent axis.
 
 import { app } from "/scripts/app.js";
-import { BossDropdown } from "../boss_theme/index.js";
+import { BossDropdown, CollectionCRUDWidget, CollectionEditorDialog, CollectionController, CollectionModel } from "../boss_theme/index.js";
 
 // ── Constants ──────────────────────────────────────────────────────────────
 const STATE_PROP = "cameraState";
@@ -564,6 +564,7 @@ class CameraEditor {
     this.state = readState(node);
     this.lastSeed = node._pixBossLastSeed ?? null;
     this.modal = null;
+    this.controller = new CollectionController("/camera_boss");
   }
 
   async fetchData() {
@@ -571,14 +572,21 @@ class CameraEditor {
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = await r.json();
     this.library = {
-      angles: data.angles || {},
-      framings: data.framings || {},
-      styles: data.styles || {},
+      angles: CollectionModel.normalize(data.angles),
+      framings: CollectionModel.normalize(data.framings),
+      styles: CollectionModel.normalize(data.styles),
       angleCategories: data.angleCategories || {},
       framingCategories: data.framingCategories || {},
       styleCategories: data.styleCategories || {},
       weightFormats: data.weightFormats || [],
     };
+    // Build slug→name maps for display
+    this.library.angleSlugMap = {};
+    for (const [s, v] of Object.entries(this.library.angles)) this.library.angleSlugMap[s] = v.name || s;
+    this.library.framingSlugMap = {};
+    for (const [s, v] of Object.entries(this.library.framings)) this.library.framingSlugMap[s] = v.name || s;
+    this.library.styleSlugMap = {};
+    for (const [s, v] of Object.entries(this.library.styles)) this.library.styleSlugMap[s] = v.name || s;
   }
 
   open() {
@@ -626,6 +634,12 @@ class CameraEditor {
         listVar: "_angleListEl",
       }),
     );
+    const angleAddBtn = document.createElement("button");
+    angleAddBtn.type = "button";
+    angleAddBtn.className = "boss-crd-add";
+    angleAddBtn.textContent = "＋ Add Angle";
+    angleAddBtn.addEventListener("click", () => this._addEntry("angle"));
+    side.appendChild(angleAddBtn);
     side.appendChild(
       this.buildCategorySection({
         title: "Angle Category",
@@ -653,6 +667,12 @@ class CameraEditor {
         listVar: "_framingListEl",
       }),
     );
+    const framingAddBtn = document.createElement("button");
+    framingAddBtn.type = "button";
+    framingAddBtn.className = "boss-crd-add";
+    framingAddBtn.textContent = "＋ Add Framing";
+    framingAddBtn.addEventListener("click", () => this._addEntry("framing"));
+    side.appendChild(framingAddBtn);
     side.appendChild(
       this.buildCategorySection({
         title: "Framing Category",
@@ -680,6 +700,12 @@ class CameraEditor {
         listVar: "_styleListEl",
       }),
     );
+    const styleAddBtn = document.createElement("button");
+    styleAddBtn.type = "button";
+    styleAddBtn.className = "boss-crd-add";
+    styleAddBtn.textContent = "＋ Add Style";
+    styleAddBtn.addEventListener("click", () => this._addEntry("style"));
+    side.appendChild(styleAddBtn);
     side.appendChild(
       this.buildCategorySection({
         title: "Style Category",
@@ -824,40 +850,68 @@ class CameraEditor {
     el.innerHTML = "";
     const search = (this[searchVar] || "").toLowerCase();
 
+    // Sentinel entries
     const items = [
-      { name: sentinel, badge: "Random" },
-      { name: NONE_SENTINEL, badge: "None" },
+      { slug: sentinel, name: sentinel === RANDOM_ANGLE ? "(Random)" : sentinel === RANDOM_FRAMING ? "(Random)" : "(Random)", badge: "Random", isSentinel: true },
+      { slug: NONE_SENTINEL, name: "(None)", badge: "None", isSentinel: true },
     ];
 
-    let names;
+    // Data entries (slug-based)
+    const catData = isAngle ? this.library.angleCategories : isFraming ? this.library.framingCategories : this.library.styleCategories;
     const cat = this.state[categoryKey];
+    let names;
     if (cat === ALL_CATEGORIES || !cat) {
       names = Object.keys(data).sort();
     } else {
-      names = (cats[cat] || []).filter((n) => n in data).sort();
+      names = (catData[cat] || []).filter((s) => s in data).sort();
     }
-    for (const n of names) {
-      if (search && !n.toLowerCase().includes(search)) continue;
-      items.push({ name: n, badge: "" });
+    for (const slug of names) {
+      const entry = data[slug];
+      if (!entry || typeof entry !== "object") continue;
+      const displayName = entry.name || slug;
+      if (search && !displayName.toLowerCase().includes(search) && !entry.prompt?.toLowerCase().includes(search)) continue;
+      items.push({ slug, name: displayName, badge: "", isSentinel: false });
     }
 
     for (const it of items) {
       const row = document.createElement("div");
       row.className =
         "boss-cam-list-item" +
-        (this.state[stateKey] === it.name ? " selected" : "");
-      const name = document.createElement("span");
-      name.className = "name";
-      name.textContent = it.name;
-      row.appendChild(name);
+        (this.state[stateKey] === it.slug ? " selected" : "");
+      const nameEl = document.createElement("span");
+      nameEl.className = "name";
+      nameEl.textContent = it.name;
+      row.appendChild(nameEl);
       if (it.badge) {
         const badge = document.createElement("span");
         badge.className = "badge";
         badge.textContent = it.badge;
         row.appendChild(badge);
       }
+      // Edit/Delete icons for non-sentinel items
+      if (!it.isSentinel) {
+        const editIcon = document.createElement("span");
+        editIcon.className = "boss-crd-icon";
+        editIcon.textContent = "✎";
+        editIcon.title = "Edit";
+        editIcon.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this._editEntry(which, it.slug);
+        });
+        row.appendChild(editIcon);
+
+        const delIcon = document.createElement("span");
+        delIcon.className = "boss-crd-icon boss-crd-icon-danger";
+        delIcon.textContent = "✕";
+        delIcon.title = "Delete";
+        delIcon.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this._deleteEntry(which, it.slug);
+        });
+        row.appendChild(delIcon);
+      }
       row.addEventListener("click", () => {
-        this.state[stateKey] = it.name;
+        this.state[stateKey] = it.slug;
         this.refreshList(which);
         this.refreshPreview();
       });
@@ -868,7 +922,7 @@ class CameraEditor {
       empty.className = "boss-cam-list-item";
       empty.style.color = "#999";
       empty.style.cursor = "default";
-      empty.textContent = "No matches.";
+      empty.textContent = search ? "No matches." : "No entries yet.";
       el.appendChild(empty);
     }
   }
@@ -1143,6 +1197,121 @@ class CameraEditor {
   refreshPreview() {
     if (!this.cardEl) return;
     this.cardEl.innerHTML = buildPreviewHTML(this.state, this.library);
+  }
+
+  // ── CRUD operations ──────────────────────────────────────────────────
+  _addEntry(which) {
+    const title = which === "angle" ? "Angle" : which === "framing" ? "Framing" : "Style";
+    const existingSlugs = new Map(
+      Object.entries(which === "angle" ? this.library.angles : which === "framing" ? this.library.framings : this.library.styles)
+    );
+    const dialog = new CollectionEditorDialog({
+      title,
+      item: { name: "", prompt: "", description: "", favorite: false },
+      isEdit: false,
+      existingSlugs,
+      onSave: async ({ slug, item }) => {
+        const type = which === "angle" ? "angles" : which === "framing" ? "framings" : "styles";
+        const catKey = which === "angle" ? "angleCategory" : which === "framing" ? "framingCategory" : "styleCategory";
+        const categories = this.state[catKey] && this.state[catKey] !== ALL_CATEGORIES ? [this.state[catKey]] : [];
+        const result = await this.controller.add(type, item, categories);
+        if (result.ok) {
+          await this.fetchData();
+          this.state[which === "angle" ? "cameraAngle" : which === "framing" ? "cameraFraming" : "artStyle"] = slug;
+          this.refreshList(which);
+          this.refreshPreview();
+          setStatus(this.node, `Added "${item.name}"`);
+          setTimeout(() => setStatus(this.node, ""), 2000);
+        } else {
+          setStatus(this.node, `Error: ${result.error}`, true);
+        }
+      },
+    });
+    dialog.open();
+  }
+
+  _editEntry(which, slug) {
+    const title = which === "angle" ? "Angle" : which === "framing" ? "Framing" : "Style";
+    const collection = which === "angle" ? this.library.angles : which === "framing" ? this.library.framings : this.library.styles;
+    const entry = collection[slug];
+    if (!entry) return;
+
+    const existingSlugs = new Map(Object.entries(collection));
+    const dialog = new CollectionEditorDialog({
+      title,
+      item: { ...entry, _slug: slug },
+      isEdit: true,
+      existingSlugs,
+      onSave: async ({ slug: newSlug, item }) => {
+        const type = which === "angle" ? "angles" : which === "framing" ? "framings" : "styles";
+        const catKey = which === "angle" ? "angleCategory" : which === "framing" ? "framingCategory" : "styleCategory";
+        const categories = this.state[catKey] && this.state[catKey] !== ALL_CATEGORIES ? [this.state[catKey]] : [];
+        const result = await this.controller.edit(type, slug, item, categories);
+        if (result.ok) {
+          await this.fetchData();
+          this.refreshList(which);
+          this.refreshPreview();
+          setStatus(this.node, `Saved "${item.name}"`);
+          setTimeout(() => setStatus(this.node, ""), 2000);
+        } else {
+          setStatus(this.node, `Error: ${result.error}`, true);
+        }
+      },
+    });
+    dialog.open();
+  }
+
+  async _deleteEntry(which, slug) {
+    const title = which === "angle" ? "Angle" : which === "framing" ? "Framing" : "Style";
+    const collection = which === "angle" ? this.library.angles : which === "framing" ? this.library.framings : this.library.styles;
+    const entry = collection[slug];
+    if (!entry) return;
+
+    const confirmed = await this._showConfirm(`Delete "${entry.name || slug}"?`);
+    if (!confirmed) return;
+
+    const type = which === "angle" ? "angles" : which === "framing" ? "framings" : "styles";
+    const result = await this.controller.delete(type, slug);
+    if (result.ok) {
+      await this.fetchData();
+      const stateKey = which === "angle" ? "cameraAngle" : which === "framing" ? "cameraFraming" : "artStyle";
+      if (this.state[stateKey] === slug) {
+        this.state[stateKey] = which === "angle" ? RANDOM_ANGLE : which === "framing" ? RANDOM_FRAMING : RANDOM_STYLE;
+      }
+      this.refreshList(which);
+      this.refreshPreview();
+      setStatus(this.node, `Deleted "${entry.name || slug}"`);
+      setTimeout(() => setStatus(this.node, ""), 2000);
+    } else {
+      setStatus(this.node, `Error: ${result.error}`, true);
+    }
+  }
+
+  _showConfirm(message) {
+    return new Promise((resolve) => {
+      const toast = document.createElement("div");
+      toast.className = "boss-toast";
+      toast.innerHTML = `
+        <span>${escapeHtml(message)}</span>
+        <button class="boss-btn-primary" style="margin-left:8px;padding:4px 12px;">Yes</button>
+        <button class="boss-btn-ghost" style="margin-left:4px;padding:4px 12px;">No</button>
+      `;
+      toast.style.cssText = "position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--boss-bg-section);border:1px solid var(--boss-border-strong);border-radius:8px;padding:8px 16px;z-index:9999;display:flex;align-items:center;gap:4px;box-shadow:0 4px 12px rgba(0,0,0,0.3);";
+      document.body.appendChild(toast);
+      const cleanup = (val) => { toast.remove(); resolve(val); };
+      toast.querySelector(".boss-btn-primary").addEventListener("click", () => cleanup(true));
+      toast.querySelector(".boss-btn-ghost").addEventListener("click", () => cleanup(false));
+    });
+  }
+
+  _toggleFavorite(which, slug) {
+    const collection = which === "angle" ? this.library.angles : which === "framing" ? this.library.framings : this.library.styles;
+    const entry = collection[slug];
+    if (!entry) return;
+    const type = which === "angle" ? "angles" : which === "framing" ? "framings" : "styles";
+    this.controller.edit(type, slug, { ...entry, favorite: !entry.favorite }, []);
+    entry.favorite = !entry.favorite;
+    this.refreshList(which);
   }
 
   save() {
