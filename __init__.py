@@ -91,7 +91,7 @@ def load_nodes_from_subdirectory():
 
 # Boss Prompt Analyzer PRO
 try:
-    from boss_prompt_analyzer.boss_prompt_analyzer import BossPromptAnalyzerPRO
+    from py.boss_prompt_analyzer.boss_prompt_analyzer import BossPromptAnalyzerPRO
     NODE_CLASS_MAPPINGS["BossPromptAnalyzerPRO"] = BossPromptAnalyzerPRO
     NODE_DISPLAY_NAME_MAPPINGS["BossPromptAnalyzerPRO"] = "👑 Boss Prompt Analyzer PRO"
 except Exception as e:
