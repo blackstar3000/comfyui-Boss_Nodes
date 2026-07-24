@@ -556,6 +556,7 @@ def register_api_routes():
             prompt = body.get("prompt", "").strip()
             description = body.get("description", "").strip()
             favorite = bool(body.get("favorite", False))
+            preview = body.get("preview", "").strip()
             categories = body.get("categories", [])
 
             if lib_type not in _COLLECTION_MAP:
@@ -586,7 +587,7 @@ def register_api_routes():
                 "prompt": prompt,
                 "description": description,
                 "favorite": favorite,
-                "preview": collection.get(slug, {}).get("preview", "") if isinstance(collection.get(slug), dict) else "",
+                "preview": preview or (collection.get(slug, {}).get("preview", "") if isinstance(collection.get(slug), dict) else ""),
             }
             collection[slug] = entry
 
@@ -612,14 +613,16 @@ def register_api_routes():
             except (json.JSONDecodeError, OSError):
                 disk_data = {}
 
-            disk_data[data_key] = {k: v if isinstance(v, dict) else v for k, v in collection.items()}
+            disk_data[data_key] = dict(collection)
             # For unified `categories` dict, merge instead of overwrite
             if cat_key == "categories":
                 disk_cats = disk_data.setdefault("categories", {})
-                disk_cats.update(cat_dict)
+                for cat_name, items in cat_dict.items():
+                    disk_cats[cat_name] = items
             else:
                 disk_data[cat_key] = cat_dict
             _save_json(JSON_FILE, disk_data)
+            _log(f"Saved {lib_type}/{slug} ({name}) — total {len(collection)} entries")
 
             # Bust mtime cache
             _LIB.mtime = None
