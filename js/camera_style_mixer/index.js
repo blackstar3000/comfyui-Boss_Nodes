@@ -85,6 +85,10 @@ function injectCSS() {
       flex-shrink: 0;
     }
     .boss-cam-list-item .name { flex: 1; }
+    .boss-cam-list-thumb {
+      width: 24px; height: 24px; border-radius: 4px; object-fit: cover;
+      flex-shrink: 0; margin-right: 6px;
+    }
 
     /* Strength slider + linked number */
     .boss-cam-strength { display: flex; align-items: center; gap: 10px; }
@@ -452,6 +456,12 @@ function applyWeight(text, strength, fmt) {
 
 // ── Live preview HTML ──────────────────────────────────────────────────────
 
+function getEntryPrompt(entry) {
+  if (!entry) return "";
+  if (typeof entry === "string") return entry;
+  return entry.prompt || "";
+}
+
 function buildPreviewHTML(state, lib) {
   const angKey = state.cameraAngle;
   const fraKey = state.cameraFraming;
@@ -464,17 +474,17 @@ function buildPreviewHTML(state, lib) {
   let angText = "";
   if (angKey === NONE_SENTINEL) angText = "";
   else if (angKey === RANDOM_ANGLE) angText = "(random pick on Run)";
-  else angText = lib.angles[angKey] || `(missing: ${angKey})`;
+  else angText = getEntryPrompt(lib.angles[angKey]) || `(missing: ${angKey})`;
 
   let fraText = "";
   if (fraKey === NONE_SENTINEL) fraText = "";
   else if (fraKey === RANDOM_FRAMING) fraText = "(random pick on Run)";
-  else fraText = lib.framings[fraKey] || `(missing: ${fraKey})`;
+  else fraText = getEntryPrompt(lib.framings[fraKey]) || `(missing: ${fraKey})`;
 
   let styText = "";
   if (styKey === NONE_SENTINEL) styText = "";
   else if (styKey === RANDOM_STYLE) styText = "(random pick on Run)";
-  else styText = lib.styles[styKey] || `(missing: ${styKey})`;
+  else styText = getEntryPrompt(lib.styles[styKey]) || `(missing: ${styKey})`;
 
   const angWeighted = applyWeight(angText, angStr, fmt);
   const fraWeighted = applyWeight(fraText, fraStr, fmt);
@@ -870,7 +880,7 @@ class CameraEditor {
       if (!entry || typeof entry !== "object") continue;
       const displayName = entry.name || slug;
       if (search && !displayName.toLowerCase().includes(search) && !entry.prompt?.toLowerCase().includes(search)) continue;
-      items.push({ slug, name: displayName, badge: "", isSentinel: false });
+      items.push({ slug, name: displayName, badge: "", isSentinel: false, preview: entry.preview || "" });
     }
 
     for (const it of items) {
@@ -878,6 +888,15 @@ class CameraEditor {
       row.className =
         "boss-cam-list-item" +
         (this.state[stateKey] === it.slug ? " selected" : "");
+      // Thumbnail for entries with preview
+      if (!it.isSentinel && it.preview) {
+        const thumb = document.createElement("img");
+        thumb.className = "boss-cam-list-thumb";
+        thumb.alt = "";
+        thumb.onerror = () => { thumb.remove(); };
+        thumb.src = it.preview;
+        row.appendChild(thumb);
+      }
       const nameEl = document.createElement("span");
       nameEl.className = "name";
       nameEl.textContent = it.name;
@@ -1200,20 +1219,35 @@ class CameraEditor {
   }
 
   // ── CRUD operations ──────────────────────────────────────────────────
+
+  _getEntryCategories(which, slug) {
+    const catData = which === "angle" ? this.library.angleCategories : which === "framing" ? this.library.framingCategories : this.library.styleCategories;
+    const cats = [];
+    for (const [cat, members] of Object.entries(catData)) {
+      if (Array.isArray(members) && members.includes(slug)) cats.push(cat);
+    }
+    return cats;
+  }
+
+  _getCategoryDict(which) {
+    return which === "angle" ? this.library.angleCategories : which === "framing" ? this.library.framingCategories : this.library.styleCategories;
+  }
+
   _addEntry(which) {
     const title = which === "angle" ? "Angle" : which === "framing" ? "Framing" : "Style";
-    const existingSlugs = new Map(
-      Object.entries(which === "angle" ? this.library.angles : which === "framing" ? this.library.framings : this.library.styles)
-    );
+    const collection = which === "angle" ? this.library.angles : which === "framing" ? this.library.framings : this.library.styles;
+    const existingSlugs = new Map(Object.entries(collection));
+    const catDict = this._getCategoryDict(which);
     const dialog = new CollectionEditorDialog({
       title,
       item: { name: "", prompt: "", description: "", favorite: false },
       isEdit: false,
       existingSlugs,
-      onSave: async ({ slug, item }) => {
+      categories: catDict,
+      selectedCategories: [],
+      previewUrl: "",
+      onSave: async ({ slug, item, categories }) => {
         const type = which === "angle" ? "angles" : which === "framing" ? "framings" : "styles";
-        const catKey = which === "angle" ? "angleCategory" : which === "framing" ? "framingCategory" : "styleCategory";
-        const categories = this.state[catKey] && this.state[catKey] !== ALL_CATEGORIES ? [this.state[catKey]] : [];
         const result = await this.controller.add(type, item, categories);
         if (result.ok) {
           await this.fetchData();
@@ -1237,15 +1271,18 @@ class CameraEditor {
     if (!entry) return;
 
     const existingSlugs = new Map(Object.entries(collection));
+    const catDict = this._getCategoryDict(which);
+    const selectedCats = this._getEntryCategories(which, slug);
     const dialog = new CollectionEditorDialog({
       title,
       item: { ...entry, _slug: slug },
       isEdit: true,
       existingSlugs,
-      onSave: async ({ slug: newSlug, item }) => {
+      categories: catDict,
+      selectedCategories: selectedCats,
+      previewUrl: entry.preview || "",
+      onSave: async ({ slug: newSlug, item, categories }) => {
         const type = which === "angle" ? "angles" : which === "framing" ? "framings" : "styles";
-        const catKey = which === "angle" ? "angleCategory" : which === "framing" ? "framingCategory" : "styleCategory";
-        const categories = this.state[catKey] && this.state[catKey] !== ALL_CATEGORIES ? [this.state[catKey]] : [];
         const result = await this.controller.edit(type, slug, item, categories);
         if (result.ok) {
           await this.fetchData();
