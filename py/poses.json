@@ -36,7 +36,10 @@
       "prompt": "{doggystyle, bent over, from behind, ass focus, penetration, explicit|vaginal sex from behind, side view, view from side, BREAK Standing position, leaning forward, hands on bed, arched back, eyes closed, moaning in pleasure, open mouth, head tilted up, bed, purple wall, man standing partially out of frame, huge penis, vaginal sex, bouncing breasts}",
       "custom_preview": ""
     },
-    "Missionary": "missionary position, lying on back, legs wrapped around, intimate sex, explicit",
+    "Missionary": {
+      "prompt": "missionary, on_back, spread_legs, sex, {grabbing_another's_breast|groping|breast}",
+      "custom_preview": ""
+    },
     "Reverse Cowgirl": {
       "prompt": "{reverse cowgirl, facing away, ass focus, riding, explicit|vaginal sex, deep penetration, side view, view from side, BREAK Reverse cowgirl position, kneeling, girl straddles the man, sitting on penis, leaning back, arm support, hands on man's chest, eyes closed, moaning in pleasure, open mouth, head tilted up, bed, purple wall, man partially out of frame, huge penis, vaginal sex, bouncing breasts}",
       "custom_preview": ""
