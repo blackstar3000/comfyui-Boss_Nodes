@@ -1,0 +1,88 @@
+{
+  "favorites": {
+    "WAI 15,16,17": {
+      "sampler_name": "euler_ancestral",
+      "scheduler": "karras",
+      "steps": 23,
+      "cfg": 5.0
+    },
+    "next": {
+      "sampler_name": "euler_ancestral",
+      "scheduler": "karras",
+      "steps": 15,
+      "cfg": 5.0
+    },
+    "real cartoon xl": {
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "steps": 30,
+      "cfg": 7.0
+    },
+    "real cartoon xl #2": {
+      "sampler_name": "euler_ancestral",
+      "scheduler": "karras",
+      "steps": 30,
+      "cfg": 7.0
+    },
+    "real cartoon xl #3": {
+      "sampler_name": "euler_ancestral",
+      "scheduler": "karras",
+      "steps": 55,
+      "cfg": 7.0
+    },
+    "real cartoon xl #4": {
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "steps": 60,
+      "cfg": 7.0
+    },
+    "Anime V3": {
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "steps": 30,
+      "cfg": 7.0
+    },
+    "Anime V4": {
+      "sampler_name": "euler_ancestral",
+      "scheduler": "karras",
+      "steps": 30,
+      "cfg": 7.0
+    },
+    "Juggernaut XL small": {
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "steps": 35,
+      "cfg": 7.0
+    },
+    "SDXL": {
+      "sampler_name": "dpmpp_2m",
+      "scheduler": "karras",
+      "steps": 35,
+      "cfg": 7.0
+    },
+    "Danbooru": {
+      "sampler_name": "euler_ancestral",
+      "scheduler": "karras",
+      "steps": 20,
+      "cfg": 4.5
+    },
+    "Plant Milk": {
+      "sampler_name": "euler",
+      "scheduler": "karras",
+      "steps": 28,
+      "cfg": 3
+    },
+    "BSSEquinoxILSemi_v30": {
+      "sampler_name": "euler_ancestral",
+      "scheduler": "karras",
+      "steps": 25,
+      "cfg": 7
+    },
+    "🌗 Equinox (IL Semi-Realistic model)": {
+      "sampler_name": "euler_ancestral",
+      "scheduler": "karras",
+      "steps": 25,
+      "cfg": 5
+    }
+  }
+}
