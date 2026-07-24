@@ -77,6 +77,12 @@
       "scheduler": "karras",
       "steps": 25,
       "cfg": 7
+    },
+    "🌗 Equinox (IL Semi-Realistic model)": {
+      "sampler_name": "euler_ancestral",
+      "scheduler": "karras",
+      "steps": 25,
+      "cfg": 5
     }
   }
 }
