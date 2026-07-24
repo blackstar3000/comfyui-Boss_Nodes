@@ -30,11 +30,12 @@ STRENGTH_DEFAULT = 1.0
 # ── Weight format registry ──────────────────────────────────────────────────
 # Shared by nodes that offer a weight format dropdown (prompt_master_library,
 # prompt_booster_pro, camera_style_mixer).
-WEIGHT_FORMAT_KEYS = ["comfyui", "parentheses", "multiply", "none"]
+WEIGHT_FORMAT_KEYS = ["comfyui", "parentheses", "multiply", "deemphasis", "none"]
 WEIGHT_FORMAT_LABELS = {
     "comfyui":     "(text:1.30) — ComfyUI / A1111 standard",
     "parentheses": "((text))    — Stacked parentheses",
     "multiply":    "text * 1.30 — Multiply style",
+    "deemphasis":  "[text]     — De-emphasis brackets",
     "none":        "none        — No weighting",
 }
 WEIGHT_FORMAT_DEFAULT = "comfyui"
