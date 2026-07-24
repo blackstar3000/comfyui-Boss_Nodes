@@ -1,73 +1,125 @@
-# Task 4: Backend enrichment (`artist_selector.py`)
+# Task 4: Python — Migrate `camera_style_mixer.json` to slug-based keys
 
 **Files:**
-- Modify: `py/artist_selector.py`
-- Reads: `py/artist_previews.json`, `py/artist_categories.json`
+- Create: `py/_migrate_camera_json.py` (temporary, deleted after run)
+- Modify: `py/camera_style_mixer.json` (one-time migration)
 
 **Interfaces:**
-- Consumes: enriched `artists.json` (object format), `artist_previews.json`, `artist_categories.json`
-- Produces: updated `/wai_artist/data` response with previews, categories, post_counts
+- Consumes: nothing (standalone migration script)
+- Produces: migrated JSON file
 
-## Key Requirements
+- [ ] **Step 1: Write migration script**
 
-1. **Backward compatibility**: Python code must handle BOTH old string format and new object format for artist entries
-2. **Helper functions**: `_get_artist_prompt(entry)`, `_get_artist_post_count(entry)`, `_get_artist_categories(entry)`
-3. **New sort mode**: Add "Popular" sort (by post count descending) to SORT_MODES
-4. **Updated `_sort_names`**: Accept `post_counts` parameter
-5. **Updated `_format_output`**: Use `_get_artist_prompt()` to extract prompt text
-6. **Updated `_get_database`**: Return enriched data (library, favorites, history, previews, categories_list, post_counts)
-7. **Updated API response**: `/wai_artist/data` returns previews, categories, post_counts
-8. **Updated `_set_favorites`**: Match new 6-tuple cache signature
+Create `py/_migrate_camera_json.py`:
 
-## Steps
-
-- [ ] **Step 1: Add helper functions and enriched data file paths**
-
-After the existing imports and constants, add:
-- `PREVIEWS_FILE` and `CATEGORIES_FILE` paths
-- `_previews_cache` and `_categories_cache` module-level caches
-- `_get_artist_prompt(entry)` — returns prompt text from string or dict
-- `_get_artist_post_count(entry)` — returns post_count from dict (0 for strings)
-- `_get_artist_categories(entry)` — returns categories list from dict ([] for strings)
-- `_get_previews(force_refresh)` — loads and caches artist_previews.json
-- `_get_artist_categories_file(force_refresh)` — loads and caches artist_categories.json
-
-- [ ] **Step 2: Update `_sort_names` to support "Popular" sort**
-
-Add `post_counts=None` parameter and a new case:
 ```python
-if sort_mode == "Popular":
-    counts = post_counts or {}
-    return sorted(names, key=lambda n: -counts.get(n, 0))
+"""One-time migration: convert camera_style_mixer.json to slug-based keys."""
+import json
+import re
+from pathlib import Path
+
+JSON_PATH = Path(__file__).parent / "camera_style_mixer.json"
+
+
+def to_slug(name: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+    return slug or "entry"
+
+
+def unique_slug(slug: str, existing: set) -> str:
+    if slug not in existing:
+        return slug
+    n = 2
+    while f"{slug}_{n}" in existing:
+        n += 1
+    return f"{slug}_{n}"
+
+
+def migrate_collection(data: dict, entry_key: str, cat_key: str) -> None:
+    old_entries = data.get(entry_key, {})
+    old_cats = data.get(cat_key, {})
+
+    # Build name→slug mapping
+    name_to_slug = {}
+    used_slugs = set()
+    for name in old_entries:
+        slug = unique_slug(to_slug(name), used_slugs)
+        used_slugs.add(slug)
+        name_to_slug[name] = slug
+
+    # Migrate entries
+    new_entries = {}
+    for name, value in old_entries.items():
+        slug = name_to_slug[name]
+        if isinstance(value, str):
+            new_entries[slug] = {
+                "name": name,
+                "prompt": value,
+                "description": "",
+                "favorite": False,
+                "preview": "",
+            }
+        elif isinstance(value, dict):
+            value["name"] = name
+            new_entries[slug] = value
+
+    # Migrate category lists
+    new_cats = {}
+    for cat_name, members in old_cats.items():
+        if not isinstance(members, list):
+            continue
+        new_cats[cat_name] = [name_to_slug.get(m, m) for m in members]
+
+    data[entry_key] = new_entries
+    data[cat_key] = new_cats
+
+
+def main():
+    with JSON_PATH.open("r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    migrate_collection(data, "camera_angles", "angle_categories")
+    migrate_collection(data, "camera_framings", "framing_categories")
+    migrate_collection(data, "art_styles", "style_categories")
+
+    with JSON_PATH.open("w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+
+    print(f"Migrated: {len(data['camera_angles'])} angles, "
+          f"{len(data['camera_framings'])} framings, {len(data['art_styles'])} styles")
+
+
+if __name__ == "__main__":
+    main()
 ```
 
-- [ ] **Step 3: Update `_format_output` to use helper function**
+- [ ] **Step 2: Run migration**
 
-Replace `library.get(n, n)` with `_get_artist_prompt(library.get(n, n))` in all output modes.
+Run: `F:\ComfyUI\python_embeded\python.exe py/_migrate_camera_json.py`
 
-- [ ] **Step 4: Update `_get_database` to return enriched data**
+Expected: `Migrated: 15 angles, 30 framings, 117 styles` (approximate counts)
 
-Change return signature from 3-tuple to 6-tuple: `(library, favorites, history, previews, categories_list, post_counts)`. Load previews and categories files. Extract post_counts from enriched library. Merge artist_categories into library entries.
+- [ ] **Step 3: Verify first entry is slug-based**
 
-- [ ] **Step 5: Update `select` method to use enriched data**
+Run: `F:\ComfyUI\python_embeded\python.exe -c "import json; d=json.load(open('py/camera_style_mixer.json')); k=list(d['camera_angles'].keys())[0]; print(f'Key: {k}'); print(f'Value: {d[\"camera_angles\"][k]}')"`
 
-Update the unpacking of `_get_database` to handle 6-tuple. Pass `post_counts` to `_sort_names`.
+Expected: Key is a slug (e.g. `extreme_low_angle`), value is an object with `name`, `prompt`, etc.
 
-- [ ] **Step 6: Update `get_artists_data` route**
+- [ ] **Step 4: Verify categories reference slugs**
 
-Add `previews`, `categories`, `post_counts` to the JSON response.
+Run: `F:\ComfyUI\python_embeded\python.exe -c "import json; d=json.load(open('py/camera_style_mixer.json')); cats=d.get('angle_categories',{}); k=list(cats.keys())[0]; print(f'Category: {k}'); print(f'Members: {cats[k][:3]}')"`
 
-- [ ] **Step 7: Update `_set_favorites` to match new cache signature**
+Expected: Members are slugs, not names
 
-Unpack 6-tuple from `_get_database`.
-
-- [ ] **Step 8: Verify backward compatibility**
-
-Test that the node still works with both old string format and new object format artists.json.
-
-- [ ] **Step 9: Commit**
+- [ ] **Step 5: Delete migration script**
 
 ```bash
-git add py/artist_selector.py
-git commit -m "feat: enrich artist_selector.py with previews, categories, post counts"
+rm py/_migrate_camera_json.py
+```
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add py/camera_style_mixer.json
+git commit -m "feat(camera): migrate camera_style_mixer.json to slug-based keys"
 ```

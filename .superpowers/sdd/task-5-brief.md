@@ -1,96 +1,133 @@
-# Task 5: Frontend enrichment (JS)
+# Task 5: JS — CollectionModel + CollectionController
 
 **Files:**
-- Modify: `js/artist_selector/index.js`
+- Modify: `js/boss_theme/index.js` (add before closing `export`)
 
 **Interfaces:**
-- Consumes: enriched `/wai_artist/data` response (previews, categories, post_counts)
+- Consumes: nothing (new shared components)
+- Produces: `CollectionModel`, `CollectionController` classes exported from boss_theme
 
-## Key Requirements
+**IMPORTANT**: Read the current state of `js/boss_theme/index.js` first to understand the current structure. Add the new classes before the closing `export { ... }` line.
 
-1. **Update SORT_MODES**: Add "Popular" to the JS SORT_MODES constant
-2. **Update state**: Add `selectedCategories` array to state serialization
-3. **Add CSS**: Category chips, thumbnails, post count badges, category tags
-4. **Add `buildCategorySection()`**: Horizontal scrollable row of category filter chips
-5. **Update `filteredList()`**: Filter by selected categories
-6. **Update `refreshList()`**: Render thumbnails, category tags, post count badges
-7. **Add `createThumbPlaceholder()`**: Gray placeholder for missing thumbnails
+- [ ] **Step 1: Add CollectionModel class**
 
-## Steps
+Add before the closing `export { ... }` in `js/boss_theme/index.js`:
 
-- [ ] **Step 1: Update SORT_MODES constant**
-
-Find: `const SORT_MODES = ["A-Z", "Z-A", "Favorites", "Recent"];`
-Replace with: `const SORT_MODES = ["A-Z", "Z-A", "Favorites", "Recent", "Popular"];`
-
-- [ ] **Step 2: Update state functions for selectedCategories**
-
-In `defaultStateFromWidgets`: Add `selectedCategories: []` to return object
-In `readState`: Add `merged.selectedCategories = Array.isArray(obj.selectedCategories) ? obj.selectedCategories.filter(...) : [];`
-In `writeState`: Add `selectedCategories: state.selectedCategories || [],` to the serialized object
-
-- [ ] **Step 3: Add new CSS styles**
-
-In `injectCSS()`, add styles for:
-- `.boss-art-categories` — flex row with overflow-x auto
-- `.boss-art-chip` — rounded chip buttons
-- `.boss-art-chip.active` — active state with brand color
-- `.boss-art-thumb` — 48x48px thumbnail image
-- `.boss-art-thumb-placeholder` — gray placeholder div
-- `.boss-art-item` — updated layout with thumbnail support
-- `.boss-art-item-info` — flex container for name/meta
-- `.boss-art-item-name` — artist name
-- `.boss-art-item-meta` — flex row for categories + post count
-- `.boss-art-cats` — small category text
-- `.boss-art-posts` — post count badge
-
-- [ ] **Step 4: Add `buildCategorySection()` method**
-
-New method in ArtistEditor class that creates:
-- Label "Categories"
-- Horizontal scrollable chip container
-- "All" chip (active when no categories selected)
-- One chip per category from `this.data.categories`
-- Click toggles category selection
-- Multiple categories can be active
-
-- [ ] **Step 5: Add `updateCategoryChips()` method**
-
-Method to sync chip active states with `this.state.selectedCategories`.
-
-- [ ] **Step 6: Add `createThumbPlaceholder()` method**
-
-Returns a 48x48 div with "?" text for artists without preview images.
-
-- [ ] **Step 7: Update `buildModal()` to include category section**
-
-After `buildForceRefreshSection()`, add `buildCategorySection()`.
-
-- [ ] **Step 8: Update `filteredList()` to filter by categories**
-
-After search filter, add category filter:
 ```javascript
-const selectedCats = this.state.selectedCategories || [];
-if (selectedCats.length > 0) {
-  const artistCats = this.data.artist_categories || {};
-  list = list.filter((n) => {
-    const cats = artistCats[n] || [];
-    return selectedCats.some((c) => cats.includes(c));
-  });
+// ── Shared CRUD framework ─────────────────────────────────────────────────
+
+class CollectionModel {
+  static normalize(rawData) {
+    const out = {};
+    for (const [key, value] of Object.entries(rawData || {})) {
+      if (typeof value === "string") {
+        out[key] = { name: key, prompt: value, description: "", favorite: false, preview: "" };
+      } else if (value && typeof value === "object") {
+        out[key] = {
+          name: value.name || key,
+          prompt: value.prompt || "",
+          description: value.description || "",
+          favorite: !!value.favorite,
+          preview: value.preview || "",
+        };
+      }
+    }
+    return out;
+  }
+
+  static toSlug(name, existingSlugs = new Set()) {
+    let slug = String(name || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_|_$/g, "");
+    if (!slug) slug = "entry";
+    if (!existingSlugs.has(slug)) return slug;
+    let n = 2;
+    while (existingSlugs.has(`${slug}_${n}`)) n++;
+    return `${slug}_${n}`;
+  }
+
+  static validate(item, existingSlugs = new Set(), excludeSlug = null) {
+    if (!item?.name?.trim()) return { ok: false, error: "Name required" };
+    if (!item?.prompt?.trim()) return { ok: false, error: "Prompt required" };
+    const nameLower = item.name.trim().toLowerCase();
+    // Check name uniqueness (case-insensitive)
+    for (const [slug, entry] of existingSlugs) {
+      if (slug === excludeSlug) continue;
+      if (typeof entry === "object" && entry?.name?.toLowerCase() === nameLower) {
+        return { ok: false, error: "Name already exists" };
+      }
+    }
+    return { ok: true, error: "" };
+  }
 }
 ```
 
-- [ ] **Step 9: Update `refreshList()` item rendering**
+- [ ] **Step 2: Add CollectionController class**
 
-Replace the item rendering loop to include:
-- Thumbnail (img element with onerror fallback to placeholder)
-- Info container with name + meta row
-- Meta row with category tags (max 3) and post count
-- Favorite button (unchanged)
+```javascript
+class CollectionController {
+  constructor(baseUrl = "/camera_boss") {
+    this.baseUrl = baseUrl;
+  }
 
-- [ ] **Step 10: Commit**
+  async add(type, item, categories = []) {
+    return this._post("/save", { type, name: item.name, prompt: item.prompt, description: item.description || "", favorite: item.favorite || false, categories });
+  }
+
+  async edit(type, slug, item, categories = []) {
+    return this._post("/save", { type, slug, name: item.name, prompt: item.prompt, description: item.description || "", favorite: item.favorite || false, categories });
+  }
+
+  async delete(type, slug) {
+    return this._post("/delete", { type, slug });
+  }
+
+  async refresh() {
+    try {
+      const r = await fetch(`${this.baseUrl}/refresh`, { method: "POST" });
+      if (!r.ok) return { ok: false, error: `HTTP ${r.status}`, data: null };
+      const data = await r.json();
+      return { ok: true, data, error: "" };
+    } catch (e) {
+      return { ok: false, error: e.message, data: null };
+    }
+  }
+
+  async _post(path, body) {
+    try {
+      const r = await fetch(`${this.baseUrl}${path}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await r.json();
+      if (!r.ok) return { ok: false, error: data.error || `HTTP ${r.status}`, ...data };
+      return { ok: true, ...data };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }
+}
+```
+
+- [ ] **Step 3: Export the new classes**
+
+Find the existing `export { BossDropdown, escapeHtml };` line and replace with:
+
+```javascript
+export { BossDropdown, escapeHtml, CollectionModel, CollectionController };
+```
+
+- [ ] **Step 4: Verify JS syntax**
+
+Run: `node --check "F:\ComfyUI\ComfyUI\custom_nodes\comfyui-Boss_Nodes\js\boss_theme\index.js"`
+
+Expected: no output (success)
+
+- [ ] **Step 5: Commit**
 
 ```bash
-git add js/artist_selector/index.js
-git commit -m "feat: add thumbnails, category chips, and post count badges to artist editor"
+git add js/boss_theme/index.js
+git commit -m "feat(theme): add CollectionModel and CollectionController shared components"
 ```

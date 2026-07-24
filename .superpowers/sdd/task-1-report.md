@@ -1,36 +1,22 @@
-# Task 1 Report: Backend — Add `/char_boss/save` Endpoint
+# Task 1 Report: Python — `_save_json()` + slug helpers
 
-## What I Implemented
+## Changes
 
-Added a `POST /char_boss/save` endpoint to `py/ultimate_character_builder.py` (lines 305-362). The endpoint:
+- Added `import re` after existing imports in `py/camera_style_mixer.py`
+- Added three helpers after `_log` declaration:
+  - `_to_slug(name)` — normalizes name to slug format
+  - `_unique_slug(slug, existing)` — ensures slug uniqueness with _2, _3 suffix
+  - `_save_json(path, data)` — atomic JSON write via tmp + os.replace
 
-- Accepts JSON body with `type`, `name`, `prompt`, `categories`, and `custom_preview` fields
-- Validates `type` is one of `"characters"`, `"expressions"`, `"poses"`
-- Validates `name` and `prompt` are non-empty
-- Maps `type` to the correct `Collection` object (`_CHARACTERS`, `_EXPRESSIONS`, `_POSES`)
-- Detects new vs existing entries (`is_new` flag)
-- For existing entries, preserves the old `custom_preview` if none is provided
-- Adds the item to all non-"All" categories if `categories` is non-empty
-- Calls `coll.save()` to persist changes
-- Returns `{ name, prompt, categories, custom_preview, is_new }` on success
-- Wraps everything in try/except returning a 500 error with the exception message
+## Verification
 
-## What I Tested and Results
-
-- **Python syntax verification**: `py_compile.compile()` — passed cleanly, no output
-- **Code review**: Re-read the file after edit to confirm correct indentation, placement after refresh endpoint, and exact match to the task brief specification
-
-## Files Changed
-
-- `py/ultimate_character_builder.py` — Added 59 lines (the `/char_boss/save` endpoint handler)
-
-## Self-Review Findings
-
-- The implementation matches the task brief exactly
-- The endpoint is correctly placed inside `register_api_routes()`, after the `/char_boss/refresh` handler
-- All imports (`web`, `Collection`, `_CHARACTERS`, `_EXPRESSIONS`, `_POSES`) are already available in scope
-- No concerns identified
+- Python compile check: **OK**
+- All three functions follow exact spec from task brief
 
 ## Commit
 
-- `4629ca7` — `feat: add POST /char_boss/save endpoint for CRUD`
+`0523ff6` — feat(camera): add _save_json, _to_slug, _unique_slug helpers
+
+## Concerns
+
+None. Implementation matches spec exactly.

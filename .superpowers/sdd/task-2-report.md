@@ -1,20 +1,21 @@
-# Task 2 Report: Backend — Add `/char_boss/delete` Endpoint
+# Task 2 Report: Update `_load_library()` normalization
 
-**Status:** ✅ Completed
+## Changes
 
-**Commit:** `4e98e94` — `feat: add POST /char_boss/delete endpoint for CRUD`
+Added `_normalize_entries()` function inside `_load_library()` that converts legacy string values to objects with `{name, prompt, description, favorite, preview}` structure, and fills missing fields via `setdefault` for existing dict entries.
 
-**Changes:**
-- Added `POST /char_boss/delete` route in `py/ultimate_character_builder.py:364-394`
-- Endpoint validates type and name, removes entry from collection items and categories, persists to disk
-- Returns `{"name": "<name>", "deleted": true}` on success
+Replaced `sanitize_entries()` calls with `_normalize_entries()` calls.
 
-**Verification:**
-- Python syntax check passed (py_compile)
-- Git commit successful
+## Commit
 
-**Test Summary:**
-Endpoint validates input, deletes entry from collection, and returns success response.
+`7dc9f07` feat(camera): normalize legacy string values to objects in _load_library
 
-**Concerns:**
-- None identified. Endpoint follows same pattern as existing save endpoint and correctly handles edge cases (invalid type, missing name, entry not found).
+## Compile Check
+
+Passed (`py_compile.compile` → OK)
+
+## Concerns
+
+**Downstream breakage:** `_resolve()` returns `data.get(choice)` which now yields a `dict` instead of a `str`. `apply_weight()` expects a string — this will break the prompt building pipeline. This is expected to be addressed in a later task but should be noted.
+
+`_to_slug()` (Task 1) is not used in this task's code — the brief mentions it as a dependency but the normalization doesn't call it yet.

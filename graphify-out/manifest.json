@@ -1,0 +1,1172 @@
+{
+  "__init__.py": {
+    "mtime": 1784124784.0,
+    "ast_hash": "e5d7fc3300cee9f415155d9a4addcc00",
+    "semantic_hash": ""
+  },
+  "js/artist_selector/index.js": {
+    "mtime": 1784728046.0,
+    "ast_hash": "0da463ced345ee985d4423bfca7f3521",
+    "semantic_hash": ""
+  },
+  "js/batch_save/index.js": {
+    "mtime": 1784728046.0,
+    "ast_hash": "64b5128ed611dc79e17cf8c93017b385",
+    "semantic_hash": ""
+  },
+  "js/boss_theme/index.js": {
+    "mtime": 1784729750.0,
+    "ast_hash": "49e266d6f27a4f428921454011398035",
+    "semantic_hash": ""
+  },
+  "js/camera_style_mixer/index.js": {
+    "mtime": 1784728046.0,
+    "ast_hash": "ea4add5e47e639b468be931a3c0166be",
+    "semantic_hash": ""
+  },
+  "js/danbooru_tag_builder/index.js": {
+    "mtime": 1784729732.0,
+    "ast_hash": "73e27c1e748345abdf382792d5c12c95",
+    "semantic_hash": ""
+  },
+  "js/danbooru_validator/index.js": {
+    "mtime": 1784729702.0,
+    "ast_hash": "ca3027b7f8a8f29402f0479ce24a1713",
+    "semantic_hash": ""
+  },
+  "js/metadata_extractor/index.js": {
+    "mtime": 1784728046.0,
+    "ast_hash": "802eea69e48e69f53f9836becb0b4c04",
+    "semantic_hash": ""
+  },
+  "js/outfit_selector/index.js": {
+    "mtime": 1784728046.0,
+    "ast_hash": "37d21f8f7778eb638890b8d8c8050efa",
+    "semantic_hash": ""
+  },
+  "js/prompt_booster_pro/index.js": {
+    "mtime": 1784728046.0,
+    "ast_hash": "8e743ba359284f851f50611890e4a4d3",
+    "semantic_hash": ""
+  },
+  "js/prompt_lens_library/index.js": {
+    "mtime": 1784728046.0,
+    "ast_hash": "ee7dce86c952c425cdccc26297657742",
+    "semantic_hash": ""
+  },
+  "js/prompt_master_library_pro/index.js": {
+    "mtime": 1784728046.0,
+    "ast_hash": "2d990869e53fcc0036fc07999ba7dd3d",
+    "semantic_hash": ""
+  },
+  "js/promptunstuck_pro/index.js": {
+    "mtime": 1784728046.0,
+    "ast_hash": "f683ccb7cde6b965b95aa4467ed2198d",
+    "semantic_hash": ""
+  },
+  "js/scene_maker_pro/index.js": {
+    "mtime": 1784728046.0,
+    "ast_hash": "c5f32f3ce115255fc21978b0c7b0597f",
+    "semantic_hash": ""
+  },
+  "js/smart_text_clip/index.js": {
+    "mtime": 1784728046.0,
+    "ast_hash": "5680db8d6cc1b14d82a9924761fb495a",
+    "semantic_hash": ""
+  },
+  "js/ultimate_character_builder/index.js": {
+    "mtime": 1784740158.0,
+    "ast_hash": "93fe42de2092fffffeb221a0a575426c",
+    "semantic_hash": ""
+  },
+  "js/ultimate_ksampler/index.js": {
+    "mtime": 1784728046.0,
+    "ast_hash": "8d11a33bc2c22c09375ebdbd3ca0d858",
+    "semantic_hash": ""
+  },
+  "js/ultimate_loader/index.js": {
+    "mtime": 1784728046.0,
+    "ast_hash": "6f1678f7d28dfcc9ce77ece29efd44dd",
+    "semantic_hash": ""
+  },
+  "js/workflow_snapshotter/index.js": {
+    "mtime": 1784728046.0,
+    "ast_hash": "ef6d198290ae1f32095e25a5a3f6d4a6",
+    "semantic_hash": ""
+  },
+  "py/.batch_save_history.json": {
+    "mtime": 1783306216.0,
+    "ast_hash": "7b4e672895695c97e721332a77df8ff3",
+    "semantic_hash": ""
+  },
+  "py/.character_previews_cache.json": {
+    "mtime": 1784528110.0,
+    "ast_hash": "000b3ca7f2653a13cdb5b96f21c2ba4d",
+    "semantic_hash": ""
+  },
+  "py/Bosstest.json": {
+    "mtime": 1784234874.0,
+    "ast_hash": "d2054cb786167fe2feaf60029726112c",
+    "semantic_hash": ""
+  },
+  "py/PromptMaster_favorites.json": {
+    "mtime": 1782715962.0,
+    "ast_hash": "f8875b33567e85dbb71afacfa24f0abc",
+    "semantic_hash": ""
+  },
+  "py/artist_categories.json": {
+    "mtime": 1784440396.0,
+    "ast_hash": "0b2271dec3096a7e610603e8101eb35f",
+    "semantic_hash": ""
+  },
+  "py/artist_previews.json": {
+    "mtime": 1784478842.0,
+    "ast_hash": "10981747ac50a48ed24636547d818a0e",
+    "semantic_hash": ""
+  },
+  "py/artist_selector.py": {
+    "mtime": 1784729964.0,
+    "ast_hash": "cdc8c1e057599b49e1d6f8d1910d70f0",
+    "semantic_hash": ""
+  },
+  "py/artists.json": {
+    "mtime": 1784764102.0,
+    "ast_hash": "2ec378cac27d3a4dbc847c66ffbae943",
+    "semantic_hash": ""
+  },
+  "py/batch_save_auto_naming.py": {
+    "mtime": 1784002750.0,
+    "ast_hash": "1364b05a3d3e99c1ba909e3cb1811703",
+    "semantic_hash": ""
+  },
+  "py/billions_prompt_generator.py": {
+    "mtime": 1767379332.0,
+    "ast_hash": "8f946a88753f04d191a0c19b272737cf",
+    "semantic_hash": ""
+  },
+  "py/billions_prompts.json": {
+    "mtime": 1766767634.0,
+    "ast_hash": "5f43ef918fa063fc9168f3979882c8b7",
+    "semantic_hash": ""
+  },
+  "py/camera_style_mixer.json": {
+    "mtime": 1784145458.0,
+    "ast_hash": "b067c4aa42f3151bd2b9b883513ca0b0",
+    "semantic_hash": ""
+  },
+  "py/camera_style_mixer.py": {
+    "mtime": 1784002776.0,
+    "ast_hash": "5e8586ae0c1ff296c982328b351c5c04",
+    "semantic_hash": ""
+  },
+  "py/categories.json": {
+    "mtime": 1784254976.0,
+    "ast_hash": "f4314f664d8bacb5729df8bb1cea8ff5",
+    "semantic_hash": ""
+  },
+  "py/character_previews.json": {
+    "mtime": 1784728046.0,
+    "ast_hash": "99914b932bd37a50b983c5e7c90ae93b",
+    "semantic_hash": ""
+  },
+  "py/characters.json": {
+    "mtime": 1784737842.0,
+    "ast_hash": "d06f8a8792508ac51cf5b49a18266ce3",
+    "semantic_hash": ""
+  },
+  "py/checkpoint_favorites.json": {
+    "mtime": 1783300006.0,
+    "ast_hash": "635cb26b186684cf2a7ad46ab511ff97",
+    "semantic_hash": ""
+  },
+  "py/civitai_cache.json": {
+    "mtime": 1784421272.0,
+    "ast_hash": "a9d41d9df16d8f626d34786236ca5253",
+    "semantic_hash": ""
+  },
+  "py/clip_dual_text_encode.py": {
+    "mtime": 1767690070.0,
+    "ast_hash": "757a67b1cea581e6b18533c31d192153",
+    "semantic_hash": ""
+  },
+  "py/curate_categories.py": {
+    "mtime": 1784440344.0,
+    "ast_hash": "2282d583a24b2562a88e508c9ae5e173",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tag_builder.py": {
+    "mtime": 1784002734.0,
+    "ast_hash": "47902d72a3940033a3a0c1a140f022ab",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags.json": {
+    "mtime": 1784404238.0,
+    "ast_hash": "f5c0cdb306953a8aa898127c33196ea5",
+    "semantic_hash": ""
+  },
+  "py/danbooru_validator.py": {
+    "mtime": 1784729638.0,
+    "ast_hash": "0e953f9a085ecbe84ccbf5c1743d22e8",
+    "semantic_hash": ""
+  },
+  "py/expressions.json": {
+    "mtime": 1766520928.0,
+    "ast_hash": "59e61edcac24abfc5af41295b72d058a",
+    "semantic_hash": ""
+  },
+  "py/favorites.json": {
+    "mtime": 1784764306.0,
+    "ast_hash": "9070cefa134d743640429a7ca59ac379",
+    "semantic_hash": ""
+  },
+  "py/fetch_artist_post_counts.py": {
+    "mtime": 1784439766.0,
+    "ast_hash": "010d3fa70ac0b8c5832ab061c1aa4fb9",
+    "semantic_hash": ""
+  },
+  "py/fetch_artist_previews.py": {
+    "mtime": 1784478652.0,
+    "ast_hash": "c6201d13814b6dcd975e3a36102eb4de",
+    "semantic_hash": ""
+  },
+  "py/fetch_character_previews.py": {
+    "mtime": 1784525684.0,
+    "ast_hash": "e9535be0e524da9c2929cc435b658caa",
+    "semantic_hash": ""
+  },
+  "py/fetch_danbooru_tags.py": {
+    "mtime": 1784403870.0,
+    "ast_hash": "4e7521fb0d1b9e3abe5664604bd61f85",
+    "semantic_hash": ""
+  },
+  "py/generate_danbooru_tags.py": {
+    "mtime": 1784403300.0,
+    "ast_hash": "131f088f82b82bf8b6089eaee05c9208",
+    "semantic_hash": ""
+  },
+  "py/girls.json": {
+    "mtime": 1784426956.0,
+    "ast_hash": "dcc4a4a031a1b9e2db455d6abef561db",
+    "semantic_hash": ""
+  },
+  "py/history.json": {
+    "mtime": 1784764498.0,
+    "ast_hash": "f4ae5e563d08c8035cbece3b07fd7146",
+    "semantic_hash": ""
+  },
+  "py/ksampler_favorites.json": {
+    "mtime": 1783287810.0,
+    "ast_hash": "40d1916dbed166513af63aa85ef5c3e9",
+    "semantic_hash": ""
+  },
+  "py/lens.json": {
+    "mtime": 1768101210.0,
+    "ast_hash": "9a8780f947069ac63fa419ab08ae9438",
+    "semantic_hash": ""
+  },
+  "py/lights.json": {
+    "mtime": 1784127994.0,
+    "ast_hash": "37da4941814761e95866338390699ae9",
+    "semantic_hash": ""
+  },
+  "py/make_categories.py": {
+    "mtime": 1783026564.0,
+    "ast_hash": "0fcfae94c6a686a39146b15be17e24f2",
+    "semantic_hash": ""
+  },
+  "py/males.json": {
+    "mtime": 1768088138.0,
+    "ast_hash": "e2bf3e74b63caf5d36620f4f527c0d85",
+    "semantic_hash": ""
+  },
+  "py/metadata_extractor.py": {
+    "mtime": 1783253790.0,
+    "ast_hash": "1ddc63c042838f814cf0c46a2757681f",
+    "semantic_hash": ""
+  },
+  "py/negative_boosts.json": {
+    "mtime": 1782275688.0,
+    "ast_hash": "3b72e023832c923800a24c5618cf441b",
+    "semantic_hash": ""
+  },
+  "py/negative_quality_booster.py": {
+    "mtime": 1784123942.0,
+    "ast_hash": "d1fa1904549f0bec059e90232026ff43",
+    "semantic_hash": ""
+  },
+  "py/outfit_selector.py": {
+    "mtime": 1784728046.0,
+    "ast_hash": "203de2dc9deaf168d981421ab2c5b5c2",
+    "semantic_hash": ""
+  },
+  "py/outfits.json": {
+    "mtime": 1784728046.0,
+    "ast_hash": "305d90f39b80698790be656e062c716f",
+    "semantic_hash": ""
+  },
+  "py/poses.json": {
+    "mtime": 1784753544.0,
+    "ast_hash": "be9a03b49828e6bdfeca286332c2b812",
+    "semantic_hash": ""
+  },
+  "py/prompt_booster_pro.py": {
+    "mtime": 1784078682.0,
+    "ast_hash": "331513f4f1a8205c3b0754f91b584c14",
+    "semantic_hash": ""
+  },
+  "py/prompt_builder_core_wildcards.py": {
+    "mtime": 1767382054.0,
+    "ast_hash": "13ee995caaa504bb21d8d3ed415a50ee",
+    "semantic_hash": ""
+  },
+  "py/prompt_lens_library.py": {
+    "mtime": 1783996638.0,
+    "ast_hash": "226da32acca30034e23bd77d1b0ad32d",
+    "semantic_hash": ""
+  },
+  "py/prompt_master_library_pro.py": {
+    "mtime": 1784002782.0,
+    "ast_hash": "2a245c1f03390b6c05772b16c19f0698",
+    "semantic_hash": ""
+  },
+  "py/prompt_quality_booster.json": {
+    "mtime": 1784245528.0,
+    "ast_hash": "3e52aa518ab5c4544b112908f7138d57",
+    "semantic_hash": ""
+  },
+  "py/prompt_quality_booster.py": {
+    "mtime": 1784123902.0,
+    "ast_hash": "5c6c9201d278faf14ca721f514f15852",
+    "semantic_hash": ""
+  },
+  "py/promptunstuck.json": {
+    "mtime": 1766529818.0,
+    "ast_hash": "38febc1e6af25238481d07eb37e38def",
+    "semantic_hash": ""
+  },
+  "py/promptunstuck_pro.py": {
+    "mtime": 1783996628.0,
+    "ast_hash": "f8cbec9eb349b8ff26b24cde43022a6c",
+    "semantic_hash": ""
+  },
+  "py/quality_boosts.json": {
+    "mtime": 1784080484.0,
+    "ast_hash": "9418d766e08ac8157ff7e5b92a9f1c23",
+    "semantic_hash": ""
+  },
+  "py/scene_maker_pro.py": {
+    "mtime": 1784728046.0,
+    "ast_hash": "5b6ab4b7d451584cbe187de46bdc19d3",
+    "semantic_hash": ""
+  },
+  "py/scenes.json": {
+    "mtime": 1784426368.0,
+    "ast_hash": "4ac065f676e22b51cbc0d76e4a83218a",
+    "semantic_hash": ""
+  },
+  "py/size_preset_loader.py": {
+    "mtime": 1767545722.0,
+    "ast_hash": "89fbe0da4ea07a7623d935a4b0c366b6",
+    "semantic_hash": ""
+  },
+  "py/size_presets.json": {
+    "mtime": 1783287334.0,
+    "ast_hash": "5f4e509e710f02121ccf98516074c0d9",
+    "semantic_hash": ""
+  },
+  "py/smart_text_clip.py": {
+    "mtime": 1783189628.0,
+    "ast_hash": "fb24d4fca2fc29569b03a8ab35e76e20",
+    "semantic_hash": ""
+  },
+  "py/snapshots.json": {
+    "mtime": 1782881354.0,
+    "ast_hash": "054a8be1019e3bf8fada049b9d7f1ce6",
+    "semantic_hash": ""
+  },
+  "py/styles.json": {
+    "mtime": 1784127456.0,
+    "ast_hash": "94b44a285a0f9b8e2af034bb954447bf",
+    "semantic_hash": ""
+  },
+  "py/tag_searcher.py": {
+    "mtime": 1767370604.0,
+    "ast_hash": "0de74d4dfd2a0d3b1a991b24daf15cc4",
+    "semantic_hash": ""
+  },
+  "py/text_concatenate_legacy.py": {
+    "mtime": 1782939396.0,
+    "ast_hash": "b740b352a209a55df3bd7b86029b5bc3",
+    "semantic_hash": ""
+  },
+  "py/text_concatenate_multi.py": {
+    "mtime": 1782935868.0,
+    "ast_hash": "58dedfa3ed4f0102cd84535d2b2afd36",
+    "semantic_hash": ""
+  },
+  "py/themes.json": {
+    "mtime": 1767136122.0,
+    "ast_hash": "37b93036e35c04a7284b0460a57d6e5c",
+    "semantic_hash": ""
+  },
+  "py/ultimate_character_builder.py": {
+    "mtime": 1784740148.0,
+    "ast_hash": "966d2beeefb8220f2fb1142d107ed49a",
+    "semantic_hash": ""
+  },
+  "py/ultimate_k_sampler_pro.py": {
+    "mtime": 1783485414.0,
+    "ast_hash": "224ac97bf98e31d770346663946ed40a",
+    "semantic_hash": ""
+  },
+  "py/ultimate_loader.py": {
+    "mtime": 1784730072.0,
+    "ast_hash": "c005060333fd5930084968a8a19477b6",
+    "semantic_hash": ""
+  },
+  "py/utils/__init__.py": {
+    "mtime": 1783994882.0,
+    "ast_hash": "31d735e58da9cec6b94a24932a254296",
+    "semantic_hash": ""
+  },
+  "py/utils/cache_utils.py": {
+    "mtime": 1784391218.0,
+    "ast_hash": "bea3ece9fe6e9afb52ddbd70f4f1d555",
+    "semantic_hash": ""
+  },
+  "py/utils/constants.py": {
+    "mtime": 1784002756.0,
+    "ast_hash": "3792a69098b5f3663aa2da64bb5117ef",
+    "semantic_hash": ""
+  },
+  "py/utils/file_utils.py": {
+    "mtime": 1783994896.0,
+    "ast_hash": "482f0e73054f5dbbf9d2abe3132a5f3a",
+    "semantic_hash": ""
+  },
+  "py/utils/json_utils.py": {
+    "mtime": 1784529010.0,
+    "ast_hash": "4234e652150c1dc8bc9f5cf68b50f07e",
+    "semantic_hash": ""
+  },
+  "py/utils/logging_utils.py": {
+    "mtime": 1783996556.0,
+    "ast_hash": "d29589766c9a4d839b21036cbd4aca84",
+    "semantic_hash": ""
+  },
+  "py/utils/prompt_utils.py": {
+    "mtime": 1783995672.0,
+    "ast_hash": "ed50b20d992ae518cc8dca2d08c708f8",
+    "semantic_hash": ""
+  },
+  "py/utils/ui_utils.py": {
+    "mtime": 1783994898.0,
+    "ast_hash": "92f1cfcabaa8c88773940e6a63c04f6f",
+    "semantic_hash": ""
+  },
+  "py/utils/validation.py": {
+    "mtime": 1783994890.0,
+    "ast_hash": "131b60a6a822536ad15387bb42f053f5",
+    "semantic_hash": ""
+  },
+  "py/workflow_snapshotter.py": {
+    "mtime": 1783126336.0,
+    "ast_hash": "f64bf0b20b55cb5910cb61cebacb75fb",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/progress.md": {
+    "mtime": 1784471098.0,
+    "ast_hash": "02677ec9fec240a326eb5a037bbf34c8",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-1-brief.md": {
+    "mtime": 1784525168.0,
+    "ast_hash": "68b5543e83c8d35fe4abfc393b75ccab",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-1-report.md": {
+    "mtime": 1784525222.0,
+    "ast_hash": "9ae95a007a4859a02cf5da192fc39975",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-2-brief.md": {
+    "mtime": 1784439084.0,
+    "ast_hash": "bf58e171566a3e0f9a4cdc637188d2be",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-2-report.md": {
+    "mtime": 1784525304.0,
+    "ast_hash": "068e9eb76f951af53db30eec60cb7576",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-3-brief.md": {
+    "mtime": 1784440240.0,
+    "ast_hash": "f89952bdbb3085a8e9fbac10bfc34f59",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-3-report.md": {
+    "mtime": 1784525382.0,
+    "ast_hash": "c5945d1f132815361bae2dba863fc992",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-4-brief.md": {
+    "mtime": 1784440478.0,
+    "ast_hash": "ed8eec8a7a5dcdfb82568638d5acae21",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-4-report.md": {
+    "mtime": 1784440698.0,
+    "ast_hash": "19570580e2a8fde87dc1fb8a31f790d2",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-5-brief.md": {
+    "mtime": 1784440860.0,
+    "ast_hash": "857deeea64f23ea99b41a1b163c2ae2d",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-5-report.md": {
+    "mtime": 1784441070.0,
+    "ast_hash": "ede76b64228c685fd49788ea51d805e5",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-6-brief.md": {
+    "mtime": 1784441196.0,
+    "ast_hash": "0b00bd81645bfdb71ab876d901ef35cd",
+    "semantic_hash": ""
+  },
+  ".superpowers/sdd/task-6-report.md": {
+    "mtime": 1784441346.0,
+    "ast_hash": "96d9181b0472df4061391a753e190989",
+    "semantic_hash": ""
+  },
+  "LICENSE.txt": {
+    "mtime": 1782840024.0,
+    "ast_hash": "6d75c57c64742ead9ffcc475c56b4ad0",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1782840024.0,
+    "ast_hash": "73a3b2b2e7b1e5ed7950608459e79333",
+    "semantic_hash": ""
+  },
+  "docs/2026-07-19-artist-selector-enrichment-design.md": {
+    "mtime": 1784437700.0,
+    "ast_hash": "cd5abc630712b655698b0e66a3d84101",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-19-artist-selector-enrichment.md": {
+    "mtime": 1784438234.0,
+    "ast_hash": "62e2fd20fb8c90589fe47c0de9b03855",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-20-character-builder-crud-buttons.md": {
+    "mtime": 1784525816.0,
+    "ast_hash": "eb132a12012c4e48a4e7bfd09efcf458",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-20-character-builder-crud.md": {
+    "mtime": 1784524938.0,
+    "ast_hash": "1bffb263087d20207e984908e148b367",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/plans/2026-07-20-character-previews-backend.md": {
+    "mtime": 1784525532.0,
+    "ast_hash": "92cc894279d4e9aea1e869e6fe247ef2",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-07-19-artist-selector-crud-design.md": {
+    "mtime": 1784485256.0,
+    "ast_hash": "ebc2f7c2a1c90dbf5333df5cc3ccd388",
+    "semantic_hash": ""
+  },
+  "docs/superpowers/specs/2026-07-20-character-builder-crud-design.md": {
+    "mtime": 1784524366.0,
+    "ast_hash": "4a26b804eb91e1f596dfd4296eda851b",
+    "semantic_hash": ""
+  },
+  "py/.continue/agents/new-config.yaml": {
+    "mtime": 1776440186.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/.continue/mcpServers/new-mcp-server.yaml": {
+    "mtime": 1776439986.0,
+    "ast_hash": "68b329da9893e34099c7d8ad5cb9c940",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/accessory/main/collarbone.txt": {
+    "mtime": 1783090844.0,
+    "ast_hash": "c251f459845556718ab2f9ee428799c3",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/accessory/main/\ud83d\udd25none\ud83d\udd25.txt": {
+    "mtime": 1783135540.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/accessory/sub/arms.txt": {
+    "mtime": 1783090224.0,
+    "ast_hash": "a9284a39765b97ca0011e82676b52549",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/accessory/sub/bags.txt": {
+    "mtime": 1783090242.0,
+    "ast_hash": "d5cc29f5ab80c37322c2c0f7a2f6d677",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/accessory/sub/chokers.txt": {
+    "mtime": 1783090260.0,
+    "ast_hash": "10f438db9e477b0adbc158be8cb274a6",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/accessory/sub/decorations.txt": {
+    "mtime": 1783090286.0,
+    "ast_hash": "ba89326b4fc5e48f26316acdbeb21027",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/accessory/sub/hat.txt": {
+    "mtime": 1783090350.0,
+    "ast_hash": "d5287467fc38f168e01be88f1c32048c",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/accessory/sub/head.txt": {
+    "mtime": 1783090384.0,
+    "ast_hash": "6af02d532dc86d63fbad259d4bdb0b07",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/accessory/sub/jewelry.txt": {
+    "mtime": 1783090400.0,
+    "ast_hash": "ef782a2622f6f6095090a5c8bf17137d",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/accessory/sub/legs.txt": {
+    "mtime": 1783090426.0,
+    "ast_hash": "816cf9163e130692dc0a6c45c15f53f7",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/accessory/sub/neck.txt": {
+    "mtime": 1783090456.0,
+    "ast_hash": "f4a13f5b81a209bece275e7cb101ae89",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/body/main/female.txt": {
+    "mtime": 1783108766.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/body/main/male.txt": {
+    "mtime": 1783175192.0,
+    "ast_hash": "bb5551c0f00cd7a11f26cf97ed33d717",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/body/main/tattoos.txt": {
+    "mtime": 1783270844.0,
+    "ast_hash": "8499bca4ecfb91aa4fca322877f4a23b",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/body/main/unisex.txt": {
+    "mtime": 1782956792.0,
+    "ast_hash": "1d2a4e0f165e4c029243c8c82e34b15b",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/body/main/\ud83d\udd25none\ud83d\udd25.txt": {
+    "mtime": 1783135540.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/body/sub/ass.txt": {
+    "mtime": 1783117960.0,
+    "ast_hash": "e893ec0834186e59ed8825b8c06292d2",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/body/sub/breasts.txt": {
+    "mtime": 1783116932.0,
+    "ast_hash": "f9a07955e1ca5ece6919cdb64b791b3f",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/body/sub/eyebrows.txt": {
+    "mtime": 1783117346.0,
+    "ast_hash": "4509531193222b603d1eac7811702dac",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/body/sub/eyes.txt": {
+    "mtime": 1783116982.0,
+    "ast_hash": "0518141b71bb155289fe98364ff547b7",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/body/sub/m-facial_hair.txt": {
+    "mtime": 1783175448.0,
+    "ast_hash": "8fa7061ee885a674ecfbbb5d4c6f52ed",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/body/sub/tattoos location.txt": {
+    "mtime": 1783271488.0,
+    "ast_hash": "eb95f2985200c74d34d424cf21fc6352",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/expressions/main/female.txt": {
+    "mtime": 1783208634.0,
+    "ast_hash": "71542911a9ee21a790b7750cf51f36d8",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/expressions/main/male.txt": {
+    "mtime": 1783194952.0,
+    "ast_hash": "f9ad1fd95ed065329448d8091dc6dd5f",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/expressions/main/unisex.txt": {
+    "mtime": 1783195066.0,
+    "ast_hash": "b901a2b6b606850c30a4210611ae6782",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/expressions/main/\ud83d\udd25none\ud83d\udd25.txt": {
+    "mtime": 1783135540.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/expressions/sub/test.txt": {
+    "mtime": 1783195252.88,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/main/buns.txt": {
+    "mtime": 1783093428.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/main/female.txt": {
+    "mtime": 1783093558.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/main/hair length.txt": {
+    "mtime": 1783092346.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/main/hair texture.txt": {
+    "mtime": 1783092600.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/main/male.txt": {
+    "mtime": 1783092868.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/main/ponytails.txt": {
+    "mtime": 1783094472.0,
+    "ast_hash": "8c82847afc5585edc22f4f934fcf9342",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/main/unisex.txt": {
+    "mtime": 1783093576.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/main/\ud83d\udd25none\ud83d\udd25.txt": {
+    "mtime": 1783135540.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/sub/Actions.txt": {
+    "mtime": 1783090124.0,
+    "ast_hash": "87a408d2eba5eadc6b40427a741e16b6",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/sub/Specific colors.txt": {
+    "mtime": 1783090140.0,
+    "ast_hash": "7f26ef3085745ae49beb88885f514180",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/sub/bangs.txt": {
+    "mtime": 1783711876.0,
+    "ast_hash": "b38b0ed9d6a04a90b5165d712f962691",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/sub/braids.txt": {
+    "mtime": 1783712026.0,
+    "ast_hash": "ceda93c04ac7d69f4277bf0396b1f0b8",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/sub/buns.txt": {
+    "mtime": 1783093458.0,
+    "ast_hash": "354ae01ff6ca92dbe781342e12771629",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/sub/decorative.txt": {
+    "mtime": 1783098256.0,
+    "ast_hash": "6171582373d933cd679fbf1822877ebe",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/sub/length.txt": {
+    "mtime": 1783092438.0,
+    "ast_hash": "e78783ef43dfecf40d201e9fa48c88c0",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/sub/male hairstyles.txt": {
+    "mtime": 1783092876.0,
+    "ast_hash": "801901ac1d0a457fafdb3085da88ff51",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/sub/multicolored hair.txt": {
+    "mtime": 1783090116.0,
+    "ast_hash": "5acf2189e5a5ac73a2cfdc5adbe43c48",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/sub/ponytails.txt": {
+    "mtime": 1783093544.0,
+    "ast_hash": "9b4c0a8da676f56f9d0cbd716db2c5e9",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/sub/short styles.txt": {
+    "mtime": 1783093024.0,
+    "ast_hash": "b31bd4b5878612bed42dd9295027961f",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/sub/texture.txt": {
+    "mtime": 1783092590.0,
+    "ast_hash": "6443df27031829b856ff83ea41ea3764",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/hair/sub/twintails.txt": {
+    "mtime": 1783097334.0,
+    "ast_hash": "869dda2c0dcb58aedd20e459d52a31d6",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/lips/main/\ud83d\udd25none\ud83d\udd25.txt": {
+    "mtime": 1783135540.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/lips/sub/lips.txt": {
+    "mtime": 1783440838.0,
+    "ast_hash": "9149c78cc5e2abf81df7bd514a4e47ce",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/nudity/sub/nude.txt": {
+    "mtime": 1783278214.0,
+    "ast_hash": "74b1bbd55faac166c956b3b726c49017",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/nudity/sub/nude_outfis.txt": {
+    "mtime": 1783278752.0,
+    "ast_hash": "acfcab029746ba9ac898fb091a6e4e01",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/nudity/sub/nude_outfis_extended.txt": {
+    "mtime": 1783279012.0,
+    "ast_hash": "01abd0d2e9e887443ffba7c2f8e8e79b",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/nudity/sub/nude_outfis_more.txt": {
+    "mtime": 1783279142.0,
+    "ast_hash": "66be96d87c4035c5fe27a0943682154e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/outfits/main/casual.txt": {
+    "mtime": 1784301482.0,
+    "ast_hash": "206493f617b9291e6de355296cf59601",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/outfits/main/formal.txt": {
+    "mtime": 1782952030.0,
+    "ast_hash": "d019f9e13f229801f2694be8eb4335ab",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/outfits/main/nsfw.txt": {
+    "mtime": 1783182868.0,
+    "ast_hash": "8cf47786a4636dc6e9667eb4a6c53c12",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/outfits/main/\ud83d\udd25none\ud83d\udd25.txt": {
+    "mtime": 1783135538.87,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/outfits/sub/bottomwear.txt": {
+    "mtime": 1782957312.0,
+    "ast_hash": "0abaadd22eeb78e65c4745125a031627",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/outfits/sub/fashion.txt": {
+    "mtime": 1783282334.0,
+    "ast_hash": "349dec25b65893798f3ad6c42a601c01",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/outfits/sub/general.txt": {
+    "mtime": 1783214148.0,
+    "ast_hash": "a87e1ecd0737582512f341738114f209",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/outfits/sub/headwear.txt": {
+    "mtime": 1782957344.0,
+    "ast_hash": "2b1996f90c9b5f5505426a1ef7b32a69",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/outfits/sub/shirts.txt": {
+    "mtime": 1782959526.0,
+    "ast_hash": "b751b52b655633ff53ccf654f2761caa",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags/outfits/sub/uniforms.txt": {
+    "mtime": 1783283406.0,
+    "ast_hash": "a111b909031898965981345fb60d364a",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/body/main/female.txt": {
+    "mtime": 1783008054.0,
+    "ast_hash": "64b73716ca5fe4851948fe5c00787a73",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/body/main/male.txt": {
+    "mtime": 1782955492.0,
+    "ast_hash": "72f0930b2706494f8b474c078ed87703",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/body/main/unisex.txt": {
+    "mtime": 1782956792.0,
+    "ast_hash": "1d2a4e0f165e4c029243c8c82e34b15b",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/body/sub/ass.txt": {
+    "mtime": 1783839936.0,
+    "ast_hash": "1174e83b67154329ed136a4bcd18cbb5",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/body/sub/breasts.txt": {
+    "mtime": 1783008062.0,
+    "ast_hash": "daadd86c0b635ab2722ff06b86eff97f",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/body/sub/eyes.txt": {
+    "mtime": 1783007194.0,
+    "ast_hash": "3763bb7104c7e54acab1e3bb2c99d5d4",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/colors/sub/aqua.txt": {
+    "mtime": 1783029390.0,
+    "ast_hash": "8e48e4c3e90ce088191062ccd7c3ccff",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/colors/sub/black.txt": {
+    "mtime": 1783029580.0,
+    "ast_hash": "f99a9d988c87bfd2d91b78f84b9f882c",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/main/buns.txt": {
+    "mtime": 1783093428.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/main/female.txt": {
+    "mtime": 1783093558.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/main/hair length.txt": {
+    "mtime": 1783092345.87,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/main/hair texture.txt": {
+    "mtime": 1783092600.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/main/male.txt": {
+    "mtime": 1783092868.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/main/ponytails.txt": {
+    "mtime": 1783093514.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/main/unisex.txt": {
+    "mtime": 1783093576.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/sub/Actions.txt": {
+    "mtime": 1783090124.0,
+    "ast_hash": "87a408d2eba5eadc6b40427a741e16b6",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/sub/Specific colors.txt": {
+    "mtime": 1783090140.0,
+    "ast_hash": "7f26ef3085745ae49beb88885f514180",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/sub/braids.txt": {
+    "mtime": 1783093268.0,
+    "ast_hash": "45e9341935efef6573d9b05dffd9ae17",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/sub/buns.txt": {
+    "mtime": 1783093458.0,
+    "ast_hash": "354ae01ff6ca92dbe781342e12771629",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/sub/length.txt": {
+    "mtime": 1783092438.0,
+    "ast_hash": "e78783ef43dfecf40d201e9fa48c88c0",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/sub/male hairstyles.txt": {
+    "mtime": 1783092876.0,
+    "ast_hash": "801901ac1d0a457fafdb3085da88ff51",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/sub/multicolored hair.txt": {
+    "mtime": 1783090116.0,
+    "ast_hash": "5acf2189e5a5ac73a2cfdc5adbe43c48",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/sub/ponytails.txt": {
+    "mtime": 1783093544.0,
+    "ast_hash": "9b4c0a8da676f56f9d0cbd716db2c5e9",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/sub/short styles.txt": {
+    "mtime": 1783093024.0,
+    "ast_hash": "b31bd4b5878612bed42dd9295027961f",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/hair/sub/texture.txt": {
+    "mtime": 1783092590.0,
+    "ast_hash": "6443df27031829b856ff83ea41ea3764",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/makeup/main/female.txt": {
+    "mtime": 1782957158.0,
+    "ast_hash": "12d83dc7eb19e7fce6e86640e9664fff",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/makeup/main/none.txt": {
+    "mtime": 1783038824.0,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/makeup/sub/glam.txt": {
+    "mtime": 1782957182.0,
+    "ast_hash": "04a552bb24e8fc99d28d8eb6e78fcd06",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/makeup/sub/gothic.txt": {
+    "mtime": 1782957212.0,
+    "ast_hash": "17632a19207cbc7eb4776e52298a82e8",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/makeup/sub/natural.txt": {
+    "mtime": 1782957232.0,
+    "ast_hash": "ac18ba12bc129bb30c90731af32ca063",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/makeup/sub/no_makeup.txt": {
+    "mtime": 1782957252.0,
+    "ast_hash": "82f7baccbb4b8c878d985abbffe8b29b",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/outfits/main/casual.txt": {
+    "mtime": 1782951912.0,
+    "ast_hash": "eaeed2b0932e303d37c197b068d6dfc6",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/outfits/main/formal.txt": {
+    "mtime": 1782952030.0,
+    "ast_hash": "d019f9e13f229801f2694be8eb4335ab",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/outfits/main/nsfw.txt": {
+    "mtime": 1782952304.0,
+    "ast_hash": "a5edf50a02c458a5174c965dbf7dbbb6",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/outfits/sub/bottomwear.txt": {
+    "mtime": 1782957312.0,
+    "ast_hash": "0abaadd22eeb78e65c4745125a031627",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/outfits/sub/general.txt": {
+    "mtime": 1782957332.0,
+    "ast_hash": "34566b0ce586070b067915fa86bd910a",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/outfits/sub/headwear.txt": {
+    "mtime": 1782957344.0,
+    "ast_hash": "2b1996f90c9b5f5505426a1ef7b32a69",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/outfits/sub/shirts.txt": {
+    "mtime": 1782959526.0,
+    "ast_hash": "b751b52b655633ff53ccf654f2761caa",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/skin/main/dark_skin.txt": {
+    "mtime": 1783000618.0,
+    "ast_hash": "79291059b1cd99cb413659baa7f88d4a",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/skin/main/light_skin.txt": {
+    "mtime": 1782957382.0,
+    "ast_hash": "6becc272c063a42d3e99ac90e0acc457",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/skin/sub/exotic_skin.txt": {
+    "mtime": 1782957400.0,
+    "ast_hash": "7df53eb54ddf6b3c4ae03bca4e8a9b18",
+    "semantic_hash": ""
+  },
+  "py/danbooru_tags_old/visual aesthetic/sub/general aesthetics.txt": {
+    "mtime": 1782993662.0,
+    "ast_hash": "f8745a4a4a50b47ae2b0d1d574957d49",
+    "semantic_hash": ""
+  },
+  "py/wildcards/anime_characters.yaml": {
+    "mtime": 1763660656.0,
+    "ast_hash": "9fac55947f7ae50e9198b08c68aa5528",
+    "semantic_hash": ""
+  },
+  "py/wildcards/characters.yaml": {
+    "mtime": 1767384330.0,
+    "ast_hash": "035973623810820a744c3b75b10ae914",
+    "semantic_hash": ""
+  },
+  "py/wildcards/extra.txt": {
+    "mtime": 1765074696.0,
+    "ast_hash": "ee25b8a7fa9081c32d1fc3dfc15110e7",
+    "semantic_hash": ""
+  },
+  "py/wildcards/girls.txt": {
+    "mtime": 1765071148.0,
+    "ast_hash": "33232a9f0e877b6c43d961402458704f",
+    "semantic_hash": ""
+  },
+  "py/wildcards/lights_BG.txt": {
+    "mtime": 1765317262.0,
+    "ast_hash": "ecfb5144b26a9d14f25230ed8318d23a",
+    "semantic_hash": ""
+  },
+  "py/wildcards/males.txt": {
+    "mtime": 1765002930.0,
+    "ast_hash": "43adacb593e1c3fc4fed8bf0f406ea26",
+    "semantic_hash": ""
+  },
+  "py/wildcards/scenes.txt": {
+    "mtime": 1765065346.0,
+    "ast_hash": "29437f400d794aad1ae7e221ea6de9f7",
+    "semantic_hash": ""
+  },
+  "py/wildcards/themes_cartoon.txt": {
+    "mtime": 1765380320.0,
+    "ast_hash": "272b76e12f2f5df06bde9e8776f0182d",
+    "semantic_hash": ""
+  },
+  "py/wildcards/velma_outfit.txt": {
+    "mtime": 1765909878.0,
+    "ast_hash": "09aa059837d053e4adc9978916663847",
+    "semantic_hash": ""
+  }
+}

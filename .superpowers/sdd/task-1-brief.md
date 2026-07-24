@@ -1,89 +1,64 @@
-# Task 1: Backend — Add `/char_boss/save` Endpoint
+# Task 1: Python — `_save_json()` + slug helpers
 
 **Files:**
-- Modify: `py/ultimate_character_builder.py`
+- Modify: `py/camera_style_mixer.py:26-28` (add imports)
+- Modify: `py/camera_style_mixer.py` (add helpers after `_log` declaration)
 
 **Interfaces:**
-- Consumes: `_CHARACTERS`, `_EXPRESSIONS`, `_POSES` Collection objects (already defined)
-- Produces: `POST /char_boss/save` route returning `{ name, prompt, categories, custom_preview, is_new }`
+- Consumes: nothing (new utility functions)
+- Produces: `_save_json(path, data)`, `_to_slug(name)`, `_unique_slug(slug, existing)`
 
-- [ ] **Step 1: Read the current file to understand structure**
-
-Read `py/ultimate_character_builder.py` to find where routes are defined and where the Collection objects are initialized. Note the `_CHARACTERS`, `_EXPRESSIONS`, `_POSES` globals and the existing `@routes.get("/char_boss/data")` and `@routes.post("/char_boss/refresh")` endpoints.
-
-- [ ] **Step 2: Add the save endpoint after the refresh endpoint**
-
-Find the `@routes.post("/char_boss/refresh")` handler. Add the following route immediately after it:
+- [ ] **Step 1: Add `re` import**
 
 ```python
-@routes.post("/char_boss/save")
-async def save_char_entry(request):
-    try:
-        body = await request.json()
-        lib_type = body.get("type", "")
-        name = body.get("name", "").strip()
-        prompt = body.get("prompt", "").strip()
-        categories = body.get("categories", [])
-        custom_preview = body.get("custom_preview", "").strip()
-
-        if lib_type not in ("characters", "expressions", "poses"):
-            return web.json_response({"error": "Invalid type"}, status=400)
-        if not name:
-            return web.json_response({"error": "Name required"}, status=400)
-        if not prompt:
-            return web.json_response({"error": "Prompt required"}, status=400)
-
-        coll_map = {
-            "characters": _CHARACTERS,
-            "expressions": _EXPRESSIONS,
-            "poses": _POSES,
-        }
-        coll = coll_map[lib_type]
-
-        existing = coll.items.get(name)
-        is_new = existing is None
-
-        if is_new:
-            entry = {"prompt": prompt, "custom_preview": custom_preview}
-        else:
-            old_preview = ""
-            if isinstance(existing, dict):
-                old_preview = existing.get("custom_preview", "")
-            entry = {
-                "prompt": prompt,
-                "custom_preview": custom_preview or old_preview,
-            }
-
-        coll.items[name] = entry
-
-        if categories:
-            for cat, members in coll.categories.items():
-                if cat == "All":
-                    continue
-                if name not in members:
-                    members.append(name)
-
-        coll.save()
-
-        return web.json_response({
-            "name": name,
-            "prompt": prompt,
-            "categories": categories,
-            "custom_preview": entry.get("custom_preview", ""),
-            "is_new": is_new,
-        })
-    except Exception as e:
-        return web.json_response({"error": str(e)}, status=500)
+import re
 ```
 
-- [ ] **Step 3: Verify syntax**
+Add after existing `import json` at line 15.
 
-Run: `F:\ComfyUI\python_embeded\python.exe -c "import py_compile; py_compile.compile('py/ultimate_character_builder.py', doraise=True)"`
-Expected: No output (clean compile)
+- [ ] **Step 2: Add `_to_slug()` helper**
 
-- [ ] **Step 4: Commit**
+Add after `_log = make_logger("CameraStyleMixer")` (line 77):
+
+```python
+def _to_slug(name: str) -> str:
+    """Lowercase, spaces→underscores, strip non-alphanumeric."""
+    slug = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+    return slug or "entry"
+
+
+def _unique_slug(slug: str, existing: set[str]) -> str:
+    """Append _2, _3, ... until unique."""
+    if slug not in existing:
+        return slug
+    n = 2
+    while f"{slug}_{n}" in existing:
+        n += 1
+    return f"{slug}_{n}"
+```
+
+- [ ] **Step 3: Add `_save_json()` helper**
+
+Add after the slug helpers:
+
+```python
+def _save_json(path: Path, data: dict) -> None:
+    """Atomic write: write to .tmp then os.replace."""
+    tmp = path.with_suffix(".tmp")
+    with tmp.open("w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2, ensure_ascii=False)
+    os.replace(tmp, path)
+```
+
+- [ ] **Step 4: Verify Python compiles**
+
+Run: `F:\ComfyUI\python_embeded\python.exe -c "import py_compile; py_compile.compile(r'F:\ComfyUI\ComfyUI\custom_nodes\comfyui-Boss_Nodes\py\camera_style_mixer.py', doraise=True); print('OK')"`
+
+Expected: `OK`
+
+- [ ] **Step 5: Commit**
 
 ```bash
-git add py/ultimate_character_builder.py
-git commit -m "feat: add POST /char_boss/save endpoint for CRUD"
+git add py/camera_style_mixer.py
+git commit -m "feat(camera): add _save_json, _to_slug, _unique_slug helpers"
 ```

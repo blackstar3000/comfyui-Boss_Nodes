@@ -1,23 +1,17 @@
-# Task 3 Report — Backend: Add `/char_boss/proxy_image` Endpoint
+# Task 3 Report: `/camera_boss/save` and `/camera_boss/delete` endpoints
 
-**Status:** ✅ Complete
+## Status: DONE
 
-## Changes Made
+## Commit
+`3200bd7` — `feat(camera): add /camera_boss/save and /camera_boss/delete endpoints`
 
-- Added `import aiohttp` at top of `py/ultimate_character_builder.py` (line 17)
-- Added `GET /char_boss/proxy_image` route after the delete endpoint (lines 399–417)
-- Endpoint accepts `url` query parameter, proxies image with `User-Agent` + `Referer` headers, 10s timeout
-- Returns upstream image bytes with correct `content_type`, or JSON error on failure
+## What was done
+- Added `_COLLECTION_MAP` dict (type name → data_key, category_key, library_attr) before `register_api_routes()`
+- Added `/camera_boss/save` POST endpoint: validates input, generates unique slug for new entries, updates in-memory collection + categories, persists to JSON, busts mtime cache
+- Added `/camera_boss/delete` POST endpoint: validates input, removes entry from collection + all categories, persists to JSON, busts mtime cache
 
-## Commits
-
-- `cf486c7` — feat: add GET /char_boss/proxy_image endpoint for preview proxy
-
-## Test Summary
-
-- Python syntax check passed (`py_compile.compile` — no errors)
-- `aiohttp` already available in ComfyUI's embedded Python environment (used by other routes)
+## Test summary
+Python compile check passed — `py_compile.compile()` returned OK with no errors.
 
 ## Concerns
-
-- None. Endpoint is self-contained, reuses existing `from aiohttp import web` inside `register_api_routes()`, and `aiohttp` is now importable at module level for the `ClientSession`/`ClientTimeout` references.
+None — implementation matches the task brief exactly. The `_to_slug`, `_unique_slug`, `_save_json` helpers from Task 1 and `_LIB` from Task 2 are consumed as specified.

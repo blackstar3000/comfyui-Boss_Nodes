@@ -94,12 +94,15 @@ class CollectionModel {
   // Converts legacy string values to objects
   // Returns {slug: {name, prompt, description, favorite, preview}}
 
-  static toSlug(name)
+  static toSlug(name, existingSlugs)
   // Generates stable ID: "Dutch Angle" → "dutch_angle"
   // Lowercase, spaces→underscores, strip non-alphanumeric
+  // If slug already exists in existingSlugs: appends _2, _3, ... until unique
+  // Returns the unique slug
 
   static validate(item, existingSlugs, excludeSlug)
-  // Checks: name non-empty, prompt non-empty, name unique (case-insensitive)
+  // Checks: name non-empty, prompt non-empty, name unique (case-insensitive),
+  //   generated slug unique in existingSlugs (excluding excludeSlug if renaming)
   // Returns {ok: bool, error: string}
 
   static dedupe(items, existingSlug)
@@ -116,7 +119,8 @@ class CollectionController {
   constructor(baseUrl = "/camera_boss")
 
   async add(type, item, categories)
-  // POST /camera_boss/save with no slug → backend creates slug
+  // POST /camera_boss/save with no slug → backend generates unique slug
+  // Backend checks slug uniqueness, appends _2/_3 if needed
   // Returns {ok, slug, error}
 
   async edit(type, slug, item, categories)
@@ -185,10 +189,10 @@ POST /camera_boss/delete  — {type, slug}
 1. Validate `type` is "angles" | "framings" | "styles"
 2. Validate `name` and `prompt` non-empty
 3. If `slug` provided and exists → update entry
-4. If `slug` not provided → generate slug from name, add new entry
+4. If `slug` not provided → generate slug from name, ensure uniqueness (append _2/_3 if needed), add new entry
 5. Update categories: add to selected, remove from unselected
 6. Write JSON atomically (temp file → rename)
-7. Return updated collection data + count
+7. Return updated collection data + count + slug
 
 #### `/camera_boss/delete` Logic
 
@@ -255,24 +259,60 @@ Each collection section gets a CRUD row below its list:
 
 ### One-time JSON Migration
 
-Convert `camera_style_mixer.json` from name-based keys to slug-based keys:
+Convert `camera_style_mixer.json` from name-based keys to slug-based keys. Both entries AND category lists are migrated in one shot.
 
 ```python
-def migrate_to_slugs(data, key):
-    """Convert name-keyed entries to slug-keyed objects."""
-    old = data.get(key, {})
-    new = {}
-    for name, value in old.items():
-        slug = to_slug(name)
+def to_slug(name: str) -> str:
+    """Lowercase, spaces→underscores, strip non-alphanumeric."""
+    import re
+    slug = re.sub(r'[^a-z0-9]+', '_', name.lower()).strip('_')
+    return slug or "entry"
+
+def unique_slug(slug: str, existing: set) -> str:
+    """Append _2, _3, ... until unique."""
+    if slug not in existing:
+        return slug
+    n = 2
+    while f"{slug}_{n}" in existing:
+        n += 1
+    return f"{slug}_{n}"
+
+def migrate_to_slugs(data: dict, entry_key: str, cat_key: str) -> dict:
+    """Convert name-keyed entries and category refs to slug-based."""
+    old_entries = data.get(entry_key, {})
+    old_cats = data.get(cat_key, {})
+
+    # Build name→slug mapping
+    name_to_slug = {}
+    used_slugs = set()
+    for name in old_entries:
+        slug = unique_slug(to_slug(name), used_slugs)
+        used_slugs.add(slug)
+        name_to_slug[name] = slug
+
+    # Migrate entries
+    new_entries = {}
+    for name, value in old_entries.items():
+        slug = name_to_slug[name]
         if isinstance(value, str):
-            new[slug] = {"name": name, "prompt": value, "description": "", "favorite": False, "preview": ""}
+            new_entries[slug] = {"name": name, "prompt": value, "description": "", "favorite": False, "preview": ""}
         else:
             value["name"] = name
-            new[slug] = value
-    return new
+            new_entries[slug] = value
+
+    # Migrate category lists (name refs → slug refs)
+    new_cats = {}
+    for cat_name, members in old_cats.items():
+        if not isinstance(members, list):
+            continue
+        new_cats[cat_name] = [name_to_slug.get(m, m) for m in members]
+
+    data[entry_key] = new_entries
+    data[cat_key] = new_cats
+    return data
 ```
 
-Run once, commit the migrated JSON.
+Run once on all three collection types, commit the migrated JSON.
 
 ## What Stays the Same
 
