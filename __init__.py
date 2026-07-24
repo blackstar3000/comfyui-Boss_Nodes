@@ -89,6 +89,14 @@ def load_nodes_from_subdirectory():
                 print(f"   ❌ Failed to load {filename}: {e}")
                 traceback.print_exc()
 
+# Boss Prompt Analyzer PRO
+try:
+    from boss_prompt_analyzer.boss_prompt_analyzer import BossPromptAnalyzerPRO
+    NODE_CLASS_MAPPINGS["BossPromptAnalyzerPRO"] = BossPromptAnalyzerPRO
+    NODE_DISPLAY_NAME_MAPPINGS["BossPromptAnalyzerPRO"] = "👑 Boss Prompt Analyzer PRO"
+except Exception as e:
+    print(f"Failed to load BossPromptAnalyzerPRO: {e}")
+
 # Run the loader
 load_nodes_from_subdirectory()
 
