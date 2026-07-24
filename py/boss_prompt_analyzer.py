@@ -110,15 +110,37 @@ class TokenAnalyzer(BaseAnalyzer):
         else:
             context.tokenizer_name = "CLIP"
         for key in tokens:
-            tensor = tokens[key]
-            if tensor is not None and len(tensor.shape) >= 2:
-                max_len = tensor.shape[-1]
-                context.chunk_limit = max_len
-                for chunk_tensor in tensor.reshape(-1, max_len):
-                    chunk_tokens = [t.item() for t in chunk_tensor if t.item() not in (0, 49407)]
+            val = tokens[key]
+            if val is None:
+                continue
+            # Handle both tensor and list returns
+            if hasattr(val, "shape"):
+                # It's a tensor
+                if len(val.shape) >= 2:
+                    max_len = val.shape[-1]
+                    context.chunk_limit = max_len
+                    for chunk_tensor in val.reshape(-1, max_len):
+                        chunk_tokens = [t.item() for t in chunk_tensor if t.item() not in (0, 49407)]
+                        if chunk_tokens:
+                            context.chunks.append(chunk_tokens)
+                    break
+            elif isinstance(val, list):
+                # It's a list of lists (batch of token arrays)
+                if val and isinstance(val[0], list):
+                    max_len = len(val[0])
+                    context.chunk_limit = max_len
+                    for chunk_list in val:
+                        chunk_tokens = [t for t in chunk_list if t not in (0, 49407)]
+                        if chunk_tokens:
+                            context.chunks.append(chunk_tokens)
+                    break
+                elif val:
+                    # Flat list of token IDs
+                    context.chunk_limit = 77
+                    chunk_tokens = [t for t in val if t not in (0, 49407)]
                     if chunk_tokens:
                         context.chunks.append(chunk_tokens)
-                break
+                    break
         context.total_tokens = sum(len(c) for c in context.chunks)
         context.tokens = context.chunks
 
