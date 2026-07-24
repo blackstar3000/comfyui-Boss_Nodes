@@ -649,6 +649,26 @@
 .boss-crd-ctx-item.danger { color: #e74c3c; }
 .boss-crd-ctx-item.danger:hover { background: rgba(231,76,60,0.1); }
 
+/* ── Dialog category chips + preview ──────────────────────────────────── */
+.boss-dialog-cat-chips {
+  display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;
+}
+.boss-dialog-cat-chip {
+  padding: 4px 10px; font-size: 12px; border-radius: var(--boss-radius-md);
+  background: var(--boss-bg-section); border: 1px solid var(--boss-border-strong);
+  color: var(--boss-text-muted); cursor: pointer; user-select: none;
+  transition: background 0.1s, color 0.1s, border-color 0.1s;
+}
+.boss-dialog-cat-chip:hover { color: var(--boss-text-bright); border-color: var(--boss-border-accent); }
+.boss-dialog-cat-chip.active {
+  background: var(--boss-brand); color: #fff; border-color: var(--boss-brand);
+}
+.boss-dialog-preview-img {
+  max-width: 200px; max-height: 200px; border-radius: var(--boss-radius-md);
+  object-fit: contain; display: block; margin-top: 6px;
+  border: 1px solid var(--boss-border-strong);
+}
+
 /* ── Responsive: stack sidebar below 1200px ───────────────────────────── */
 @media (max-width: 1200px) {
   .boss-body { flex-direction: column; }
