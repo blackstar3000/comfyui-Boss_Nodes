@@ -1,0 +1,8 @@
+{
+  "Character": ["1girl", "1boy", "solo", "hair", "eyes", "face", "body", "skin", "breasts", "thighs", "lips"],
+  "Outfit": ["outfit", "dress", "shirt", "pants", "sneakers", "boots", "hat", "socks", "gloves", "bodysuit"],
+  "Pose": ["standing", "sitting", "lying", "kneeling", "pose", "looking at viewer", "full body", "upper body"],
+  "Lighting": ["lighting", "sunlight", "moonlight", "shadow", "glow", "backlight", "dappled", "mottled"],
+  "Style": ["masterpiece", "best quality", "realistic", "anime", "painting", "8k", "ultra detailed", "photorealistic"],
+  "Background": ["forest", "city", "sky", "indoor", "outdoor", "background", "wall", "trees", "moon", "fog"]
+}
