@@ -5,35 +5,35 @@
       "prompt": "extreme low angle, worm's eye view, heroic dramatic pose, looking up",
       "description": "",
       "favorite": false,
-      "preview": ""
+      "preview": "https://pbblogassets.s3.amazonaws.com/uploads/2015/10/The_Shining_Low_Angle.jpg"
     },
     "low_angle": {
       "name": "Low Angle",
       "prompt": "low angle, powerful perspective, looking up, cinematic hero shot",
       "description": "",
       "favorite": false,
-      "preview": ""
+      "preview": "https://www.soundstripe.com/hs-fs/hubfs/Blog%20Images/2022/January/unnamed-2.jpg?width=1500&name=unnamed-2.jpg"
     },
     "high_angle": {
       "name": "High Angle",
       "prompt": "high angle, bird's eye perspective, looking down, subject appears small or vulnerable",
       "description": "",
       "favorite": false,
-      "preview": ""
+      "preview": "https://www.soundstripe.com/hs-fs/hubfs/Blog%20Images/2022/January/unnamed-1.jpg?width=2400&name=unnamed-1.jpg"
     },
     "extreme_high_angle": {
       "name": "Extreme High Angle",
       "prompt": "extreme high angle, top-down overhead, god's eye view, dramatic scale",
       "description": "",
       "favorite": false,
-      "preview": ""
+      "preview": "https://d26oc3sg82pgk3.cloudfront.net/files/media/edit/image/49607/article_featured%403x.jpg"
     },
     "dutch_tilt": {
       "name": "Dutch Tilt",
       "prompt": "dutch angle, tilted camera, dynamic tension, unsettling or energetic",
       "description": "",
       "favorite": false,
-      "preview": ""
+      "preview": "https://www.soundstripe.com/hs-fs/hubfs/Blog%20Images/2022/January/unnamed-4.jpg?width=1920&name=unnamed-4.jpg"
     },
     "straight_on": {
       "name": "Straight On",
@@ -47,7 +47,7 @@
       "prompt": "eye level shot, natural perspective, intimate and relatable",
       "description": "",
       "favorite": false,
-      "preview": ""
+      "preview": "https://www.soundstripe.com/hs-fs/hubfs/Blog%20Images/2022/January/unnamed-3.jpg?width=1707&name=unnamed-3.jpg"
     },
     "view": {
       "name": "¾ View",
@@ -61,21 +61,21 @@
       "prompt": "side profile, sharp silhouette, elegant and dramatic",
       "description": "",
       "favorite": false,
-      "preview": ""
+      "preview": "https://s.studiobinder.com/wp-content/uploads/2025/09/Profile-Shot-Example-Featured-Profile-level-camera-angle-on-Cillian-Murphy-from-Oppenheimer.jpg"
     },
     "back_view": {
       "name": "Back View",
       "prompt": "from behind, over shoulder, mysterious, cinematic reveal",
       "description": "",
       "favorite": false,
-      "preview": ""
+      "preview": "https://assets.videomaker.com/2019/06/ZFm3J4Me-8TBGFXrT-387-F02-Camera-Angles-secondary-6.jpg"
     },
     "over_the_shoulder": {
       "name": "Over the Shoulder",
       "prompt": "over the shoulder shot, intimate POV, narrative tension",
       "description": "",
       "favorite": false,
-      "preview": ""
+      "preview": "https://www.premiumbeat.com/blog/wp-content/uploads/2017/05/Over-The-Shoulder-Harry-Potter.jpg"
     },
     "fisheye_extreme": {
       "name": "Fisheye Extreme",
@@ -96,7 +96,7 @@
       "prompt": "straight-on, upper body, looking at viewer, (from above:1.2), reaching out to viewer, foreshortening",
       "description": "",
       "favorite": false,
-      "preview": ""
+      "preview": "https://cdn.donmai.us/sample/aa/b4/__nakayama_festa_umamusume_drawn_by_roroko_momo__sample-aab4ebc75a2eb40f07cbbb96d11b83da.jpg"
     },
     "upper_body_selfie": {
       "name": "Upper-body selfie",
@@ -104,6 +104,13 @@
       "description": "",
       "favorite": false,
       "preview": ""
+    },
+    "from_above": {
+      "name": "From Above",
+      "prompt": "from above",
+      "description": "Looking at something/someone from above. The perspective has you looking down at a character.\n\nTypically used to imply the smallness of the subject in view or to highlight the size difference from the perspective of the larger entity/the viewer.",
+      "favorite": false,
+      "preview": "https://cdn.serika.art/uploads/1779486132767-1779486132767-5zir3-danbooru-11419813.jpg"
     }
   },
   "camera_framings": {
@@ -1132,143 +1139,6 @@
       "preview": ""
     }
   },
-  "camera_lenses": {
-    "85mm_portrait": {
-      "name": "85mm Portrait",
-      "prompt": "shot on 85mm lens, creamy bokeh, perfect subject isolation",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "50mm_natural": {
-      "name": "50mm Natural",
-      "prompt": "shot on 50mm prime, natural human eye perspective, filmic",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "35mm_cinematic": {
-      "name": "35mm Cinematic",
-      "prompt": "shot on 35mm lens, immersive storytelling, environmental portrait",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "35mm_storytelling": {
-      "name": "35mm Storytelling",
-      "prompt": "shot on 35mm lens, environmental portrait, immersive wide feel",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "24mm_wide_drama": {
-      "name": "24mm Wide Drama",
-      "prompt": "shot on 24mm wide angle, dramatic perspective, slight distortion",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "135mm_compression": {
-      "name": "135mm Compression",
-      "prompt": "shot on 135mm telephoto, background compression, dreamy stacked look",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "macro_detail_2": {
-      "name": "Macro Detail",
-      "prompt": "macro lens, extreme detail, shallow depth of field",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "anamorphic": {
-      "name": "Anamorphic",
-      "prompt": "anamorphic lens, cinematic oval bokeh, horizontal flares, hollywood",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "tilt_shift": {
-      "name": "Tilt-Shift",
-      "prompt": "tilt-shift lens, miniature effect, selective focus, toy-like world",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "arri_alexa_look": {
-      "name": "Arri Alexa Look",
-      "prompt": "Arri Alexa 65, cinematic color science, filmic tones, hollywood quality",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "8k_film_scan": {
-      "name": "8K Film Scan",
-      "prompt": "shot on 70mm IMAX, scanned at 8K, ultra detailed, reference quality",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    }
-  },
-  "quality_boosters": {
-    "ultra_quality": {
-      "name": "Ultra Quality",
-      "prompt": "masterpiece, best quality, ultra-detailed, absurdres, intricate details",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "8k_perfection": {
-      "name": "8K Perfection",
-      "prompt": "8k, extremely detailed, sharp focus, perfect anatomy, flawless",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "cinematic_masterpiece": {
-      "name": "Cinematic Masterpiece",
-      "prompt": "cinematic masterpiece, award-winning, national geographic, breathtaking",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "trending_boost": {
-      "name": "Trending Boost",
-      "prompt": "trending on artstation, trending on pixiv, featured artwork",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "depth_volume": {
-      "name": "Depth & Volume",
-      "prompt": "volumetric lighting, ray tracing, global illumination, unreal engine 5",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "professional_photo": {
-      "name": "Professional Photo",
-      "prompt": "professional photography, canon eos r5, 85mm f1.2, studio lighting",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "fashion_editorial_2": {
-      "name": "Fashion Editorial",
-      "prompt": "vogue editorial, high fashion, perfect skin, dramatic pose",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    },
-    "negative_prompt_safe": {
-      "name": "Negative Prompt Safe",
-      "prompt": "(worst quality, low quality:1.4), (deformed, bad anatomy:1.3), text, watermark",
-      "description": "",
-      "favorite": false,
-      "preview": ""
-    }
-  },
   "categories": {
     "All Angles": [],
     "All Framings": [],
@@ -1277,49 +1147,31 @@
       "extreme_low_angle",
       "low_angle",
       "dutch_tilt",
-      "back_view"
+      "back_view",
+      "profile_view"
     ],
     "Most Flattering": [
       "view",
       "eye_level",
-      "high_angle",
-      "portrait",
-      "head_shot"
+      "high_angle"
     ],
-    "Sexiest": [
-      "over_the_shoulder",
-      "close_up",
-      "extreme_close_up",
-      "hip_shot",
-      "waist_shot"
-    ],
+    "Sexiest": [],
     "Epic Cinematic": [
-      "Wide Establishing",
-      "establishing_shot",
-      "extreme_wide",
       "low_angle",
-      "cinematic_frame"
+      "over_the_shoulder"
     ],
     "Action & Dynamic": [
-      "cowboy_shot",
-      "action_frame",
       "dutch_tilt",
-      "american_shot",
-      "fisheye_extreme"
+      "fisheye_extreme",
+      "from_above",
+      "extreme_high_angle"
     ],
     "Intimate & Emotional": [
       "eye_level",
-      "close_up",
-      "medium_close_up",
-      "over_the_shoulder",
-      "silhouette"
+      "over_the_shoulder"
     ],
     "Fashion & Editorial": [
-      "full_body",
-      "fashion_editorial_2",
-      "straight_on",
-      "magazine_cover",
-      "bust_shot"
+      "straight_on"
     ],
     "Wide & Environmental": [
       "wide_shot",
