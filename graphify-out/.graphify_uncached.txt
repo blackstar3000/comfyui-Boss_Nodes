@@ -1,0 +1,10 @@
+F:\ComfyUI\ComfyUI\custom_nodes\comfyui-Boss_Nodes\docs\2026-07-19-artist-selector-enrichment-design.md
+F:\ComfyUI\ComfyUI\custom_nodes\comfyui-Boss_Nodes\docs\superpowers\plans\2026-07-19-artist-selector-enrichment.md
+F:\ComfyUI\ComfyUI\custom_nodes\comfyui-Boss_Nodes\docs\superpowers\plans\2026-07-20-character-builder-crud-buttons.md
+F:\ComfyUI\ComfyUI\custom_nodes\comfyui-Boss_Nodes\docs\superpowers\plans\2026-07-20-character-builder-crud.md
+F:\ComfyUI\ComfyUI\custom_nodes\comfyui-Boss_Nodes\docs\superpowers\plans\2026-07-20-character-previews-backend.md
+F:\ComfyUI\ComfyUI\custom_nodes\comfyui-Boss_Nodes\docs\superpowers\plans\2026-07-22-camera-style-mixer-crud.md
+F:\ComfyUI\ComfyUI\custom_nodes\comfyui-Boss_Nodes\docs\superpowers\specs\2026-07-19-artist-selector-crud-design.md
+F:\ComfyUI\ComfyUI\custom_nodes\comfyui-Boss_Nodes\docs\superpowers\specs\2026-07-20-character-builder-crud-design.md
+F:\ComfyUI\ComfyUI\custom_nodes\comfyui-Boss_Nodes\docs\superpowers\specs\2026-07-22-camera-style-mixer-crud-design.md
+F:\ComfyUI\ComfyUI\custom_nodes\comfyui-Boss_Nodes\docs\superpowers\specs\2026-07-23-dialog-categories-preview-design.md

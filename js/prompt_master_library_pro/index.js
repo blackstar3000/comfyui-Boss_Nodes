@@ -15,7 +15,7 @@
 //   - In-editor Favorites section with HTTP-backed save/load/delete.
 
 import { app } from "/scripts/app.js";
-import { BossDropdown } from "../boss_theme/index.js";
+import { BossDropdown, CollectionController, CollectionEditorDialog, escapeHtml } from "../boss_theme/index.js";
 
 // ── Constants (mirror Python exactly) ──────────────────────────────────────
 
@@ -70,6 +70,11 @@ function injectCSS() {
       display: flex;
       align-items: center;
       justify-content: center;
+    }
+
+    /* Toast */
+    .boss-toast {
+      pointer-events: none;
     }
 
     /* Side panel width override */
@@ -449,14 +454,6 @@ const VISIBLE_NATIVE_WIDGETS = [
   "negative_text",
 ];
 
-function escapeHtml(s) {
-  return String(s)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/&quot;/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 // ── On-node body ───────────────────────────────────────────────────────────
 
@@ -870,6 +867,7 @@ async function deleteFavoriteHTTP(name) {
 class MasterEditor {
   constructor(node) {
     this.node = node;
+    this.controller = new CollectionController("/master_boss");
     this.libs = {
       lights: {},
       themes: {},
@@ -897,6 +895,9 @@ class MasterEditor {
     this.libs.lights = data.lights || {};
     this.libs.themes = data.themes || {};
     this.libs.styles = data.styles || {};
+    this.libs.lightsData = data.lightsData || {};
+    this.libs.themesData = data.themesData || {};
+    this.libs.stylesData = data.stylesData || {};
     this.libs.lightCategories = data.lightCategories || {};
     this.libs.themeCategories = data.themeCategories || {};
     this.libs.styleCategories = data.styleCategories || {};
@@ -938,12 +939,34 @@ class MasterEditor {
     const bar = document.createElement("div");
     bar.className = "boss-bar";
     bar.innerHTML = `<div class="boss-bar-title">Prompt Master Library Pro Editor</div>`;
+    const btnGroup = document.createElement("div");
+    btnGroup.style.cssText = "display:flex;gap:6px;align-items:center;";
+    const refreshBtn = document.createElement("button");
+    refreshBtn.type = "button";
+    refreshBtn.className = "boss-btn";
+    refreshBtn.textContent = "↻ Refresh";
+    refreshBtn.addEventListener("click", async () => {
+      refreshBtn.disabled = true;
+      try {
+        await this.controller.refresh();
+        await this.fetchData();
+        this.refreshList("light");
+        this.refreshList("theme");
+        this.refreshList("style");
+        this._showToast("Libraries refreshed");
+      } catch (err) {
+        this._showToast("Refresh failed", "error");
+      }
+      refreshBtn.disabled = false;
+    });
+    btnGroup.appendChild(refreshBtn);
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
     closeBtn.className = "boss-btn-close";
     closeBtn.textContent = "CLOSE";
     closeBtn.addEventListener("click", () => this.cancel());
-    bar.appendChild(closeBtn);
+    btnGroup.appendChild(closeBtn);
+    bar.appendChild(btnGroup);
     modal.appendChild(bar);
 
     // Body
@@ -1103,6 +1126,108 @@ class MasterEditor {
     return wrap;
   }
 
+  // ── CRUD operations ────────────────────────────────────────────────
+  _showToast(msg, type = "success") {
+    const toast = document.createElement("div");
+    toast.className = "boss-toast";
+    toast.style.cssText = `
+      position: fixed; bottom: 80px; right: 24px; z-index: 10001;
+      padding: 10px 18px; border-radius: 8px; font-size: 13px; color: #fff;
+      background: ${type === "error" ? "#f87171" : "#3ec371"};
+      border: 1px solid ${type === "error" ? "#dc2626" : "#22c55e"};
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: opacity 0.3s;
+    `;
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => { toast.style.opacity = "0"; setTimeout(() => toast.remove(), 300); }, 2000);
+  }
+
+  async _addEntry(which) {
+    const typeMap = { light: "lights", theme: "themes", style: "styles" };
+    const dataMap = { light: "lightsData", theme: "themesData", style: "stylesData" };
+    const type = typeMap[which];
+    const catData = this.libs[dataMap[which]] || {};
+    const categories = Object.keys(catData).sort();
+
+    const dialog = new CollectionEditorDialog({
+      title: which.charAt(0).toUpperCase() + which.slice(1),
+      item: { name: "", prompt: "", description: "", favorite: false },
+      isEdit: false,
+      existingSlugs: new Map(),
+      categories: Object.fromEntries(categories.map(c => [c, []])),
+      selectedCategories: [],
+      onSave: async ({ slug, item, categories: cats }) => {
+        const res = await this.controller.add(type, item, [...cats]);
+        if (!res.ok) {
+          this._showToast(res.error || "Save failed", "error");
+          return;
+        }
+        await this.fetchData();
+        this.refreshList(which);
+        this.refreshPreview();
+        this._showToast(`Added "${item.name}"`);
+      },
+      onCancel: () => {},
+    });
+    await dialog.open();
+  }
+
+  async _editEntry(which, flatKey) {
+    const typeMap = { light: "lights", theme: "themes", style: "styles" };
+    const dataMap = { light: "lightsData", theme: "themesData", style: "stylesData" };
+    const type = typeMap[which];
+    const flatData = this.libs[typeMap[which]] || {};
+    const catData = this.libs[dataMap[which]] || {};
+
+    const parts = flatKey.split(" → ");
+    const name = parts.length > 1 ? parts[1] : flatKey;
+    const currentCat = parts.length > 1 ? parts[0] : "Uncategorized";
+
+    const prompt = flatData[flatKey] || "";
+
+    const categories = Object.keys(catData).sort();
+
+    const dialog = new CollectionEditorDialog({
+      title: which.charAt(0).toUpperCase() + which.slice(1),
+      item: { name, prompt, description: "", favorite: false },
+      isEdit: true,
+      existingSlugs: new Map(),
+      categories: Object.fromEntries(categories.map(c => [c, []])),
+      selectedCategories: [currentCat],
+      onSave: async ({ slug, item, categories: cats }) => {
+        const selectedCats = [...cats];
+        if (selectedCats.length === 0) selectedCats.push(currentCat);
+        const res = await this.controller.add(type, item, selectedCats);
+        if (!res.ok) {
+          this._showToast(res.error || "Save failed", "error");
+          return;
+        }
+        await this.fetchData();
+        this.refreshList(which);
+        this.refreshPreview();
+        this._showToast(`Updated "${item.name}"`);
+      },
+      onCancel: () => {},
+    });
+    await dialog.open();
+  }
+
+  async _deleteEntry(which, name) {
+    if (!confirm(`Delete "${name}"?`)) return;
+    const typeMap = { light: "lights", theme: "themes", style: "styles" };
+    const type = typeMap[which];
+    try {
+      await this.controller._post("/delete", { type, name });
+      await this.fetchData();
+      this.refreshList(which);
+      this.refreshPreview();
+      this._showToast(`Deleted "${name}"`);
+    } catch (err) {
+      this._showToast("Delete failed", "error");
+    }
+  }
+
   refreshList(which) {
     const collectionMap = { light: "lights", theme: "themes", style: "styles" };
     const data = this.libs[collectionMap[which]] || {};
@@ -1124,30 +1249,71 @@ class MasterEditor {
       { name: NONE_SENTINEL, badge: "None" },
     ];
 
+    // Flat items: keys are "Category → Name" strings
     const names = Object.keys(data || {}).sort();
     for (const n of names) {
       if (search && !n.toLowerCase().includes(search)) continue;
-      items.push({ name: n, badge: "" });
+      const parts = n.split(" → ");
+      const cat = parts.length > 1 ? parts[0] : "";
+      const entryName = parts.length > 1 ? parts[1] : n;
+      items.push({ name: entryName, badge: cat, _flatKey: n, _cat: cat });
     }
+
+    // Add button
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.className = "boss-btn";
+    addBtn.textContent = "+ Add";
+    addBtn.style.cssText = "width:100%;margin-bottom:6px;";
+    addBtn.addEventListener("click", () => this._addEntry(which));
+    el.appendChild(addBtn);
 
     for (const it of items) {
       const row = document.createElement("div");
       row.className =
         "boss-ms-list-item" +
-        (this.state[stateKey] === it.name ? " selected" : "");
-      const name = document.createElement("span");
-      name.className = "name";
-      name.textContent = it.name;
-      name.title = it.name;
-      row.appendChild(name);
+        (this.state[stateKey] === (it._flatKey || it.name) ? " selected" : "");
+      const nameEl = document.createElement("span");
+      nameEl.className = "name";
+      nameEl.textContent = it.name;
+      nameEl.title = it.name;
+      row.appendChild(nameEl);
       if (it.badge) {
         const badge = document.createElement("span");
         badge.className = "badge";
         badge.textContent = it.badge;
         row.appendChild(badge);
       }
+
+      // CRUD buttons for non-sentinel items
+      if (it._flatKey) {
+        const editBtn = document.createElement("button");
+        editBtn.type = "button";
+        editBtn.className = "boss-btn";
+        editBtn.textContent = "✎";
+        editBtn.title = "Edit";
+        editBtn.style.cssText = "padding:2px 6px;font-size:11px;min-width:0;";
+        editBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this._editEntry(which, it._flatKey);
+        });
+        row.appendChild(editBtn);
+
+        const delBtn = document.createElement("button");
+        delBtn.type = "button";
+        delBtn.className = "boss-btn is-danger";
+        delBtn.textContent = "✕";
+        delBtn.title = "Delete";
+        delBtn.style.cssText = "padding:2px 6px;font-size:11px;min-width:0;";
+        delBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          this._deleteEntry(which, it.name);
+        });
+        row.appendChild(delBtn);
+      }
+
       row.addEventListener("click", () => {
-        this.state[stateKey] = it.name;
+        this.state[stateKey] = it._flatKey || it.name;
         this.refreshList(which);
         this.refreshPreview();
       });

@@ -22,16 +22,26 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from utils.constants import SEED_MAX, STRENGTH_MIN, STRENGTH_MAX, STRENGTH_DEFAULT, STRENGTH_STEP, WEIGHT_FORMAT_KEYS, WEIGHT_FORMAT_LABELS, WEIGHT_FORMAT_DEFAULT, RANDOM_STYLE
+from utils.constants import (
+    SEED_MAX,
+    STRENGTH_MIN,
+    STRENGTH_MAX,
+    STRENGTH_DEFAULT,
+    STRENGTH_STEP,
+    WEIGHT_FORMAT_KEYS,
+    WEIGHT_FORMAT_LABELS,
+    WEIGHT_FORMAT_DEFAULT,
+    RANDOM_STYLE,
+)
 from utils.prompt_utils import apply_weight, clamp_strength, to_bool
 from utils.logging_utils import make_logger
 
 # ── File paths ──────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).parent
 
-LIGHTS_FILE    = BASE_DIR / "lights.json"
-THEMES_FILE    = BASE_DIR / "themes.json"
-STYLES_FILE    = BASE_DIR / "styles.json"
+LIGHTS_FILE = BASE_DIR / "lights.json"
+THEMES_FILE = BASE_DIR / "themes.json"
+STYLES_FILE = BASE_DIR / "styles.json"
 FAVORITES_FILE = BASE_DIR / "PromptMaster_favorites.json"
 
 # ── Sentinel values for the per-collection combos ──────────────────────────
@@ -52,10 +62,19 @@ FAVORITE_NAME_DEFAULT = "My Combo"
 # values that leak in from stale v3.0 workflow saves (a `load_favorite`
 # boolean literal like True/False) or from a default `favorite_name`
 # widget value that got wired into the name field. Filter them on read.
-_JUNK_FAVORITE_NAMES = frozenset({
-    "", "my combo", "true", "false", "none", "random",
-    "random light", "random theme", "random style",
-})
+_JUNK_FAVORITE_NAMES = frozenset(
+    {
+        "",
+        "my combo",
+        "true",
+        "false",
+        "none",
+        "random",
+        "random light",
+        "random theme",
+        "random style",
+    }
+)
 
 
 def _is_junk_favorite_name(name) -> bool:
@@ -80,6 +99,7 @@ def _is_junk_favorite_name(name) -> bool:
 
 # ── Library cache ───────────────────────────────────────────────────────────
 
+
 class _LibraryState:
     """Parsed + validated library data with mtime tracking. Mirrors the
     other four rebuilt nodes."""
@@ -90,6 +110,7 @@ _log = make_logger("PromptMasterLibraryPro")
 
 # — Sanitization helpers (kept from v3.0 to preserve flat-or-categorized
 # compatibility) —
+
 
 def _sanitize_library(raw: Any, filename: str) -> dict[str, dict[str, str]]:
     """Normalize a loaded JSON library into `{category: {name: text}}`.
@@ -129,9 +150,19 @@ def _sanitize_library(raw: Any, filename: str) -> dict[str, dict[str, str]]:
 def _fallback(key: str) -> dict[str, dict[str, str]]:
     """Tiny safety net if a JSON file is missing or broken."""
     defaults = {
-        "lights": {"Natural": {"Golden Hour": "golden hour lighting, warm sunlight, long shadows"}},
-        "themes": {"Fantasy":  {"High Fantasy": "epic fantasy setting, magical atmosphere"}},
-        "styles": {"Digital":  {"Concept Art":  "concept art, matte painting, professional illustration"}},
+        "lights": {
+            "Natural": {
+                "Golden Hour": "golden hour lighting, warm sunlight, long shadows"
+            }
+        },
+        "themes": {
+            "Fantasy": {"High Fantasy": "epic fantasy setting, magical atmosphere"}
+        },
+        "styles": {
+            "Digital": {
+                "Concept Art": "concept art, matte painting, professional illustration"
+            }
+        },
     }
     return defaults.get(key, {"Uncategorized": {"Default": ""}})
 
@@ -186,7 +217,9 @@ def _load_library(key: str, force: bool = False) -> dict[str, dict[str, str]]:
 
     _LIBS[key] = data
     _MTIMES[key] = mtime
-    _log(f"Loaded {filename}: {sum(len(v) for v in data.values())} entries across {len(data)} categories")
+    _log(
+        f"Loaded {filename}: {sum(len(v) for v in data.values())} entries across {len(data)} categories"
+    )
     return data
 
 
@@ -206,10 +239,29 @@ def _library_payload(key: str) -> tuple[dict, list[str]]:
     return flat, sorted(data.keys())
 
 
+def _categorized_payload(key: str) -> dict[str, dict[str, str]]:
+    """Return raw {category: {name: prompt}} for CRUD operations."""
+    return _load_library(key)
+
+
+def _save_library_json(key: str, data: dict) -> None:
+    """Write library data back to disk and bust the cache."""
+    path = _FILES[key]
+    try:
+        with path.open("w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2, ensure_ascii=False)
+    except OSError as e:
+        _log(f"Error writing {path.name}: {e}")
+        return
+    _MTIMES[key] = None  # bust mtime cache
+
+
 # ── Resolved selection value object (kept from v3.0) ───────────────────────
+
 
 class _Selection:
     """Holds a resolved category/name pair and the raw prompt text."""
+
     __slots__ = ("category", "name", "text", "is_random")
 
     def __init__(self, category: str, name: str, text: str, is_random: bool = False):
@@ -232,6 +284,7 @@ class _Selection:
 
 # ── Resolve selection ──────────────────────────────────────────────────────
 
+
 def _resolve(
     rng: random.Random,
     choice: str,
@@ -244,11 +297,7 @@ def _resolve(
         return _Selection.empty()
 
     if choice.startswith("__RANDOM_"):
-        pool = [
-            (cat, name)
-            for cat, items in data.items()
-            for name in items
-        ]
+        pool = [(cat, name) for cat, items in data.items() for name in items]
         if not pool:
             _log(f"Empty pool for {label} random — skipping.")
             return _Selection.empty()
@@ -269,30 +318,54 @@ def _resolve(
 # ── Auto-negative generation (kept from v3.0) ──────────────────────────────
 
 _NEGATIVE_RULES: list[tuple[list[str], str]] = [
-    (["anime", "manga", "kawaii", "pixel art", "retro game", "retro arcade"],
-     "realistic, photography, photorealistic, 3d render, deformed, low contrast"),
-    (["photo", "cinematic", "film", "hdr", "glamour", "long exposure", "tilt shift"],
-     "drawing, painting, cartoon, anime, sketch, illustration, low quality, blurry"),
-    (["digital art", "concept art", "matte painting"],
-     "photo, photography, realistic, photorealistic, ugly, deformed"),
-    (["watercolor", "impressionist", "pointillism", "expressionist"],
-     "photo, realistic, digital art, vector, sharp outlines, deformed, noisy"),
-    (["pop art", "psychedelic", "graffiti"],
-     "realistic, photorealistic, low contrast, muted colors, photo, deformed"),
-    (["origami", "papercraft", "kirigami", "papercut", "paper mache"],
-     "3d render, realistic, photo, textured noise, blur, deformed, painting"),
-    (["pixel art", "lowpoly", "retro arcade", "retro game"],
-     "smooth shading, realistic, high resolution, photo, 3d, blurry"),
-    (["cyberpunk", "neonpunk", "vaporwave", "biomechanical", "sci fi", "futuristic"],
-     "natural lighting, rustic, historical, low tech, deformed, painting"),
-    (["line art", "minimalist", "monochrome", "silhouette"],
-     "colorful, textured, realistic, photo, noise, blurry, complex background"),
-    (["stained glass", "zentangle", "typography"],
-     "photo, realistic, 3d, deformed, blurry, noisy"),
-    (["steampunk", "gothic", "horror", "macabre", "lovecraftian"],
-     "bright colors, cartoon, kawaii, cute, deformed, low contrast"),
-    (["comic book", "comic", "manga panel"],
-     "realistic, photo, 3d render, deformed, blurry, low quality"),
+    (
+        ["anime", "manga", "kawaii", "pixel art", "retro game", "retro arcade"],
+        "realistic, photography, photorealistic, 3d render, deformed, low contrast",
+    ),
+    (
+        ["photo", "cinematic", "film", "hdr", "glamour", "long exposure", "tilt shift"],
+        "drawing, painting, cartoon, anime, sketch, illustration, low quality, blurry",
+    ),
+    (
+        ["digital art", "concept art", "matte painting"],
+        "photo, photography, realistic, photorealistic, ugly, deformed",
+    ),
+    (
+        ["watercolor", "impressionist", "pointillism", "expressionist"],
+        "photo, realistic, digital art, vector, sharp outlines, deformed, noisy",
+    ),
+    (
+        ["pop art", "psychedelic", "graffiti"],
+        "realistic, photorealistic, low contrast, muted colors, photo, deformed",
+    ),
+    (
+        ["origami", "papercraft", "kirigami", "papercut", "paper mache"],
+        "3d render, realistic, photo, textured noise, blur, deformed, painting",
+    ),
+    (
+        ["pixel art", "lowpoly", "retro arcade", "retro game"],
+        "smooth shading, realistic, high resolution, photo, 3d, blurry",
+    ),
+    (
+        ["cyberpunk", "neonpunk", "vaporwave", "biomechanical", "sci fi", "futuristic"],
+        "natural lighting, rustic, historical, low tech, deformed, painting",
+    ),
+    (
+        ["line art", "minimalist", "monochrome", "silhouette"],
+        "colorful, textured, realistic, photo, noise, blurry, complex background",
+    ),
+    (
+        ["stained glass", "zentangle", "typography"],
+        "photo, realistic, 3d, deformed, blurry, noisy",
+    ),
+    (
+        ["steampunk", "gothic", "horror", "macabre", "lovecraftian"],
+        "bright colors, cartoon, kawaii, cute, deformed, low contrast",
+    ),
+    (
+        ["comic book", "comic", "manga panel"],
+        "realistic, photo, 3d render, deformed, blurry, low quality",
+    ),
 ]
 _DEFAULT_NEGATIVE = "blurry, deformed, ugly, low quality, noise, artifact"
 
@@ -309,6 +382,7 @@ def _generate_auto_negative(sel: _Selection) -> str:
 
 
 # ── Favorites I/O (with backwards-compat for the v3.0 flat-key schema) ─────
+
 
 def _read_favorites() -> list[dict]:
     """Read favorites from disk. Accepts both new (light_choice/...) and v3.0
@@ -352,16 +426,18 @@ def _read_favorites() -> list[dict]:
         except (TypeError, ValueError):
             light_s = theme_s = style_s = STRENGTH_DEFAULT
         saved_at = entry.get("saved_at") or entry.get("timestamp") or None
-        out.append({
-            "name":           name,
-            "light_choice":   light,
-            "theme_choice":   theme,
-            "style_choice":   style,
-            "light_strength": light_s,
-            "theme_strength": theme_s,
-            "style_strength": style_s,
-            "saved_at":       saved_at,
-        })
+        out.append(
+            {
+                "name": name,
+                "light_choice": light,
+                "theme_choice": theme,
+                "style_choice": style,
+                "light_strength": light_s,
+                "theme_strength": theme_s,
+                "style_strength": style_s,
+                "saved_at": saved_at,
+            }
+        )
 
     # One-time scrub: rewrite the disk file with junk names removed so
     # subsequent INPUT_TYPES calls don't keep surfacing stale entries.
@@ -398,23 +474,32 @@ def _write_favorites(favs: list[dict]) -> None:
         _log(f"Failed to write favorites: {e}")
 
 
-def _add_favorite(name: str, light: str, theme: str, style: str,
-                  light_s: float, theme_s: float, style_s: float) -> list[dict]:
+def _add_favorite(
+    name: str,
+    light: str,
+    theme: str,
+    style: str,
+    light_s: float,
+    theme_s: float,
+    style_s: float,
+) -> list[dict]:
     if _is_junk_favorite_name(name):
         _log(f"Refusing to save junk favorite name: {name!r}")
         return _read_favorites()
     favs = _read_favorites()
     favs = [f for f in favs if f.get("name") != name]
-    favs.append({
-        "name":           name,
-        "light_choice":   light,
-        "theme_choice":   theme,
-        "style_choice":   style,
-        "light_strength": float(light_s),
-        "theme_strength": float(theme_s),
-        "style_strength": float(style_s),
-        "saved_at":       datetime.now().isoformat(),
-    })
+    favs.append(
+        {
+            "name": name,
+            "light_choice": light,
+            "theme_choice": theme,
+            "style_choice": style,
+            "light_strength": float(light_s),
+            "theme_strength": float(theme_s),
+            "style_strength": float(style_s),
+            "saved_at": datetime.now().isoformat(),
+        }
+    )
     _write_favorites(favs)
     return favs
 
@@ -427,6 +512,7 @@ def _delete_favorite(name: str) -> list[dict]:
 
 
 # ── Node class ──────────────────────────────────────────────────────────────
+
 
 class PromptMasterLibraryPro:
     DESCRIPTION = (
@@ -459,56 +545,100 @@ class PromptMasterLibraryPro:
 
         return {
             "required": {
-                "light":  (entry_list(lights, RANDOM_LIGHT),
-                           {"default": RANDOM_LIGHT,
-                            "tooltip": "Lighting preset. Random samples across all categories."}),
-                "theme":  (entry_list(themes, RANDOM_THEME),
-                           {"default": RANDOM_THEME,
-                            "tooltip": "Scene/world theme preset."}),
-                "style":  (entry_list(styles, RANDOM_STYLE),
-                           {"default": RANDOM_STYLE,
-                            "tooltip": "Art style or medium preset."}),
-                "light_strength":  ("FLOAT", {
-                    "default": STRENGTH_DEFAULT, "min": STRENGTH_MIN, "max": STRENGTH_MAX,
-                    "step": STRENGTH_STEP, "display": "slider",
-                    "tooltip": "Attention weight for the light fragment. 1.0 = no change.",
-                }),
-                "theme_strength":  ("FLOAT", {
-                    "default": STRENGTH_DEFAULT, "min": STRENGTH_MIN, "max": STRENGTH_MAX,
-                    "step": STRENGTH_STEP, "display": "slider",
-                    "tooltip": "Attention weight for the theme fragment. 1.0 = no change.",
-                }),
-                "style_strength":  ("FLOAT", {
-                    "default": STRENGTH_DEFAULT, "min": STRENGTH_MIN, "max": STRENGTH_MAX,
-                    "step": STRENGTH_STEP, "display": "slider",
-                    "tooltip": "Attention weight for the style fragment. 1.0 = no change.",
-                }),
+                "light": (
+                    entry_list(lights, RANDOM_LIGHT),
+                    {
+                        "default": RANDOM_LIGHT,
+                        "tooltip": "Lighting preset. Random samples across all categories.",
+                    },
+                ),
+                "theme": (
+                    entry_list(themes, RANDOM_THEME),
+                    {"default": RANDOM_THEME, "tooltip": "Scene/world theme preset."},
+                ),
+                "style": (
+                    entry_list(styles, RANDOM_STYLE),
+                    {"default": RANDOM_STYLE, "tooltip": "Art style or medium preset."},
+                ),
+                "light_strength": (
+                    "FLOAT",
+                    {
+                        "default": STRENGTH_DEFAULT,
+                        "min": STRENGTH_MIN,
+                        "max": STRENGTH_MAX,
+                        "step": STRENGTH_STEP,
+                        "display": "slider",
+                        "tooltip": "Attention weight for the light fragment. 1.0 = no change.",
+                    },
+                ),
+                "theme_strength": (
+                    "FLOAT",
+                    {
+                        "default": STRENGTH_DEFAULT,
+                        "min": STRENGTH_MIN,
+                        "max": STRENGTH_MAX,
+                        "step": STRENGTH_STEP,
+                        "display": "slider",
+                        "tooltip": "Attention weight for the theme fragment. 1.0 = no change.",
+                    },
+                ),
+                "style_strength": (
+                    "FLOAT",
+                    {
+                        "default": STRENGTH_DEFAULT,
+                        "min": STRENGTH_MIN,
+                        "max": STRENGTH_MAX,
+                        "step": STRENGTH_STEP,
+                        "display": "slider",
+                        "tooltip": "Attention weight for the style fragment. 1.0 = no change.",
+                    },
+                ),
             },
             "optional": {
-                "seed": ("INT", {
-                    "default": -1, "min": -1, "max": SEED_MAX,
-                    "tooltip": "-1 = random each run. 0 or higher = deterministic.",
-                }),
-                "separator": ("STRING", {
-                    "default": SEPARATOR_DEFAULT, "multiline": False,
-                    "tooltip": "String placed between prompt parts (ignored when newlines=True).",
-                }),
-                "newlines": ("BOOLEAN", {
-                    "default": NEWLINES_DEFAULT,
-                    "label_on": "Separate by newlines",
-                    "label_off": "Separate by delimiter",
-                    "tooltip": "ON = join parts with '\\n'. OFF = join with `separator`.",
-                }),
-                "weight_format": (WEIGHT_FORMAT_KEYS, {
-                    "default": WEIGHT_FORMAT_DEFAULT,
-                    "tooltip": "\n".join(f"{k}: {v}" for k, v in WEIGHT_FORMAT_LABELS.items()),
-                }),
-                "force_refresh": ("BOOLEAN", {
-                    "default": False,
-                    "label_on": "Refresh", "label_off": "Cached",
-                    "tooltip": "Reload lights.json / themes.json / styles.json from disk on the next run.",
-                }),
-
+                "seed": (
+                    "INT",
+                    {
+                        "default": -1,
+                        "min": -1,
+                        "max": SEED_MAX,
+                        "tooltip": "-1 = random each run. 0 or higher = deterministic.",
+                    },
+                ),
+                "separator": (
+                    "STRING",
+                    {
+                        "default": SEPARATOR_DEFAULT,
+                        "multiline": False,
+                        "tooltip": "String placed between prompt parts (ignored when newlines=True).",
+                    },
+                ),
+                "newlines": (
+                    "BOOLEAN",
+                    {
+                        "default": NEWLINES_DEFAULT,
+                        "label_on": "Separate by newlines",
+                        "label_off": "Separate by delimiter",
+                        "tooltip": "ON = join parts with '\\n'. OFF = join with `separator`.",
+                    },
+                ),
+                "weight_format": (
+                    WEIGHT_FORMAT_KEYS,
+                    {
+                        "default": WEIGHT_FORMAT_DEFAULT,
+                        "tooltip": "\n".join(
+                            f"{k}: {v}" for k, v in WEIGHT_FORMAT_LABELS.items()
+                        ),
+                    },
+                ),
+                "force_refresh": (
+                    "BOOLEAN",
+                    {
+                        "default": False,
+                        "label_on": "Refresh",
+                        "label_off": "Cached",
+                        "tooltip": "Reload lights.json / themes.json / styles.json from disk on the next run.",
+                    },
+                ),
                 # Favorites are managed entirely through the in-editor panel +
                 # the /master_boss/favorites HTTP routes. They are no longer
                 # exposed as wire widgets because stale workflow saves of
@@ -516,18 +646,27 @@ class PromptMasterLibraryPro:
                 # caused "Value not in list" errors when reloading old
                 # workflows. The editor modal's Save/Delete/Load are the
                 # only entry points.
-
                 # Negative prompt — kept on the wire for the same reason.
-                "negative_strength": ("FLOAT", {
-                    "default": NEGATIVE_STRENGTH_DEFAULT, "min": STRENGTH_MIN, "max": STRENGTH_MAX,
-                    "step": STRENGTH_STEP, "display": "slider",
-                    "tooltip": "Weight applied to the auto-generated negative prompt.",
-                }),
-                "negative_text": ("STRING", {
-                    "default": NEGATIVE_TEXT_DEFAULT, "multiline": True,
-                    "placeholder": "Extra negatives: blurry, deformed, ugly...",
-                    "tooltip": "Appended to the auto-generated negative. Can be left blank.",
-                }),
+                "negative_strength": (
+                    "FLOAT",
+                    {
+                        "default": NEGATIVE_STRENGTH_DEFAULT,
+                        "min": STRENGTH_MIN,
+                        "max": STRENGTH_MAX,
+                        "step": STRENGTH_STEP,
+                        "display": "slider",
+                        "tooltip": "Weight applied to the auto-generated negative prompt.",
+                    },
+                ),
+                "negative_text": (
+                    "STRING",
+                    {
+                        "default": NEGATIVE_TEXT_DEFAULT,
+                        "multiline": True,
+                        "placeholder": "Extra negatives: blurry, deformed, ugly...",
+                        "tooltip": "Appended to the auto-generated negative. Can be left blank.",
+                    },
+                ),
             },
             "hidden": {
                 # Mirrors CameraState / SceneState: full editor state.
@@ -535,10 +674,26 @@ class PromptMasterLibraryPro:
             },
         }
 
-    RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING",
-                    "STRING", "STRING", "STRING", "STRING")
-    RETURN_NAMES = ("combined", "light_prompt", "theme_prompt", "style_prompt",
-                    "light_name", "theme_name", "style_name", "negative")
+    RETURN_TYPES = (
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+        "STRING",
+    )
+    RETURN_NAMES = (
+        "combined",
+        "light_prompt",
+        "theme_prompt",
+        "style_prompt",
+        "light_name",
+        "theme_name",
+        "style_name",
+        "negative",
+    )
     OUTPUT_TOOLTIPS = (
         "Light + Theme + Style joined by separator (or newlines).",
         "Light fragment, weighted by light_strength.",
@@ -558,15 +713,25 @@ class PromptMasterLibraryPro:
         # a fresh run-seed on the JS side via the graphToPrompt wrapper.
         return MasterState
 
-    def go(self, light, theme, style,
-           light_strength=STRENGTH_DEFAULT, theme_strength=STRENGTH_DEFAULT,
-           style_strength=STRENGTH_DEFAULT,
-           seed=-1, separator=SEPARATOR_DEFAULT, newlines=False,
-           weight_format=WEIGHT_FORMAT_DEFAULT, show_preview=True,
-           force_refresh=False, MasterState="{}",
-           negative_strength=NEGATIVE_STRENGTH_DEFAULT,
-           negative_text=NEGATIVE_TEXT_DEFAULT,
-           **kwargs):
+    def go(
+        self,
+        light,
+        theme,
+        style,
+        light_strength=STRENGTH_DEFAULT,
+        theme_strength=STRENGTH_DEFAULT,
+        style_strength=STRENGTH_DEFAULT,
+        seed=-1,
+        separator=SEPARATOR_DEFAULT,
+        newlines=False,
+        weight_format=WEIGHT_FORMAT_DEFAULT,
+        show_preview=True,
+        force_refresh=False,
+        MasterState="{}",
+        negative_strength=NEGATIVE_STRENGTH_DEFAULT,
+        negative_text=NEGATIVE_TEXT_DEFAULT,
+        **kwargs,
+    ):
         # `show_preview` is intentionally kept in the wire signature for
         # backwards compatibility; the rebuild never uses it (preview moved
         # into the editor modal).
@@ -646,9 +811,9 @@ class PromptMasterLibraryPro:
         t_sel = _resolve(rng, theme, themes, "theme")
         s_sel = _resolve(rng, style, styles, "style")
 
-        light_strength  = clamp_strength(light_strength)
-        theme_strength  = clamp_strength(theme_strength)
-        style_strength  = clamp_strength(style_strength)
+        light_strength = clamp_strength(light_strength)
+        theme_strength = clamp_strength(theme_strength)
+        style_strength = clamp_strength(style_strength)
 
         l_prompt = apply_weight(l_sel.text, light_strength, weight_format)
         t_prompt = apply_weight(t_sel.text, theme_strength, weight_format)
@@ -677,13 +842,18 @@ class PromptMasterLibraryPro:
 
         return (
             combined,
-            l_prompt, t_prompt, s_prompt,
-            l_sel.display_name, t_sel.display_name, s_sel.display_name,
+            l_prompt,
+            t_prompt,
+            s_prompt,
+            l_sel.display_name,
+            t_sel.display_name,
+            s_sel.display_name,
             full_negative or "",
         )
 
 
 # ── HTTP API routes ─────────────────────────────────────────────────────────
+
 
 def register_api_routes():
     try:
@@ -701,25 +871,41 @@ def register_api_routes():
             lights_flat, light_cats = _library_payload("lights")
             themes_flat, theme_cats = _library_payload("themes")
             styles_flat, style_cats = _library_payload("styles")
-            return web.json_response({
-                "lights": lights_flat, "themes": themes_flat, "styles": styles_flat,
-                "lightCategories": light_cats,
-                "themeCategories": theme_cats,
-                "styleCategories": style_cats,
-                "weightFormats": [
-                    {"key": k, "label": WEIGHT_FORMAT_LABELS[k]}
-                    for k in WEIGHT_FORMAT_KEYS
-                ],
-                "separatorDefault": SEPARATOR_DEFAULT,
-                "newlinesDefault": NEWLINES_DEFAULT,
-                "strengthRange": {"min": STRENGTH_MIN, "max": STRENGTH_MAX, "step": STRENGTH_STEP},
-                "negativeDefaults": {"strength": NEGATIVE_STRENGTH_DEFAULT, "text": NEGATIVE_TEXT_DEFAULT},
-                "favoriteCount": len(_read_favorites()),
-                "randomSentinels": {
-                    "light": RANDOM_LIGHT, "theme": RANDOM_THEME, "style": RANDOM_STYLE,
-                },
-                "noneSentinel": NONE_SENTINEL,
-            })
+            return web.json_response(
+                {
+                    "lights": lights_flat,
+                    "themes": themes_flat,
+                    "styles": styles_flat,
+                    "lightsData": _categorized_payload("lights"),
+                    "themesData": _categorized_payload("themes"),
+                    "stylesData": _categorized_payload("styles"),
+                    "lightCategories": light_cats,
+                    "themeCategories": theme_cats,
+                    "styleCategories": style_cats,
+                    "weightFormats": [
+                        {"key": k, "label": WEIGHT_FORMAT_LABELS[k]}
+                        for k in WEIGHT_FORMAT_KEYS
+                    ],
+                    "separatorDefault": SEPARATOR_DEFAULT,
+                    "newlinesDefault": NEWLINES_DEFAULT,
+                    "strengthRange": {
+                        "min": STRENGTH_MIN,
+                        "max": STRENGTH_MAX,
+                        "step": STRENGTH_STEP,
+                    },
+                    "negativeDefaults": {
+                        "strength": NEGATIVE_STRENGTH_DEFAULT,
+                        "text": NEGATIVE_TEXT_DEFAULT,
+                    },
+                    "favoriteCount": len(_read_favorites()),
+                    "randomSentinels": {
+                        "light": RANDOM_LIGHT,
+                        "theme": RANDOM_THEME,
+                        "style": RANDOM_STYLE,
+                    },
+                    "noneSentinel": NONE_SENTINEL,
+                }
+            )
         except Exception:
             return web.json_response({"error": "Internal server error"}, status=500)
 
@@ -762,15 +948,117 @@ def register_api_routes():
         except Exception:
             return web.json_response({"error": "Internal server error"}, status=500)
 
+    @routes.post("/master_boss/save")
+    async def save_master_entry(request):
+        try:
+            body = await request.json()
+            lib_type = body.get("type", "")
+            name = body.get("name", "").strip()
+            prompt = body.get("prompt", "").strip()
+            categories = body.get("categories", [])
+
+            if lib_type not in _FILES:
+                return web.json_response({"error": "Invalid type"}, status=400)
+            if not name:
+                return web.json_response({"error": "Name required"}, status=400)
+            if not prompt:
+                return web.json_response({"error": "Prompt required"}, status=400)
+
+            data = _load_library(lib_type)
+            category = categories[0] if categories else "Uncategorized"
+
+            # Find and remove from old category if name exists
+            old_cat = None
+            for cat, entries in data.items():
+                if name in entries:
+                    old_cat = cat
+                    break
+
+            # Remove from old category
+            if old_cat and old_cat in data:
+                data[old_cat].pop(name, None)
+                if not data[old_cat]:
+                    del data[old_cat]
+
+            # Add to target category
+            if category not in data:
+                data[category] = {}
+            data[category][name] = prompt
+
+            _save_library_json(lib_type, data)
+            _log(
+                f"Saved {lib_type}/{category}/{name} — total {sum(len(v) for v in data.values())} entries"
+            )
+            print(
+                f"[PromptMaster] Saved {lib_type}/{category}/{name} to {_FILES[lib_type]}"
+            )
+
+            return web.json_response(
+                {
+                    "name": name,
+                    "category": category,
+                    "count": sum(len(v) for v in data.values()),
+                }
+            )
+        except Exception as e:
+            _log(f"/master_boss/save failed: {e}")
+            import traceback
+
+            traceback.print_exc()
+            return web.json_response({"error": "Internal server error"}, status=500)
+
+    @routes.post("/master_boss/delete")
+    async def delete_master_entry(request):
+        try:
+            body = await request.json()
+            lib_type = body.get("type", "")
+            name = body.get("name", "").strip()
+
+            if lib_type not in _FILES:
+                return web.json_response({"error": "Invalid type"}, status=400)
+            if not name:
+                return web.json_response({"error": "Name required"}, status=400)
+
+            data = _load_library(lib_type)
+
+            # Find and remove from category
+            found = False
+            for cat, entries in data.items():
+                if name in entries:
+                    del entries[name]
+                    if not entries:
+                        del data[cat]
+                    found = True
+                    break
+
+            if not found:
+                return web.json_response({"error": "Not found"}, status=404)
+
+            _save_library_json(lib_type, data)
+            _log(
+                f"Deleted {lib_type}/{name} — total {sum(len(v) for v in data.values())} entries"
+            )
+
+            return web.json_response(
+                {
+                    "count": sum(len(v) for v in data.values()),
+                }
+            )
+        except Exception as e:
+            _log(f"/master_boss/delete failed: {e}")
+            return web.json_response({"error": "Internal server error"}, status=500)
+
     @routes.post("/master_boss/refresh")
     async def refresh_master_data(request):
         try:
             _load_all(force=True)
-            return web.json_response({
-                "lights": sum(len(v) for v in (_LIBS.get("lights") or {}).values()),
-                "themes": sum(len(v) for v in (_LIBS.get("themes") or {}).values()),
-                "styles": sum(len(v) for v in (_LIBS.get("styles") or {}).values()),
-            })
+            return web.json_response(
+                {
+                    "lights": sum(len(v) for v in (_LIBS.get("lights") or {}).values()),
+                    "themes": sum(len(v) for v in (_LIBS.get("themes") or {}).values()),
+                    "styles": sum(len(v) for v in (_LIBS.get("styles") or {}).values()),
+                }
+            )
         except Exception:
             return web.json_response({"error": "Internal server error"}, status=500)
 
