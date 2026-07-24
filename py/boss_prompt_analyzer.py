@@ -458,6 +458,7 @@ class BossPromptAnalyzerPRO:
             "optional": {
                 "clip": ("CLIP",),
                 "show_token_ids": ("BOOLEAN", {"default": False}),
+                "auto_fix": ("BOOLEAN", {"default": False}),
                 "export_format": (["text", "markdown", "json"], {"default": "text"}),
             }
         }
@@ -469,8 +470,14 @@ class BossPromptAnalyzerPRO:
     DESCRIPTION = "Prompt diagnostics, optimization, and health scoring."
 
     def analyze(self, prompt: str, clip: Optional[object] = None,
-                show_token_ids: bool = False, export_format: str = "text"):
+                show_token_ids: bool = False, auto_fix: bool = False,
+                export_format: str = "text"):
         self._ensure_manager()
+
+        # Auto-fix if requested
+        if auto_fix:
+            prompt = self._auto_fix_prompt(prompt)
+
         context = AnalysisContext(prompt=prompt, clip=clip, show_token_ids=show_token_ids)
         result = AnalysisResult()
         self.manager.analyze(context, result)
@@ -480,6 +487,51 @@ class BossPromptAnalyzerPRO:
         health = self.report_builder.build(result, "text")
         json_rpt = self.report_builder.build(result, "json")
         return (analysis, result.effective_prompt, health, json_rpt)
+
+    def _auto_fix_prompt(self, prompt: str) -> str:
+        """Auto-fix prompt: dedupe, add BREAKs, balance chunks."""
+        # Step 1: Strip weights for dedup analysis
+        clean = self._strip_weights(prompt)
+
+        # Step 2: Split by existing BREAKs
+        parts = re.split(r"\bBREAK\b", clean, flags=re.IGNORECASE)
+        parts = [p.strip() for p in parts if p.strip()]
+
+        # Step 3: Flatten to individual tags, dedupe
+        seen = set()
+        unique_tags = []
+        for part in parts:
+            tags = [t.strip() for t in re.split(r",", part) if t.strip()]
+            for tag in tags:
+                tag_lower = tag.lower().strip()
+                if tag_lower not in seen:
+                    seen.add(tag_lower)
+                    unique_tags.append(tag)
+
+        # Step 4: Split into chunks of ~60 tokens (safe under 77)
+        TARGET = 60
+        chunks = []
+        current_chunk = []
+        current_count = 0
+
+        for tag in unique_tags:
+            # Estimate tokens: ~1 per word + commas
+            tag_tokens = len(tag.split()) + 1
+            if current_count + tag_tokens > TARGET and current_chunk:
+                chunks.append(", ".join(current_chunk))
+                current_chunk = [tag]
+                current_count = tag_tokens
+            else:
+                current_chunk.append(tag)
+                current_count += tag_tokens
+
+        if current_chunk:
+            chunks.append(", ".join(current_chunk))
+
+        # Step 5: Rejoin with BREAKs
+        if len(chunks) > 1:
+            return " BREAK ".join(chunks)
+        return chunks[0] if chunks else prompt
 
     def _strip_weights(self, prompt: str) -> str:
         r = re.sub(r"\(([^)]+):[0-9.]+\)", r"\1", prompt)
