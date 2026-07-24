@@ -481,11 +481,11 @@ class CollectionController {
   }
 
   async add(type, item, categories = []) {
-    return this._post("/save", { type, name: item.name, prompt: item.prompt, description: item.description || "", favorite: item.favorite || false, categories });
+    return this._post("/save", { type, name: item.name, prompt: item.prompt, description: item.description || "", favorite: item.favorite || false, preview: item.preview || "", categories });
   }
 
   async edit(type, slug, item, categories = []) {
-    return this._post("/save", { type, slug, name: item.name, prompt: item.prompt, description: item.description || "", favorite: item.favorite || false, categories });
+    return this._post("/save", { type, slug, name: item.name, prompt: item.prompt, description: item.description || "", favorite: item.favorite || false, preview: item.preview || "", categories });
   }
 
   async delete(type, slug) {
@@ -696,13 +696,19 @@ class CollectionCRUDWidget {
 }
 
 class CollectionEditorDialog {
-  constructor({ title, item, isEdit, existingSlugs, onSave, onCancel }) {
+  constructor({ title, item, isEdit, existingSlugs, onSave, onCancel, categories, selectedCategories, previewUrl }) {
     this.title = title;
     this.item = item || { name: "", prompt: "", description: "", favorite: false };
     this.isEdit = isEdit;
     this.existingSlugs = existingSlugs || new Map();
     this.onSave = onSave || (() => {});
     this.onCancel = onCancel || (() => {});
+    // Clone categories so Cancel doesn't mutate the caller's live state
+    this.categories = categories ? Object.fromEntries(
+      Object.entries(categories).map(([k, v]) => [k, Array.isArray(v) ? [...v] : v])
+    ) : null;
+    this.selectedCategories = new Set(selectedCategories || []);
+    this.previewUrl = previewUrl || "";
     this.modal = null;
     this.errorEl = null;
   }
@@ -776,6 +782,146 @@ class CollectionEditorDialog {
     body.appendChild(favWrap);
     this._favToggle = () => isFav;
 
+    // ── Two-column section: Categories (left) + Preview (right) ──
+    if (this.categories || this.previewUrl !== undefined) {
+      const twoCol = document.createElement("div");
+      twoCol.style.display = "flex";
+      twoCol.style.gap = "16px";
+      twoCol.style.alignItems = "flex-start";
+
+      // Left: Categories
+      if (this.categories) {
+        const catCol = document.createElement("div");
+        catCol.style.flex = "1";
+        catCol.style.minWidth = "0";
+
+        const catLbl = document.createElement("span");
+        catLbl.className = "boss-label";
+        catLbl.textContent = "Categories";
+        catCol.appendChild(catLbl);
+
+        const chipsWrap = document.createElement("div");
+        chipsWrap.className = "boss-dialog-cat-chips";
+        catCol.appendChild(chipsWrap);
+
+        const newCatRow = document.createElement("div");
+        newCatRow.style.display = "flex";
+        newCatRow.style.gap = "6px";
+        newCatRow.style.marginTop = "6px";
+        const newCatInput = document.createElement("input");
+        newCatInput.type = "text";
+        newCatInput.className = "boss-input";
+        newCatInput.placeholder = "New category name…";
+        newCatInput.style.flex = "1";
+        const newCatBtn = document.createElement("button");
+        newCatBtn.type = "button";
+        newCatBtn.className = "boss-btn-primary";
+        newCatBtn.textContent = "+";
+        newCatBtn.style.padding = "4px 10px";
+        newCatBtn.style.minWidth = "32px";
+        newCatRow.appendChild(newCatInput);
+        newCatRow.appendChild(newCatBtn);
+        catCol.appendChild(newCatRow);
+
+        const allCats = Object.keys(this.categories).sort();
+        const renderChips = () => {
+          chipsWrap.innerHTML = "";
+          for (const cat of allCats) {
+            if (cat === "All") continue;
+            const chip = document.createElement("button");
+            chip.type = "button";
+            chip.className = "boss-dialog-cat-chip" + (this.selectedCategories.has(cat) ? " active" : "");
+            chip.textContent = cat;
+            chip.addEventListener("click", () => {
+              if (this.selectedCategories.has(cat)) this.selectedCategories.delete(cat);
+              else this.selectedCategories.add(cat);
+              chip.classList.toggle("active");
+            });
+            chipsWrap.appendChild(chip);
+          }
+        };
+        renderChips();
+
+        const addNewCategory = () => {
+          const val = newCatInput.value.trim();
+          if (!val) return;
+          // Case-insensitive dedupe: find existing match
+          const existing = allCats.find((c) => c.toLowerCase() === val.toLowerCase());
+          if (existing) {
+            // Just select the existing one
+            this.selectedCategories.add(existing);
+            newCatInput.value = "";
+            renderChips();
+            return;
+          }
+          allCats.push(val);
+          allCats.sort();
+          this.categories[val] = this.categories[val] || [];
+          this.selectedCategories.add(val);
+          newCatInput.value = "";
+          renderChips();
+        };
+        newCatBtn.addEventListener("click", addNewCategory);
+        newCatInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") { e.preventDefault(); addNewCategory(); }
+        });
+
+        twoCol.appendChild(catCol);
+      }
+
+      // Right: Preview image
+      {
+        const prevCol = document.createElement("div");
+        prevCol.style.flex = "1";
+        prevCol.style.minWidth = "0";
+
+        const prevLbl = document.createElement("span");
+        prevLbl.className = "boss-label";
+        prevLbl.textContent = "Preview Image";
+        prevCol.appendChild(prevLbl);
+
+        const prevImg = document.createElement("img");
+        prevImg.className = "boss-dialog-preview-img";
+        prevImg.alt = "Preview";
+        prevImg.style.display = "none";
+        // Some CDNs (notably cdn.donmai.us) reject cross-origin image loads
+        // that carry a foreign Referer header - the browser sends this
+        // page's URL by default, which reads as hotlinking. "no-referrer"
+        // often satisfies that check. onerror hides the element instead of
+        // falling back to the browser's broken-image-icon + alt text, which
+        // is what a failed load without this handler looks like.
+        prevImg.referrerPolicy = "no-referrer";
+        prevImg.onerror = () => { prevImg.style.display = "none"; };
+        if (this.previewUrl) {
+          prevImg.src = this.previewUrl;
+          prevImg.style.display = "block";
+        }
+        prevCol.appendChild(prevImg);
+
+        const urlInput = document.createElement("input");
+        urlInput.type = "text";
+        urlInput.className = "boss-input";
+        urlInput.value = this.previewUrl;
+        urlInput.placeholder = "Image URL (optional)…";
+        urlInput.style.marginTop = "6px";
+        urlInput.addEventListener("change", () => {
+          this.previewUrl = urlInput.value.trim();
+          if (this.previewUrl) {
+            prevImg.src = this.previewUrl;
+            prevImg.style.display = "block"; // reset in case a prior URL had failed and hidden it
+          } else {
+            prevImg.style.display = "none";
+          }
+        });
+        prevCol.appendChild(urlInput);
+        this._previewInput = urlInput;
+
+        twoCol.appendChild(prevCol);
+      }
+
+      body.appendChild(twoCol);
+    }
+
     const errorEl = document.createElement("div");
     errorEl.style.color = "#e74c3c";
     errorEl.style.fontSize = "12px";
@@ -835,14 +981,15 @@ class CollectionEditorDialog {
     return { wrap, input };
   }
 
-  _save() {
+  async _save() {
     const name = this._nameInput.value.trim();
     const prompt = this._promptInput.value.trim();
     const description = this._descInput.value.trim();
     const favorite = this._favToggle();
+    const preview = this._previewInput ? this._previewInput.value.trim() : "";
 
     const slug = CollectionModel.toSlug(name, this.existingSlugs);
-    const item = { name, prompt, description, favorite };
+    const item = { name, prompt, description, favorite, preview };
     const excludeSlug = this.isEdit ? this.item._slug : null;
     const result = CollectionModel.validate(item, this.existingSlugs, excludeSlug);
 
@@ -851,10 +998,15 @@ class CollectionEditorDialog {
       return;
     }
 
+    const categories = Array.from(this.selectedCategories);
     this.modal.remove();
     this.modal = null;
-    this.onSave({ slug, item });
-    this._resolve({ slug, item });
+    try {
+      await this.onSave({ slug, item, categories });
+    } catch (e) {
+      console.error("[BossTheme] onSave failed:", e);
+    }
+    this._resolve({ slug, item, categories });
   }
 
   _cancel() {
