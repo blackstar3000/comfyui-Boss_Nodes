@@ -146,6 +146,7 @@ function hideWidget(widgets, name) {
 // ── Build DOM ──────────────────────────────────────────────────────────────
 
 function buildBody(node, root) {
+  console.log("[Boss PA] buildBody called, root connected:", root.isConnected);
   root.innerHTML = "";
   const promptW = node.widgets?.find(w => w.name === "prompt");
   const prompt = promptW?.value || "";
@@ -260,7 +261,7 @@ app.registerExtension({
     injectCSS();
     node.addClass("boss-pa-node");
 
-    // Hide the extra widgets we don't need on canvas
+    // Hide the extra widgets
     ["show_token_ids", "auto_fix", "export_format"].forEach(n => hideWidget(node.widgets, n));
 
     // Build DOM widget
@@ -268,10 +269,12 @@ app.registerExtension({
     root.className = "boss-pa-root";
     root.innerHTML = '<div class="boss-pa-empty">Type a prompt to analyze</div>';
 
+    console.log("[Boss PA] Calling addDOMWidget...");
     const domW = node.addDOMWidget("boss_pa_ui", "custom", root, {
       serialize: false,
       getMinHeight: () => 120,
     });
+    console.log("[Boss PA] DOM widget created:", domW);
 
     node._bossPARoot = root;
 
@@ -285,6 +288,9 @@ app.registerExtension({
     node.onRemoved = () => clearInterval(iv);
 
     // Initial render
-    setTimeout(() => buildBody(node, root), 100);
+    setTimeout(() => {
+      console.log("[Boss PA] Initial build, root connected:", root.isConnected, "widgets:", node.widgets?.length);
+      buildBody(node, root);
+    }, 100);
   },
 });
