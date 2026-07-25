@@ -238,6 +238,7 @@ function buildBody(node, root) {
 
 // ── Extension ──────────────────────────────────────────────────────────────
 
+console.log("[Boss PA] Extension loading...");
 app.registerExtension({
   name: "boss_prompt_analyzer.dom",
 
@@ -254,6 +255,7 @@ app.registerExtension({
 
   async nodeCreated(node) {
     if (node.comfyClass !== "BossPromptAnalyzerPRO") return;
+    console.log("[Boss PA] Node created:", node.comfyClass);
 
     injectCSS();
     node.addClass("boss-pa-node");
