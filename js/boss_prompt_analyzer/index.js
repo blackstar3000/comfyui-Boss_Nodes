@@ -259,7 +259,7 @@ app.registerExtension({
     console.log("[Boss PA] Node created:", node.comfyClass);
 
     injectCSS();
-    node.addClass("boss-pa-node");
+    if (node.addClass) node.addClass("boss-pa-node");
 
     // Hide the extra widgets
     ["show_token_ids", "auto_fix", "export_format"].forEach(n => hideWidget(node.widgets, n));
@@ -270,6 +270,7 @@ app.registerExtension({
     root.innerHTML = '<div class="boss-pa-empty">Type a prompt to analyze</div>';
 
     console.log("[Boss PA] Calling addDOMWidget...");
+    if (!node.addDOMWidget) { console.error("[Boss PA] addDOMWidget not available"); return; }
     const domW = node.addDOMWidget("boss_pa_ui", "custom", root, {
       serialize: false,
       getMinHeight: () => 120,
