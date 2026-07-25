@@ -250,6 +250,14 @@ app.registerExtension({
       if (this._bossPARoot) buildBody(this, this._bossPARoot);
       return r;
     };
+
+    // Re-render after execution completes (handles piped-in text)
+    const origExecuted = nodeType.prototype.onAfterExecute;
+    nodeType.prototype.onAfterExecute = function (data) {
+      const r = origExecuted?.apply(this, arguments);
+      if (this._bossPARoot) buildBody(this, this._bossPARoot);
+      return r;
+    };
   },
 
   async nodeCreated(node) {
@@ -274,11 +282,29 @@ app.registerExtension({
 
     node._bossPARoot = root;
 
+    // Get prompt value from widget OR connected input
+    const getPrompt = () => {
+      const pw = node.widgets?.find(w => w.name === "prompt");
+      if (pw?.value) return pw.value;
+      // Check connected input
+      const inp = node.inputs?.find(i => i.name === "prompt");
+      if (inp?.link != null) {
+        const link = node.graph?.links?.[inp.link];
+        if (link) {
+          const srcNode = node.graph.getNodeById(link.origin_id);
+          if (srcNode?.widgets) {
+            const srcW = srcNode.widgets.find(w => w.name === link.origin_slot || w.name === "text" || w.name === "STRING");
+            if (srcW?.value) return srcW.value;
+          }
+        }
+      }
+      return "";
+    };
+
     // Poll prompt for changes
     let lastP = "";
     const iv = setInterval(() => {
-      const pw = node.widgets?.find(w => w.name === "prompt");
-      const v = pw?.value || "";
+      const v = getPrompt();
       if (v !== lastP) { lastP = v; buildBody(node, root); }
     }, 250);
     node.onRemoved = () => clearInterval(iv);
