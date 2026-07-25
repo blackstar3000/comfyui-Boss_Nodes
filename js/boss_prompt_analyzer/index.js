@@ -1,6 +1,6 @@
 // Boss Prompt Analyzer PRO — DOM Widget UI
 // Computes stats client-side from prompt input; full analysis via STRING outputs.
-import { app } from "../../../scripts/app.js";
+import { app } from "/scripts/app.js";
 
 // ── CSS ────────────────────────────────────────────────────────────────────
 
