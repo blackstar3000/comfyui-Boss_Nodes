@@ -9,6 +9,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional, List, Dict
 
+from server import PromptServer
+
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # Data Classes
@@ -462,6 +464,9 @@ class BossPromptAnalyzerPRO:
                 "show_token_ids": ("BOOLEAN", {"default": False}),
                 "auto_fix": ("BOOLEAN", {"default": False}),
                 "export_format": (["text", "markdown", "json"], {"default": "text"}),
+            },
+            "hidden": {
+                "unique_id": "UNIQUE_ID",
             }
         }
 
@@ -473,7 +478,7 @@ class BossPromptAnalyzerPRO:
 
     def analyze(self, prompt: str, clip: Optional[object] = None,
                 show_token_ids: bool = False, auto_fix: bool = False,
-                export_format: str = "text"):
+                export_format: str = "text", unique_id: str = None):
         self._ensure_manager()
 
         # Auto-fix if requested
@@ -488,8 +493,16 @@ class BossPromptAnalyzerPRO:
         analysis = self.report_builder.build(result, export_format)
         health = self.report_builder.build(result, "text")
         json_rpt = self.report_builder.build(result, "json")
-        # Store JSON for DOM widget display
-        self._last_analysis = json_rpt
+
+        # Push analysis to frontend via websocket during execution
+        try:
+            PromptServer.instance.send_sync("boss_prompt_analysis", {
+                "node_id": unique_id,
+                "json_report": json_rpt,
+            })
+        except Exception:
+            pass
+
         return (analysis, result.effective_prompt, health, json_rpt)
 
     def _auto_fix_prompt(self, prompt: str) -> str:

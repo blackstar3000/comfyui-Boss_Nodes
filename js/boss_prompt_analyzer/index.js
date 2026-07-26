@@ -81,6 +81,10 @@ function injectCSS() {
     .boss-pa-btn.active { background: #7c3aed; border-color: #7c3aed; color: #fff; font-weight: 500; }
     .boss-pa-btn:disabled { opacity: 0.35; cursor: default; }
 
+    /* ── Status badge ─────────────────────────────────────────────── */
+    .boss-pa-status { font-size: 10px; color: rgba(255,255,255,0.35); margin-bottom: 4px; }
+    .boss-pa-status b { color: rgba(255,255,255,0.55); font-weight: 600; }
+
     /* ── Placeholder ──────────────────────────────────────────────── */
     .boss-pa-empty {
       display: flex; align-items: center; justify-content: center;
@@ -145,16 +149,17 @@ function hideWidget(widgets, name) {
 
 // ── Build DOM ──────────────────────────────────────────────────────────────
 
-function buildBody(node, root) {
+function buildBody(node, root, promptText) {
   root.innerHTML = "";
-  const promptW = node.widgets?.find(w => w.name === "prompt");
-  const prompt = promptW?.value || "";
+  const prompt = promptText ?? "";
   const data = analyze(prompt);
 
   if (!data) {
     root.innerHTML = '<div class="boss-pa-empty">Type a prompt to analyze</div>';
     return;
   }
+
+  root.insertAdjacentHTML("beforeend", '<div class="boss-pa-status"><b>\u26a1 Live Preview</b></div>');
 
   // Score ring
   const r = 18, C = 2 * Math.PI * r;
@@ -246,6 +251,8 @@ function renderFromJSON(node, root, data) {
     root.innerHTML = '<div class="boss-pa-empty">Type a prompt to analyze</div>';
     return;
   }
+
+  root.insertAdjacentHTML("beforeend", '<div class="boss-pa-status"><b>\u2713 Final Analysis</b></div>');
 
   // Map Python JSON to DOM format
   const tokenInfo = data.token_info || {};
@@ -345,11 +352,26 @@ function renderFromJSON(node, root, data) {
 app.registerExtension({
   name: "boss_prompt_analyzer.dom",
 
+  setup() {
+    // Listen for live analysis pushes from the Python backend during execution
+    app.api?.addEventListener?.("boss_prompt_analysis", ({ detail }) => {
+      if (!detail?.node_id || !detail?.json_report) return;
+      const node = app.graph?.getNodeById(detail.node_id);
+      if (!node || !node._bossPARoot) return;
+      try {
+        const data = JSON.parse(detail.json_report);
+        renderFromJSON(node, node._bossPARoot, data);
+      } catch (err) {
+        console.error("[Boss PA] Failed to parse pushed json_report:", err);
+      }
+    });
+  },
+
   beforeRegisterNodeDef(nodeType, nodeData) {
     if (nodeData.name !== "BossPromptAnalyzerPRO") return;
 
     const origConfigure = nodeType.prototype.onConfigure;
-    nodeType.prototype.onConfigure = function (data) {
+    nodeType.prototype.onConfigure = function () {
       const r = origConfigure?.apply(this, arguments);
       if (this._bossPARoot) buildBody(this, this._bossPARoot);
       return r;
@@ -389,16 +411,36 @@ app.registerExtension({
       // Try app.nodeOutputs first (execution results)
       const nodeOuts = app.nodeOutputs?.[srcNode.id];
       if (nodeOuts) {
-        // nodeOutputs is { slotName: [value, ...] }
         for (const key of Object.keys(nodeOuts)) {
-          const v = nodeOuts[key];
-          if (Array.isArray(v) && v[0] && typeof v[0] === "string") return v[0];
+          const val = nodeOuts[key];
+          if (Array.isArray(val) && val[0] && typeof val[0] === "string") return val[0];
         }
       }
-      // Fallback: read source node's text widget
-      const tw = srcNode.widgets?.find(w => w.name === "text" || w.name === "STRING" || w.name === "prompt");
-      if (tw?.value) return tw.value;
+      // Fallback: scan all source node widgets for any non-empty string value
+      for (const w of srcNode.widgets || []) {
+        if (w.value && typeof w.value === "string" && !w.hidden) return w.value;
+      }
       return "";
+    }
+
+    // Throttle live preview rebuilds (immediate first, then 400ms debounce)
+    let previewTimer = null;
+    let pendingPrompt = null;
+    function schedulePreviewUpdate(n, r, p) {
+      pendingPrompt = p;
+      if (previewTimer) {
+        clearTimeout(previewTimer);
+        previewTimer = null;
+        return;
+      }
+      buildBody(n, r, p);
+      previewTimer = setTimeout(() => {
+        if (pendingPrompt !== p) {
+          buildBody(n, r, pendingPrompt);
+        }
+        previewTimer = null;
+        pendingPrompt = null;
+      }, 400);
     }
 
     // Poll for text changes (typed or piped)
@@ -410,13 +452,30 @@ app.registerExtension({
       const v = typed || piped;
       if (v !== lastP) {
         lastP = v;
-        buildBody(node, root);
+        schedulePreviewUpdate(node, root, v);
       }
     }, 300);
     const origRemoved = node.onRemoved;
     node.onRemoved = function () {
       clearInterval(iv);
       origRemoved?.call(this);
+    };
+
+    // onExecuted: render authoritative server-side analysis from json_report
+    node.onExecuted = function (output) {
+      const jsonStr =
+        typeof output?.json_report === "string"
+          ? output.json_report
+          : typeof output?.[3] === "string"
+            ? output[3]
+            : null;
+      if (!jsonStr) return;
+      try {
+        const data = JSON.parse(jsonStr);
+        renderFromJSON(node, root, data);
+      } catch (err) {
+        console.error("[Boss PA] Failed to parse json_report:", err, jsonStr);
+      }
     };
 
     // Initial render
