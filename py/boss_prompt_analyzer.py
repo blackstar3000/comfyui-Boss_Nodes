@@ -93,8 +93,10 @@ class TokenAnalyzer(BaseAnalyzer):
         else:
             self._tokenize_without_clip(context)
         overflow_chunks = [i for i, c in enumerate(context.chunks) if len(c) > context.chunk_limit]
+        total_tags = sum(len(c) for c in context.chunks)
         result.token_info = {
             "total_tokens": context.total_tokens,
+            "total_tags": total_tags,
             "chunk_count": len(context.chunks),
             "chunk_limit": context.chunk_limit,
             "tokenizer_name": context.tokenizer_name,
@@ -486,6 +488,8 @@ class BossPromptAnalyzerPRO:
         analysis = self.report_builder.build(result, export_format)
         health = self.report_builder.build(result, "text")
         json_rpt = self.report_builder.build(result, "json")
+        # Store JSON for DOM widget display
+        self._last_analysis = json_rpt
         return (analysis, result.effective_prompt, health, json_rpt)
 
     def _auto_fix_prompt(self, prompt: str) -> str:
