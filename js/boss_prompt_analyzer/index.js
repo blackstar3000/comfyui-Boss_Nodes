@@ -217,7 +217,10 @@ function buildBody(node, root) {
     root.appendChild(warns);
   }
 
-  // Auto-fix button
+  appendButtons(node, root);
+}
+
+function appendButtons(node, root) {
   const btns = document.createElement("div");
   btns.className = "boss-pa-btns";
   const fixBtn = document.createElement("button");
@@ -225,15 +228,116 @@ function buildBody(node, root) {
   fixBtn.className = "boss-pa-btn";
   fixBtn.textContent = "Auto-fix prompt";
   fixBtn.title = "Deduplicate tags, add BREAKs, balance chunks to ~60 tokens each.";
+  const af = node.widgets?.find(w => w.name === "auto_fix");
+  if (af?.value) fixBtn.classList.add("active");
   fixBtn.addEventListener("click", () => {
-    const pw = node.widgets?.find(w => w.name === "prompt");
-    const af = node.widgets?.find(w => w.name === "auto_fix");
-    if (af) af.value = true;
-    // Trigger re-analysis by briefly toggling
-    setTimeout(() => { if (af) af.value = false; }, 100);
+    if (!af) return;
+    af.value = !af.value;
+    fixBtn.classList.toggle("active", af.value);
   });
   btns.appendChild(fixBtn);
   root.appendChild(btns);
+}
+
+// ── Render from pre-parsed JSON (for piped output) ─────────────────────────
+function renderFromJSON(node, root, data) {
+  root.innerHTML = "";
+  if (!data) {
+    root.innerHTML = '<div class="boss-pa-empty">Type a prompt to analyze</div>';
+    return;
+  }
+
+  // Map Python JSON to DOM format
+  const tokenInfo = data.token_info || {};
+  const healthInfo = data.health_info || {};
+  const metrics = healthInfo.metrics || {};
+  const catInfo = data.category_info || {};
+  const repeatInfo = data.repeat_info || {};
+
+  // Map Python's 1-5 star score to 0-100
+  const pyScore = healthInfo.score || 5;
+  const score = Math.max(0, Math.min(100, pyScore * 20));
+
+  const tokenEst = tokenInfo.total_tokens || 0;
+  const chunkCount = tokenInfo.chunk_count || 1;
+  const tagCount = tokenInfo.total_tags || (data.chunk_info || []).reduce((s, c) => s + (c.token_count || 0), 0);
+  const cats = {};
+  for (const [cat, info] of Object.entries(catInfo)) {
+    cats[cat] = info.count || Math.round((info.percentage / 100) * tagCount);
+  }
+  const repeats = [];
+  if (Array.isArray(repeatInfo)) {
+    for (const r of repeatInfo) {
+      repeats.push([r.concept, r.count]);
+    }
+  } else if (repeatInfo.tags) {
+    for (const [tag, count] of Object.entries(repeatInfo.tags)) {
+      repeats.push([tag, count]);
+    }
+  }
+
+  // Score ring
+  const r = 18, C = 2 * Math.PI * r;
+  const offset = C - (score / 100) * C;
+  const color = scoreColor(score);
+
+  const scoreEl = document.createElement("div");
+  scoreEl.className = "boss-pa-score";
+  scoreEl.innerHTML = `
+    <div class="boss-pa-ring">
+      <svg viewBox="0 0 44 44" width="44" height="44">
+        <circle class="boss-pa-ring-bg" cx="22" cy="22" r="${r}"/>
+        <circle class="boss-pa-ring-fg" cx="22" cy="22" r="${r}"
+          stroke="${color}" stroke-dasharray="${C}" stroke-dashoffset="${offset}"/>
+      </svg>
+      <div class="boss-pa-ring-lbl">${score}</div>
+    </div>
+    <div class="boss-pa-score-txt"><b>${scoreGrade(score)}</b></div>`;
+  root.appendChild(scoreEl);
+
+  // Stats
+  const pills = document.createElement("div");
+  pills.className = "boss-pa-pills";
+  pills.innerHTML = `
+    <span class="boss-pa-pill"><b>${tokenEst}</b> tokens</span>
+    <span class="boss-pa-pill"><b>${chunkCount}</b> chunk${chunkCount > 1 ? "s" : ""}</span>
+    <span class="boss-pa-pill"><b>${tagCount}</b> tags</span>`;
+  root.appendChild(pills);
+
+  // Categories
+  const catEntries = Object.entries(cats);
+  if (catEntries.length) {
+    const catsEl = document.createElement("div");
+    catsEl.className = "boss-pa-cats";
+    catsEl.innerHTML = '<div class="boss-pa-sec">Categories</div>';
+    const maxC = Math.max(...catEntries.map(([, v]) => v));
+    catEntries.forEach(([name, count], i) => {
+      const w = maxC > 0 ? (count / maxC) * 100 : 0;
+      const row = document.createElement("div");
+      row.className = "boss-pa-cat";
+      row.innerHTML = `
+        <span class="boss-pa-cat-n">${name}</span>
+        <div class="boss-pa-cat-bar"><div class="boss-pa-cat-fill" style="width:${w}%;background:${CAT_COLORS[i % CAT_COLORS.length]}"></div></div>
+        <span class="boss-pa-cat-c">${count}</span>`;
+      catsEl.appendChild(row);
+    });
+    root.appendChild(catsEl);
+  }
+
+  // Warnings
+  if (repeats.length) {
+    const warns = document.createElement("div");
+    warns.className = "boss-pa-warns";
+    repeats.forEach(([tag, count]) => {
+      const w = document.createElement("div");
+      w.className = "boss-pa-w";
+      w.textContent = `"${tag}" repeated ${count}\u00d7`;
+      warns.appendChild(w);
+    });
+    root.appendChild(warns);
+  }
+
+  appendButtons(node, root);
 }
 
 // ── Extension ──────────────────────────────────────────────────────────────
@@ -247,14 +351,6 @@ app.registerExtension({
     const origConfigure = nodeType.prototype.onConfigure;
     nodeType.prototype.onConfigure = function (data) {
       const r = origConfigure?.apply(this, arguments);
-      if (this._bossPARoot) buildBody(this, this._bossPARoot);
-      return r;
-    };
-
-    // Re-render after execution completes (handles piped-in text)
-    const origExecuted = nodeType.prototype.onAfterExecute;
-    nodeType.prototype.onAfterExecute = function (data) {
-      const r = origExecuted?.apply(this, arguments);
       if (this._bossPARoot) buildBody(this, this._bossPARoot);
       return r;
     };
@@ -282,32 +378,46 @@ app.registerExtension({
 
     node._bossPARoot = root;
 
-    // Get prompt value from widget OR connected input
-    const getPrompt = () => {
-      const pw = node.widgets?.find(w => w.name === "prompt");
-      if (pw?.value) return pw.value;
-      // Check connected input
+    // Read text from piped input by tracing the link chain
+    function getPipedText() {
       const inp = node.inputs?.find(i => i.name === "prompt");
-      if (inp?.link != null) {
-        const link = node.graph?.links?.[inp.link];
-        if (link) {
-          const srcNode = node.graph.getNodeById(link.origin_id);
-          if (srcNode?.widgets) {
-            const srcW = srcNode.widgets.find(w => w.name === link.origin_slot || w.name === "text" || w.name === "STRING");
-            if (srcW?.value) return srcW.value;
-          }
+      if (!inp || inp.link == null) return "";
+      const link = node.graph?.links?.[inp.link];
+      if (!link) return "";
+      const srcNode = node.graph.getNodeById(link.origin_id);
+      if (!srcNode) return "";
+      // Try app.nodeOutputs first (execution results)
+      const nodeOuts = app.nodeOutputs?.[srcNode.id];
+      if (nodeOuts) {
+        // nodeOutputs is { slotName: [value, ...] }
+        for (const key of Object.keys(nodeOuts)) {
+          const v = nodeOuts[key];
+          if (Array.isArray(v) && v[0] && typeof v[0] === "string") return v[0];
         }
       }
+      // Fallback: read source node's text widget
+      const tw = srcNode.widgets?.find(w => w.name === "text" || w.name === "STRING" || w.name === "prompt");
+      if (tw?.value) return tw.value;
       return "";
-    };
+    }
 
-    // Poll prompt for changes
+    // Poll for text changes (typed or piped)
     let lastP = "";
+    const pw = node.widgets?.find(w => w.name === "prompt");
     const iv = setInterval(() => {
-      const v = getPrompt();
-      if (v !== lastP) { lastP = v; buildBody(node, root); }
-    }, 250);
-    node.onRemoved = () => clearInterval(iv);
+      const typed = pw?.value || "";
+      const piped = !typed ? getPipedText() : "";
+      const v = typed || piped;
+      if (v !== lastP) {
+        lastP = v;
+        buildBody(node, root);
+      }
+    }, 300);
+    const origRemoved = node.onRemoved;
+    node.onRemoved = function () {
+      clearInterval(iv);
+      origRemoved?.call(this);
+    };
 
     // Initial render
     setTimeout(() => buildBody(node, root), 100);
