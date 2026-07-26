@@ -367,5 +367,33 @@
         },
         "cached_at": 1784421270.996493,
         "sha256": "54CE35C9522E14586A887E03E4FC7FF36C8F8DA53B664157B501F0C3B998C9A2"
+    },
+    "Lumina\\netayumeLuminaNetaLumina_v35Pretrained.safetensors": {
+        "data": {
+            "found": true,
+            "sha256": "10A55C7B3996BF8E3C4B194889979D234C65FA7751698888DDA8F39A0D2EB031",
+            "model_id": 1790792,
+            "version_id": 2298660,
+            "version_name": "v3.5 (pretrained)",
+            "model_name": "NetaYume Lumina (Neta Lumina/Lumina Image 2.0)",
+            "model_type": "Checkpoint",
+            "base_model": "Lumina",
+            "description": "",
+            "civitai_url": "https://civitai.com/models/1790792?modelVersionId=2298660",
+            "thumbnail_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/e560fe83-7aa3-43ce-bc1a-0713c90bb0a3/original=true/105196035.jpeg",
+            "stats": {
+                "downloadCount": 2821,
+                "thumbsUpCount": 379
+            },
+            "recommended": {
+                "sampler": "res_multistep",
+                "cfg": 5.5,
+                "steps": 30,
+                "clip_skip": null
+            },
+            "trained_words": []
+        },
+        "cached_at": 1785026472.8878973,
+        "sha256": "10A55C7B3996BF8E3C4B194889979D234C65FA7751698888DDA8F39A0D2EB031"
     }
 }
