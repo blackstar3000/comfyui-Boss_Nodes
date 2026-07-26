@@ -339,5 +339,33 @@
         },
         "cached_at": 1784419023.659171,
         "sha256": "3A4C3964E8484B74F5060EA3ACBF7C98E16783BC15600F59AEAFC15420524FB8"
+    },
+    "Illustrious\\illustrious3DRender_v22.safetensors": {
+        "data": {
+            "found": true,
+            "sha256": "54CE35C9522E14586A887E03E4FC7FF36C8F8DA53B664157B501F0C3B998C9A2",
+            "model_id": 1793964,
+            "version_id": 2153515,
+            "version_name": "v2.2",
+            "model_name": "iLLuSTRiouS 3D Render from HaDeS",
+            "model_type": "Checkpoint",
+            "base_model": "Illustrious",
+            "description": "<p>✨ Key Improvements in v2.2</p><ul><li><p>🎨 <strong>Refined 3D style:</strong> stronger consistency with more natural skin and surface textures</p></li><li><p>🔍 <strong>Higher prompt adherence:</strong> improved handling of Danbooru tags &amp; complex descriptive prompts</p></li><li><p>📊 <strong>Dynamic CFG (5–15):</strong> broader control over detail and creative output</p></li><li><p>💃 <strong>Stable anatomy:</strong> more reliable poses, expressions, and proportions</p></li><li><p>🧥 <strong>Costume accuracy:</strong> sharper handling of complex outfits (armor, fantasy, sci-fi suits)</p></li><li><p>🌌 <strong>Versatile backgrounds:</strong> works from clean studios to rich fantasy environments</p></li><li><p>🧬 <strong>LoRA-friendly:</strong> clean structure designed for training or layering additional styles</p></li></ul>",
+            "civitai_url": "https://civitai.com/models/1793964?modelVersionId=2153515",
+            "thumbnail_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/7f809c05-da5d-49e2-9e73-2c8883533a33/original=true/96755445.mp4",
+            "stats": {
+                "downloadCount": 583,
+                "thumbsUpCount": 48
+            },
+            "recommended": {
+                "sampler": "Euler",
+                "cfg": 10.0,
+                "steps": 30,
+                "clip_skip": null
+            },
+            "trained_words": []
+        },
+        "cached_at": 1784421270.996493,
+        "sha256": "54CE35C9522E14586A887E03E4FC7FF36C8F8DA53B664157B501F0C3B998C9A2"
     }
 }
