@@ -96,6 +96,26 @@ function injectCSS() {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
+const analysisCache = new Map();
+const CACHE_LIMIT = 100;
+
+function normalizePrompt(prompt) {
+  return prompt.trim().replace(/\s+/g, " ");
+}
+
+function cachedAnalyze(prompt) {
+  const key = prompt ? normalizePrompt(prompt) : prompt;
+  if (!key) return analyze(key);
+  if (analysisCache.has(key)) return analysisCache.get(key);
+  const data = analyze(key);
+  if (analysisCache.size >= CACHE_LIMIT) {
+    const firstKey = analysisCache.keys().next().value;
+    analysisCache.delete(firstKey);
+  }
+  analysisCache.set(key, data);
+  return data;
+}
+
 const CATEGORIES = {
   Character: ["girl","boy","woman","man","person","character","portrait","face","eyes","hair","body"],
   Outfit: ["dress","shirt","pants","jacket","armor","uniform","clothing","outfit","wearing","suit","robe"],
@@ -147,12 +167,44 @@ function hideWidget(widgets, name) {
   }
 }
 
+// ── Collapsible section helper ─────────────────────────────────────────────
+
+function createCollapsibleSection({ id, title, content, node, defaultExpanded = true } = {}) {
+  if (!node._bossPAExpandedSections) node._bossPAExpandedSections = new Set();
+  const expanded = node._bossPAExpandedSections.has(id) ? true : defaultExpanded;
+  const container = document.createElement("div");
+  container.style.cssText = "display:flex;flex-direction:column;gap:4px;";
+  const header = document.createElement("div");
+  header.style.cssText = "cursor:pointer;display:flex;align-items:center;gap:4px;padding:3px 4px;border-radius:3px;background:rgba(255,255,255,0.02);user-select:none;";
+  header.addEventListener("mouseenter", () => header.style.background = "rgba(255,255,255,0.06)");
+  header.addEventListener("mouseleave", () => { if (!header._hoverActive) header.style.background = "rgba(255,255,255,0.02)"; });
+  const chevron = document.createElement("span");
+  chevron.style.cssText = "font-size:9px;width:12px;flex-shrink:0;color:rgba(255,255,255,0.3);";
+  chevron.textContent = expanded ? "\u25bc" : "\u25b6";
+  const label = document.createElement("span");
+  label.style.cssText = "font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:rgba(255,255,255,0.35);font-weight:600;";
+  label.textContent = title;
+  content.style.display = expanded ? "" : "none";
+  header.appendChild(chevron);
+  header.appendChild(label);
+  header.addEventListener("click", () => {
+    const isExpanded = content.style.display !== "none";
+    content.style.display = isExpanded ? "none" : "";
+    chevron.textContent = isExpanded ? "\u25b6" : "\u25bc";
+    if (isExpanded) node._bossPAExpandedSections.delete(id); else node._bossPAExpandedSections.add(id);
+  });
+  container.appendChild(header);
+  container.appendChild(content);
+  return container;
+}
+
 // ── Build DOM ──────────────────────────────────────────────────────────────
 
 function buildBody(node, root, promptText) {
   root.innerHTML = "";
   const prompt = promptText ?? "";
-  const data = analyze(prompt);
+  const data = cachedAnalyze(prompt);
+  node._bossPALiveResult = data;
 
   if (!data) {
     root.innerHTML = '<div class="boss-pa-empty">Type a prompt to analyze</div>';
@@ -161,7 +213,9 @@ function buildBody(node, root, promptText) {
 
   root.insertAdjacentHTML("beforeend", '<div class="boss-pa-status"><b>\u26a1 Live Preview</b></div>');
 
-  // Score ring
+  const summaryBody = document.createElement("div");
+  summaryBody.style.cssText = "display:flex;flex-direction:column;gap:8px;";
+
   const r = 18, C = 2 * Math.PI * r;
   const offset = C - (data.score / 100) * C;
   const color = scoreColor(data.score);
@@ -178,18 +232,16 @@ function buildBody(node, root, promptText) {
       <div class="boss-pa-ring-lbl">${data.score}</div>
     </div>
     <div class="boss-pa-score-txt"><b>${scoreGrade(data.score)}</b></div>`;
-  root.appendChild(score);
+  summaryBody.appendChild(score);
 
-  // Stats
   const pills = document.createElement("div");
   pills.className = "boss-pa-pills";
   pills.innerHTML = `
     <span class="boss-pa-pill"><b>${data.tokenEst}</b> tokens</span>
     <span class="boss-pa-pill"><b>${data.chunkCount}</b> chunk${data.chunkCount > 1 ? "s" : ""}</span>
     <span class="boss-pa-pill"><b>${data.tagCount}</b> tags</span>`;
-  root.appendChild(pills);
+  summaryBody.appendChild(pills);
 
-  // Categories
   const catEntries = Object.entries(data.cats);
   if (catEntries.length) {
     const cats = document.createElement("div");
@@ -206,10 +258,11 @@ function buildBody(node, root, promptText) {
         <span class="boss-pa-cat-c">${count}</span>`;
       cats.appendChild(row);
     });
-    root.appendChild(cats);
+    summaryBody.appendChild(cats);
   }
 
-  // Warnings
+  root.appendChild(createCollapsibleSection({id:"summary", title:"Summary", node, content: summaryBody, defaultExpanded: true}));
+
   if (data.repeats.length) {
     const warns = document.createElement("div");
     warns.className = "boss-pa-warns";
@@ -219,7 +272,7 @@ function buildBody(node, root, promptText) {
       w.textContent = `"${tag}" repeated ${count}\u00d7`;
       warns.appendChild(w);
     });
-    root.appendChild(warns);
+    root.appendChild(createCollapsibleSection({id:"warnings", title:"Warnings", node, content: warns, defaultExpanded: false}));
   }
 
   appendButtons(node, root);
@@ -283,7 +336,9 @@ function renderFromJSON(node, root, data) {
     }
   }
 
-  // Score ring
+  const summaryBody = document.createElement("div");
+  summaryBody.style.cssText = "display:flex;flex-direction:column;gap:8px;";
+
   const r = 18, C = 2 * Math.PI * r;
   const offset = C - (score / 100) * C;
   const color = scoreColor(score);
@@ -300,18 +355,16 @@ function renderFromJSON(node, root, data) {
       <div class="boss-pa-ring-lbl">${score}</div>
     </div>
     <div class="boss-pa-score-txt"><b>${scoreGrade(score)}</b></div>`;
-  root.appendChild(scoreEl);
+  summaryBody.appendChild(scoreEl);
 
-  // Stats
   const pills = document.createElement("div");
   pills.className = "boss-pa-pills";
   pills.innerHTML = `
     <span class="boss-pa-pill"><b>${tokenEst}</b> tokens</span>
     <span class="boss-pa-pill"><b>${chunkCount}</b> chunk${chunkCount > 1 ? "s" : ""}</span>
     <span class="boss-pa-pill"><b>${tagCount}</b> tags</span>`;
-  root.appendChild(pills);
+  summaryBody.appendChild(pills);
 
-  // Categories
   const catEntries = Object.entries(cats);
   if (catEntries.length) {
     const catsEl = document.createElement("div");
@@ -328,10 +381,11 @@ function renderFromJSON(node, root, data) {
         <span class="boss-pa-cat-c">${count}</span>`;
       catsEl.appendChild(row);
     });
-    root.appendChild(catsEl);
+    summaryBody.appendChild(catsEl);
   }
 
-  // Warnings
+  root.appendChild(createCollapsibleSection({id:"summary", title:"Summary", node, content: summaryBody, defaultExpanded: true}));
+
   if (repeats.length) {
     const warns = document.createElement("div");
     warns.className = "boss-pa-warns";
@@ -341,10 +395,66 @@ function renderFromJSON(node, root, data) {
       w.textContent = `"${tag}" repeated ${count}\u00d7`;
       warns.appendChild(w);
     });
-    root.appendChild(warns);
+    root.appendChild(createCollapsibleSection({id:"warnings", title:"Warnings", node, content: warns, defaultExpanded: false}));
   }
 
   appendButtons(node, root);
+
+  const finalResult = { tokenEst, chunkCount, score, repeats };
+  node._bossPAFinalResult = finalResult;
+  const diffs = compareAnalysis(node._bossPALiveResult, finalResult);
+  const diffEl = document.createElement("div");
+  diffEl.style.cssText = "display:flex;flex-direction:column;gap:2px;";
+  renderDifferenceSummary(diffEl, diffs);
+  root.appendChild(createCollapsibleSection({id:"differences", title:"Analysis Difference", node, content: diffEl, defaultExpanded: true}));
+}
+
+// ── Analysis comparison ────────────────────────────────────────────────────
+
+const COMPARISON_FIELDS = [
+  { label: "Tokens", get: d => d.tokenEst },
+  { label: "Score", get: d => d.score },
+  { label: "Chunks", get: d => d.chunkCount },
+  { label: "Warnings", get: d => d.repeats?.length ?? 0 },
+];
+
+function compareAnalysis(live, final) {
+  const diffs = [];
+  for (const f of COMPARISON_FIELDS) {
+    const liveVal = live ? f.get(live) : undefined;
+    const finalVal = final ? f.get(final) : undefined;
+    if (liveVal === undefined || finalVal === undefined) continue;
+    if (liveVal !== finalVal) {
+      diffs.push({ label: f.label, live: liveVal, final: finalVal, delta: finalVal - liveVal });
+    }
+  }
+  return diffs;
+}
+
+function renderDifferenceSummary(root, differences) {
+  const el = document.createElement("div");
+  el.style.cssText = "margin-top:6px;border-top:1px solid rgba(255,255,255,0.08);padding-top:6px;font-size:10px;color:rgba(255,255,255,0.4);display:flex;flex-direction:column;gap:2px;";
+  const title = document.createElement("div");
+  title.style.cssText = "font-size:9px;text-transform:uppercase;letter-spacing:0.5px;color:rgba(255,255,255,0.35);font-weight:600;margin-bottom:2px;";
+  title.textContent = "Analysis Difference";
+  el.appendChild(title);
+  if (!differences || differences.length === 0) {
+    const line = document.createElement("div");
+    line.style.cssText = "color:rgba(255,255,255,0.25);";
+    line.textContent = "\u2713 No changes detected";
+    el.appendChild(line);
+    root.appendChild(el);
+    return;
+  }
+  for (const d of differences) {
+    const sign = d.delta > 0 ? "+" : "";
+    const color = d.delta > 0 ? "rgba(255,255,255,0.5)" : d.delta < 0 ? "#f87171" : "rgba(255,255,255,0.4)";
+    const row = document.createElement("div");
+    row.style.cssText = "display:flex;gap:6px;align-items:center;";
+    row.innerHTML = `<span style="flex:0 0 56px;color:rgba(255,255,255,0.35)">${d.label}</span><span style="color:${color}">${sign}${d.delta}</span>`;
+    el.appendChild(row);
+  }
+  root.appendChild(el);
 }
 
 // ── Extension ──────────────────────────────────────────────────────────────
