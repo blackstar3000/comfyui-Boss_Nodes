@@ -688,14 +688,14 @@ class BoosterEditor {
       item: { name: "", prompt: "", description: "" },
       isEdit: false,
       existingSlugs,
-      onSave: async (item) => {
+      onSave: async ({ slug, item }) => {
         const category = this._crudType === "negatives" ? (item.description || "default") : "";
         const result = await CRUD_CONTROLLER.add(this._crudType, item, [category]);
         if (result.ok) {
           this.library = await this._fetchLibraryData();
           this._refreshCRUDList();
           this._refreshAffectedDropdowns();
-          this._crudWidget.setSelected(item.name);
+          this._crudWidget.setSelected(slug);
         }
         return result;
       },
@@ -738,17 +738,17 @@ class BoosterEditor {
       item: { ...item },
       isEdit: true,
       existingSlugs,
-      onSave: async (updated) => {
-        const category = this._crudType === "negatives" ? (updated.description || "default") : "";
-        if (updated.name !== slug) {
+      onSave: async ({ slug: newSlug, item }) => {
+        const category = this._crudType === "negatives" ? (item.description || "default") : "";
+        if (newSlug !== slug) {
           await CRUD_CONTROLLER.delete(this._crudType, slug);
         }
-        const result = await CRUD_CONTROLLER.add(this._crudType, updated, [category]);
+        const result = await CRUD_CONTROLLER.add(this._crudType, item, [category]);
         if (result.ok) {
           this.library = await this._fetchLibraryData();
           this._refreshCRUDList();
           this._refreshAffectedDropdowns();
-          this._crudWidget.setSelected(updated.name);
+          this._crudWidget.setSelected(newSlug);
         }
         return result;
       },
