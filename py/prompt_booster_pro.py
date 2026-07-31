@@ -89,6 +89,81 @@ class _Collection(Collection):
 _QUALITY   = _Collection("quality_boosts.json",  "quality")
 _NEGATIVES = _Collection("negative_boosts.json",  "negatives")
 
+_FILES = {
+    "quality": QUALITY_FILE,
+    "negatives": NEGATIVES_FILE,
+}
+
+
+class _BoosterLibrary:
+    """CRUD operations for quality and negative boosters.
+    Isolates flat (quality) vs nested (negative) storage."""
+
+    def load(self, key: str, force: bool = False) -> dict:
+        """Load collection data. Quality returns {name: text},
+        negatives returns {preset: {level: text}}."""
+        coll = _QUALITY if key == "quality" else _NEGATIVES
+        coll.load(force)
+        return coll.items
+
+    def save_entry(self, key: str, name: str, text: str, category: str = "") -> dict:
+        """Create or update an entry. Quality: category ignored (flat).
+        Negatives: category = preset name (nested).
+        Returns updated collection data."""
+        data = self.load(key)
+        if key == "quality":
+            data[name] = text
+        else:
+            cat = category or "default"
+            if cat not in data:
+                data[cat] = {}
+            data[cat][name] = text
+        self._write_json(key, data)
+        _log(f"Saved {key}/{name} — total {self._count(key, data)} entries")
+        return data
+
+    def delete_entry(self, key: str, name: str, category: str = "") -> dict:
+        """Delete an entry. Returns updated collection data."""
+        data = self.load(key)
+        if key == "quality":
+            data.pop(name, None)
+        else:
+            cat = category or "default"
+            if cat in data:
+                data[cat].pop(name, None)
+                if not data[cat]:
+                    del data[cat]
+        self._write_json(key, data)
+        _log(f"Deleted {key}/{name} — total {self._count(key, data)} entries")
+        return data
+
+    def list_entries(self, key: str) -> dict:
+        """Return current collection data."""
+        return self.load(key)
+
+    def _count(self, key: str, data: dict) -> int:
+        if key == "quality":
+            return len(data)
+        return sum(len(v) for v in data.values())
+
+    def _write_json(self, key: str, data: dict) -> None:
+        """Atomic write: temp file → replace original."""
+        import tempfile
+        path = _FILES[key]
+        tmp = None
+        try:
+            fd, tmp = tempfile.mkstemp(dir=path.parent, suffix=".tmp")
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+            os.replace(tmp, path)
+        except OSError as e:
+            _log(f"Error writing {path.name}: {e}")
+            if tmp and os.path.exists(tmp):
+                os.remove(tmp)
+
+
+_library = _BoosterLibrary()
+
 
 _log = make_logger("PromptBoosterPro")
 
@@ -341,17 +416,68 @@ def register_api_routes():
             _log(f"/prompt_booster_pro/data failed: {e}")
             return web.json_response({"error": "Internal server error"}, status=500)
 
-    @routes.post("/prompt_booster_pro/refresh")
+    @routes.post("/booster_boss/save")
+    async def save_booster_entry(request):
+        try:
+            body = await request.json()
+            lib_type = body.get("type", "")
+            name = (body.get("name") or "").strip()
+            text = (body.get("prompt") or "").strip()
+            category = (body.get("category") or "").strip()
+
+            if lib_type not in ("quality", "negatives"):
+                return web.json_response({"error": "Invalid type"}, status=400)
+            if not name:
+                return web.json_response({"error": "Name required"}, status=400)
+            if not text:
+                return web.json_response({"error": "Prompt required"}, status=400)
+
+            _library.save_entry(lib_type, name, text, category)
+            data = _library.load(lib_type)
+            return web.json_response({
+                "name": name,
+                "category": category,
+                "count": _library._count(lib_type, data),
+            })
+        except Exception as e:
+            _log(f"/booster_boss/save failed: {e}")
+            import traceback
+            traceback.print_exc()
+            return web.json_response({"error": "Internal server error"}, status=500)
+
+    @routes.post("/booster_boss/delete")
+    async def delete_booster_entry(request):
+        try:
+            body = await request.json()
+            lib_type = body.get("type", "")
+            name = (body.get("name") or "").strip()
+            category = (body.get("category") or "").strip()
+
+            if lib_type not in ("quality", "negatives"):
+                return web.json_response({"error": "Invalid type"}, status=400)
+            if not name:
+                return web.json_response({"error": "Name required"}, status=400)
+
+            _library.delete_entry(lib_type, name, category)
+            data = _library.load(lib_type)
+            return web.json_response({
+                "count": _library._count(lib_type, data),
+            })
+        except Exception as e:
+            _log(f"/booster_boss/delete failed: {e}")
+            return web.json_response({"error": "Internal server error"}, status=500)
+
+    @routes.post("/booster_boss/refresh")
     async def refresh_booster_data(request):
         try:
             _load_all(force=True)
             return web.json_response({
-                "quality":  len(_QUALITY.items),
+                "quality": len(_QUALITY.items),
                 "negatives": len(_NEGATIVES.items),
                 "negativeLevelsUnion": len(_NEGATIVES.levels),
             })
         except Exception as e:
-            _log(f"/prompt_booster_pro/refresh failed: {e}")
+            _log(f"/booster_boss/refresh failed: {e}")
             return web.json_response({"error": "Internal server error"}, status=500)
 
 

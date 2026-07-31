@@ -462,23 +462,110 @@ class BoosterEditor {
     bar.appendChild(closeBtn);
     modal.appendChild(bar);
 
-    // Body
+    // Body — two panels
     const body = document.createElement("div");
     body.className = "boss-body";
+    body.style.display = "flex";
+    body.style.gap = "12px";
 
-    // Left controls
-    const side = document.createElement("div");
-    side.className = "boss-side";
+    // Left: CRUD list
+    const leftPanel = document.createElement("div");
+    leftPanel.style.cssText = "flex: 0 0 280px; display: flex; flex-direction: column; gap: 8px; min-height: 0;";
+    this._buildCRUDPanel(leftPanel);
+    body.appendChild(leftPanel);
 
-    // ── Positive Section ──────────────────────────────────────────────
+    // Right: controls + preview
+    const rightPanel = document.createElement("div");
+    rightPanel.style.cssText = "flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0;";
+    this._buildControlsPanel(rightPanel);
+    body.appendChild(rightPanel);
+
+    modal.appendChild(body);
+
+    // Footer
+    const footer = document.createElement("div");
+    footer.className = "boss-footer";
+    const saveBtn = document.createElement("button");
+    saveBtn.type = "button";
+    saveBtn.className = "boss-btn-primary";
+    saveBtn.textContent = "Save to Node";
+    saveBtn.addEventListener("click", () => this.save());
+    const cancelBtn = document.createElement("button");
+    cancelBtn.type = "button";
+    cancelBtn.className = "boss-btn-ghost";
+    cancelBtn.textContent = "Cancel";
+    cancelBtn.addEventListener("click", () => this.cancel());
+    footer.appendChild(saveBtn);
+    footer.appendChild(cancelBtn);
+    modal.appendChild(footer);
+
+    document.body.appendChild(modal);
+    this.modal = modal;
+  }
+
+  _buildCRUDPanel(container) {
+    // Tab switcher for quality / negatives
+    const tabs = document.createElement("div");
+    tabs.style.cssText = "display: flex; gap: 4px;";
+    const qTab = document.createElement("button");
+    qTab.type = "button";
+    qTab.className = "boss-btn-ghost";
+    qTab.textContent = "Quality";
+    qTab.style.flex = "1";
+    const nTab = document.createElement("button");
+    nTab.type = "button";
+    nTab.className = "boss-btn-ghost";
+    nTab.textContent = "Negatives";
+    nTab.style.flex = "1";
+    tabs.appendChild(qTab);
+    tabs.appendChild(nTab);
+    container.appendChild(tabs);
+
+    // CRUD widget
+    this._crudType = "quality";
+    this._crudWidget = new CollectionCRUDWidget({
+      title: "Quality Boosters",
+      data: this._formatDataForCRUD("quality"),
+      onAdd: () => this._onCRUDAdd(),
+      onSelect: (slug) => this._onCRUDSelect(slug),
+      onEdit: (slug) => this._onCRUDEdit(slug),
+      onDelete: (slug) => this._onCRUDDelete(slug),
+    });
+    container.appendChild(this._crudWidget.render());
+
+    // Tab click handlers
+    qTab.addEventListener("click", () => {
+      this._crudType = "quality";
+      qTab.classList.add("boss-btn-primary");
+      nTab.classList.remove("boss-btn-primary");
+      nTab.classList.add("boss-btn-ghost");
+      qTab.classList.remove("boss-btn-ghost");
+      this._refreshCRUDList();
+    });
+    nTab.addEventListener("click", () => {
+      this._crudType = "negatives";
+      nTab.classList.add("boss-btn-primary");
+      qTab.classList.remove("boss-btn-primary");
+      qTab.classList.add("boss-btn-ghost");
+      nTab.classList.remove("boss-btn-ghost");
+      this._refreshCRUDList();
+    });
+
+    // Initial tab state
+    qTab.classList.add("boss-btn-primary");
+    qTab.classList.remove("boss-btn-ghost");
+  }
+
+  _buildControlsPanel(container) {
+    // Positive section
     const posLabel = document.createElement("span");
     posLabel.className = "boss-label-accent";
     posLabel.textContent = "✨ Positive";
-    side.appendChild(posLabel);
+    container.appendChild(posLabel);
 
-    side.appendChild(this.buildPositiveLevelSection());
-    side.appendChild(this.buildStrengthSection("Positive Strength", "positiveStrength"));
-    side.appendChild(this.buildFormatSection("Positive Weight Format", "positiveWeightFormat", this.library.positiveFormats, false));
+    container.appendChild(this.buildPositiveLevelSection());
+    container.appendChild(this.buildStrengthSection("Positive Strength", "positiveStrength"));
+    container.appendChild(this.buildFormatSection("Positive Weight Format", "positiveWeightFormat", this.library.positiveFormats, false));
 
     const posCustom = document.createElement("div");
     const posCustomLabel = document.createElement("span");
@@ -495,23 +582,23 @@ class BoosterEditor {
       this.refreshPreview();
     });
     posCustom.appendChild(posCustomTA);
-    side.appendChild(posCustom);
+    container.appendChild(posCustom);
 
-    // ── Divider ───────────────────────────────────────────────────────
+    // Divider
     const hr = document.createElement("hr");
     hr.className = "boss-boost-divider";
-    side.appendChild(hr);
+    container.appendChild(hr);
 
-    // ── Negative Section ──────────────────────────────────────────────
+    // Negative section
     const negLabel = document.createElement("span");
     negLabel.className = "boss-label-accent";
     negLabel.textContent = "🛡️ Negative";
-    side.appendChild(negLabel);
+    container.appendChild(negLabel);
 
-    side.appendChild(this.buildNegativePresetSection());
-    side.appendChild(this.buildNegativeLevelSection());
-    side.appendChild(this.buildStrengthSection("Negative Strength", "negativeStrength"));
-    side.appendChild(this.buildFormatSection("Negative Weight Format", "negativeWeightFormat", this.library.weightFormats, false));
+    container.appendChild(this.buildNegativePresetSection());
+    container.appendChild(this.buildNegativeLevelSection());
+    container.appendChild(this.buildStrengthSection("Negative Strength", "negativeStrength"));
+    container.appendChild(this.buildFormatSection("Negative Weight Format", "negativeWeightFormat", this.library.weightFormats, false));
 
     const negCustom = document.createElement("div");
     const negCustomLabel = document.createElement("span");
@@ -528,41 +615,171 @@ class BoosterEditor {
       this.refreshPreview();
     });
     negCustom.appendChild(negCustomTA);
-    side.appendChild(negCustom);
+    container.appendChild(negCustom);
 
-    body.appendChild(side);
-
-    // Right preview
+    // Preview
     const previewWrap = document.createElement("div");
     previewWrap.className = "boss-preview";
     const card = document.createElement("div");
     card.className = "boss-card";
     previewWrap.appendChild(card);
-    body.appendChild(previewWrap);
-    modal.appendChild(body);
-
-    // Footer
-    const footer = document.createElement("div");
-    footer.className = "boss-footer";
-    const saveBtn = document.createElement("button");
-    saveBtn.type = "button";
-    saveBtn.className = "boss-btn-primary";
-    saveBtn.textContent = "Save";
-    saveBtn.addEventListener("click", () => this.save());
-    const cancelBtn = document.createElement("button");
-    cancelBtn.type = "button";
-    cancelBtn.className = "boss-btn-ghost";
-    cancelBtn.textContent = "Cancel";
-    cancelBtn.addEventListener("click", () => this.cancel());
-    footer.appendChild(saveBtn);
-    footer.appendChild(cancelBtn);
-    modal.appendChild(footer);
-
-    document.body.appendChild(modal);
-    this.modal = modal;
+    container.appendChild(previewWrap);
     this.cardEl = card;
-
     this.refreshPreview();
+  }
+
+  // ── CRUD helpers (Task 5 — stubs wired to plan spec) ─────────────────────
+
+  _formatDataForCRUD(type) {
+    const data = {};
+    if (type === "quality") {
+      for (const [name, text] of Object.entries(this.library.quality || {})) {
+        data[name] = { name, prompt: text, description: "" };
+      }
+    } else {
+      for (const [preset, levels] of Object.entries(this.library.negatives || {})) {
+        for (const [level, text] of Object.entries(levels)) {
+          data[level] = { name: level, prompt: text, description: preset };
+        }
+      }
+    }
+    return data;
+  }
+
+  _refreshCRUDList() {
+    if (!this._crudWidget) return;
+    this._crudWidget.data = this._formatDataForCRUD(this._crudType);
+    this._crudWidget._renderList();
+  }
+
+  async _onCRUDAdd() {
+    const existingSlugs = new Map(Object.entries(this._formatDataForCRUD(this._crudType)));
+    const dialog = new CollectionEditorDialog({
+      title: this._crudType === "quality" ? "Quality Booster" : "Negative Level",
+      item: { name: "", prompt: "", description: "" },
+      isEdit: false,
+      existingSlugs,
+      onSave: async (item) => {
+        const category = this._crudType === "negatives" ? (item.description || "default") : "";
+        const result = await CRUD_CONTROLLER.add(this._crudType, item, [category]);
+        if (result.ok) {
+          this.library = await this._fetchLibraryData();
+          this._refreshCRUDList();
+          this._refreshAffectedDropdowns();
+          this._crudWidget.setSelected(item.name);
+        }
+        return result;
+      },
+    });
+    await dialog.open();
+  }
+
+  _onCRUDSelect(slug) {
+    const data = this._formatDataForCRUD(this._crudType);
+    const item = data[slug];
+    if (!item) return;
+
+    if (this._crudType === "quality") {
+      this.state.positiveLevel = slug;
+      this.state.positiveCustom = item.prompt;
+    } else {
+      if (item.description && this.library.negatives[item.description]) {
+        this.state.negativePreset = item.description;
+        this._refreshNegativeLevelOptions();
+      }
+      this.state.negativeLevel = slug;
+      this.state.negativeCustom = item.prompt;
+    }
+    this.refreshPreview();
+  }
+
+  async _onCRUDEdit(slug) {
+    const data = this._formatDataForCRUD(this._crudType);
+    const item = data[slug];
+    if (!item) return;
+
+    const existingSlugs = new Map(Object.entries(data));
+    const dialog = new CollectionEditorDialog({
+      title: this._crudType === "quality" ? "Quality Booster" : "Negative Level",
+      item: { ...item },
+      isEdit: true,
+      existingSlugs,
+      onSave: async (updated) => {
+        const category = this._crudType === "negatives" ? (updated.description || "default") : "";
+        if (updated.name !== slug) {
+          await CRUD_CONTROLLER.delete(this._crudType, slug);
+        }
+        const result = await CRUD_CONTROLLER.add(this._crudType, updated, [category]);
+        if (result.ok) {
+          this.library = await this._fetchLibraryData();
+          this._refreshCRUDList();
+          this._refreshAffectedDropdowns();
+          this._crudWidget.setSelected(updated.name);
+        }
+        return result;
+      },
+    });
+    await dialog.open();
+  }
+
+  async _onCRUDDelete(slug) {
+    if (!confirm(`Delete "${slug}"?\n\nThis action cannot be undone.`)) return;
+    const category = this._crudType === "negatives" ? (this.state.negativePreset || "default") : "";
+    const result = await CRUD_CONTROLLER.delete(this._crudType, slug);
+    if (result.ok) {
+      this.library = await this._fetchLibraryData();
+      this._refreshCRUDList();
+      this._refreshAffectedDropdowns();
+    }
+  }
+
+  async _fetchLibraryData() {
+    const r = await fetch("/prompt_booster_pro/data");
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    const data = await r.json();
+    const weightFormats = data.weightFormats || [];
+    const positiveFormats =
+      Array.isArray(data.positiveFormats) && data.positiveFormats.length
+        ? data.positiveFormats
+        : [...weightFormats, { key: "break", label: "BREAK" }];
+    return {
+      quality: data.quality || {},
+      negatives: data.negatives || {},
+      qualityLevels: data.qualityLevels || [],
+      negativePresets: data.negativePresets || [],
+      negativeLevelsUnion: data.negativeLevelsUnion || [],
+      positiveDefault: data.positiveDefault || { level: "" },
+      negativeDefault: data.negativeDefault || { preset: "", level: "" },
+      positiveFormats,
+      weightFormats,
+      weightFormatDefault: data.weightFormatDefault || "comfyui",
+      strengthRange: data.strengthRange || { min: STRENGTH_MIN, max: STRENGTH_MAX, step: STRENGTH_STEP, default: STRENGTH_DEFAULT },
+    };
+  }
+
+  _refreshAffectedDropdowns() {
+    renderHeader(this.node);
+
+    // Rebuild the positive level dropdown if it exists
+    if (this._posLevelDropdown) {
+      const opts = this.library.qualityLevels.map((l) => ({ value: l, label: l }));
+      this._posLevelDropdown.setOptions(opts);
+      if (this.state.positiveLevel && !this.library.qualityLevels.includes(this.state.positiveLevel)) {
+        this.state.positiveLevel = this.library.qualityLevels[0] || "";
+        this._posLevelDropdown.setValue(this.state.positiveLevel);
+      }
+    }
+
+    // Rebuild negative presets/levels if they exist
+    if (this._negPresetDropdown) {
+      const opts = this.library.negativePresets.map((p) => ({ value: p, label: p }));
+      this._negPresetDropdown.setOptions(opts);
+      if (this.state.negativePreset && !this.library.negativePresets.includes(this.state.negativePreset)) {
+        this.state.negativePreset = this.library.negativePresets[0] || "";
+        this._negPresetDropdown.setValue(this.state.negativePreset);
+      }
+    }
+    this._refreshNegativeLevelOptions();
   }
 
   // ── Positive level dropdown ──────────────────────────────────────────────
@@ -584,6 +801,7 @@ class BoosterEditor {
       },
     });
     wrap.appendChild(dropdown.element);
+    this._posLevelDropdown = dropdown;
     return wrap;
   }
 
