@@ -112,6 +112,25 @@ function injectCSS() {
       margin-bottom: 6px;
       font-weight: 600;
     }
+
+    /* Toast */
+    .boss-boost-toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--boss-bg-section);
+      border: 1px solid var(--boss-border-strong);
+      border-radius: 8px;
+      padding: 8px 16px;
+      z-index: 9999;
+      color: var(--boss-text);
+      font-size: 0.9em;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      transition: opacity 0.3s;
+    }
+    .boss-boost-toast.success { border-color: var(--boss-success, #3ec371); }
+    .boss-boost-toast.error { border-color: var(--boss-danger, #ff4444); }
   `;
   const style = document.createElement("style");
   style.id = "boss-booster-css";
@@ -681,6 +700,14 @@ class BoosterEditor {
     this._crudWidget._renderList();
   }
 
+  _showToast(msg, type = "success") {
+    const t = document.createElement("div");
+    t.className = `boss-boost-toast ${type}`;
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => { t.style.opacity = "0"; setTimeout(() => t.remove(), 300); }, 2000);
+  }
+
   async _onCRUDAdd() {
     const existingSlugs = new Map(Object.entries(this._formatDataForCRUD(this._crudType)));
     const dialog = new CollectionEditorDialog({
@@ -696,6 +723,9 @@ class BoosterEditor {
           this._refreshCRUDList();
           this._refreshAffectedDropdowns();
           this._crudWidget.setSelected(slug);
+          this._showToast(`Added "${item.name}"`);
+        } else {
+          this._showToast(result.error || "Save failed", "error");
         }
         return result;
       },
@@ -749,6 +779,9 @@ class BoosterEditor {
           this._refreshCRUDList();
           this._refreshAffectedDropdowns();
           this._crudWidget.setSelected(newSlug);
+          this._showToast(`Updated "${item.name}"`);
+        } else {
+          this._showToast(result.error || "Save failed", "error");
         }
         return result;
       },
@@ -765,6 +798,9 @@ class BoosterEditor {
       this.library = await this._fetchLibraryData();
       this._refreshCRUDList();
       this._refreshAffectedDropdowns();
+      this._showToast(`Deleted "${slug}"`);
+    } else {
+      this._showToast(result.error || "Delete failed", "error");
     }
   }
 
