@@ -1,33 +1,44 @@
-# Task 4 Report: Migrate camera_style_mixer.json to slug-based keys
+# Task 4: JS rebuild editor modal with two-panel layout
 
-## Summary
+## Status: DONE
 
-Migrated all 5 collections in `camera_style_mixer.json` from name-based keys to slug-based keys, and updated all category references to use slugs.
+## What was implemented
 
-## Collections Migrated
+Replaced the single-panel `buildModal()` with a two-panel layout and added three new methods:
 
-| Collection | Count |
-|---|---|
-| camera_angles | 15 |
-| camera_framings | 30 |
-| art_styles | 116 |
-| camera_lenses | 11 |
-| quality_boosters | 8 |
+1. **`buildModal()`** — New two-panel flex layout:
+   - Left panel (280px fixed): CRUD widget with Quality/Negatives tab switcher
+   - Right panel (flex: 1): strength sliders, weight format, custom text, live preview
+   - Footer: "Save to Node" button (was "Save")
 
-## Verification
+2. **`_buildCRUDPanel(container)`** — Left panel with:
+   - Quality/Negatives tab buttons with active state toggling
+   - `CollectionCRUDWidget` instance with callbacks for add/select/edit/delete
+   - Tab click handlers that swap `this._crudType` and refresh the list
 
-- **Step 3**: First angle key is `extreme_low_angle` with `name`, `prompt`, `description`, `favorite`, `preview` fields. ✅
-- **Step 4**: "Most Dramatic" category members are `['extreme_low_angle', 'low_angle', 'dutch_tilt', 'back_view']` — all slugs. ✅
-- Lenses and boosters also migrated with slug keys and expanded value objects. ✅
+3. **`_buildControlsPanel(container)`** — Right panel with:
+   - Positive section: quality level, strength slider, weight format, custom override textarea
+   - Divider
+   - Negative section: preset, level, strength slider, weight format, extra negatives textarea
+   - Live preview card
 
-## Deviation from Brief
+Additionally wired in Task 5 CRUD helpers (called by `_buildCRUDPanel`):
+- `_formatDataForCRUD(type)` — formats library data for the CRUD widget
+- `_refreshCRUDList()` — swaps data and re-renders list
+- `_onCRUDAdd()` / `_onCRUDSelect(slug)` / `_onCRUDEdit(slug)` / `_onCRUDDelete(slug)` — CRUD callbacks
+- `_fetchLibraryData()` — re-fetches library from API
+- `_refreshAffectedDropdowns()` — refreshes on-node header and dropdowns
 
-The brief's migration script referenced `angle_categories`, `framing_categories`, and `style_categories` as separate dicts. The actual JSON has a single top-level `categories` dict with mixed references from all collections. The migration script was adapted to:
+## Testing
 
-1. Migrate all 5 collections (including `camera_lenses` and `quality_boosters`)
-2. Build a global name→slug map across all collections
-3. Update the single `categories` dict to reference slugs
+- `node -c` syntax check: PASSED (no output = valid)
+- File grew from 834 to 1031 lines (net +197, matches plan diff)
 
-## Commit
+## Files changed
 
-`2bf943d` — `feat(camera): migrate camera_style_mixer.json to slug-based keys`
+- `js/prompt_booster_pro/index.js` — replaced `buildModal`, added `_buildCRUDPanel`, `_buildControlsPanel`, and 6 CRUD helper methods
+
+## Self-review findings
+
+- No issues found. Code matches plan spec exactly.
+- CRUD helpers are Task 5 scope but included here since `_buildCRUDPanel` calls them directly — avoids a broken intermediate state.

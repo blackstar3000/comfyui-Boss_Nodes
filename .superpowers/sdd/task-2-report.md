@@ -1,21 +1,24 @@
-# Task 2 Report: Update `_load_library()` normalization
+# Task 2 Report: Python HTTP Routes
 
-## Changes
+## What I Implemented
 
-Added `_normalize_entries()` function inside `_load_library()` that converts legacy string values to objects with `{name, prompt, description, favorite, preview}` structure, and fills missing fields via `setdefault` for existing dict entries.
+Replaced `register_api_routes()` in `py/prompt_booster_pro.py:400` with expanded version from plan:
 
-Replaced `sanitize_entries()` calls with `_normalize_entries()` calls.
+- **`POST /booster_boss/save`** — Creates/updates library entry. Validates type is "quality" or "negatives", requires name and prompt text. Returns saved entry + count.
+- **`POST /booster_boss/delete`** — Deletes entry by name + category. Returns updated count.
+- **`POST /booster_boss/refresh`** — Force-reloads all collections via `_load_all(force=True)`. Returns item counts.
+- Existing `GET /prompt_booster_pro/data` route preserved unchanged.
 
-## Commit
+All routes use `_library` instance (from Task 1) and follow existing error-handling patterns.
 
-`7dc9f07` feat(camera): normalize legacy string values to objects in _load_library
+## What I Tested
 
-## Compile Check
+- `py_compile` — passed with no output (clean syntax).
 
-Passed (`py_compile.compile` → OK)
+## Files Changed
 
-## Concerns
+- `py/prompt_booster_pro.py` — Replaced lines 400-429 (old 2-route function) with 60-line version containing 4 routes.
 
-**Downstream breakage:** `_resolve()` returns `data.get(choice)` which now yields a `dict` instead of a `str`. `apply_weight()` expects a string — this will break the prompt building pipeline. This is expected to be addressed in a later task but should be noted.
+## Self-Review Findings
 
-`_to_slug()` (Task 1) is not used in this task's code — the brief mentions it as a dependency but the normalization doesn't call it yet.
+None. Plan was executed verbatim.

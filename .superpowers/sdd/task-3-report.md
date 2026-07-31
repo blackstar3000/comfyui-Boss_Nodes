@@ -1,17 +1,21 @@
-# Task 3 Report: `/camera_boss/save` and `/camera_boss/delete` endpoints
+# Task 3: JS Import CRUD Components — Report
 
-## Status: DONE
+## What Was Implemented
 
-## Commit
-`3200bd7` — `feat(camera): add /camera_boss/save and /camera_boss/delete endpoints`
+1. Updated the import statement in `js/prompt_booster_pro/index.js:13` to include `CollectionController`, `CollectionEditorDialog`, and `CollectionCRUDWidget` from `../boss_theme/index.js`.
 
-## What was done
-- Added `_COLLECTION_MAP` dict (type name → data_key, category_key, library_attr) before `register_api_routes()`
-- Added `/camera_boss/save` POST endpoint: validates input, generates unique slug for new entries, updates in-memory collection + categories, persists to JSON, busts mtime cache
-- Added `/camera_boss/delete` POST endpoint: validates input, removes entry from collection + all categories, persists to JSON, busts mtime cache
+2. Added `const CRUD_CONTROLLER = new CollectionController("/booster_boss");` at line 15, after the imports and before the constants block.
 
-## Test summary
-Python compile check passed — `py_compile.compile()` returned OK with no errors.
+## What Was Tested
 
-## Concerns
-None — implementation matches the task brief exactly. The `_to_slug`, `_unique_slug`, `_save_json` helpers from Task 1 and `_LIB` from Task 2 are consumed as specified.
+- Verified `boss_theme/index.js` exports `CollectionController`, `CollectionCRUDWidget`, and `CollectionEditorDialog` at line 1031.
+- Verified the import names match the export names exactly.
+- Verified file structure is intact after edit (lines 12-21 read cleanly).
+
+## Files Changed
+
+- `js/prompt_booster_pro/index.js` — import expanded, controller constant added.
+
+## Self-Review Findings
+
+None. The edit is minimal and matches the plan spec exactly.

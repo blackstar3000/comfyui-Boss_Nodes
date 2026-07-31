@@ -1,22 +1,26 @@
-# Task 1 Report: Python — `_save_json()` + slug helpers
+# Task 1 Report: Python `_BoosterLibrary` helper class
 
-## Changes
+## What was implemented
 
-- Added `import re` after existing imports in `py/camera_style_mixer.py`
-- Added three helpers after `_log` declaration:
-  - `_to_slug(name)` — normalizes name to slug format
-  - `_unique_slug(slug, existing)` — ensures slug uniqueness with _2, _3 suffix
-  - `_save_json(path, data)` — atomic JSON write via tmp + os.replace
+- Added `_FILES` dict mapping collection keys to file paths (needed by `_write_json`)
+- Added `_BoosterLibrary` class with 6 methods:
+  - `load(key, force)` — delegates to `_Collection.load()` and returns items
+  - `save_entry(key, name, text, category)` — flat set for quality, nested set for negatives
+  - `delete_entry(key, name, category)` — pops entry, cleans empty presets
+  - `list_entries(key)` — returns current data
+  - `_count(key, data)` — counts entries (len for quality, sum of nested values for negatives)
+  - `_write_json(key, data)` — atomic write via tempfile + `os.replace`
+- Added `_library = _BoosterLibrary()` instance
 
-## Verification
+## What was tested
 
-- Python compile check: **OK**
-- All three functions follow exact spec from task brief
+- `py_compile` on `prompt_booster_pro.py` — clean, no output (success)
 
-## Commit
+## Files changed
 
-`0523ff6` — feat(camera): add _save_json, _to_slug, _unique_slug helpers
+- `py/prompt_booster_pro.py` — inserted `_FILES`, `_BoosterLibrary` class, and `_library` instance after line 90, before `_log` definition
 
-## Concerns
+## Self-review findings
 
-None. Implementation matches spec exactly.
+- The plan's Step 1 code referenced `_FILES[key]` but didn't include the `_FILES` dict definition. Added it — required for `_write_json` to locate the JSON files.
+- No other issues. All imports (`json`, `os`, `tempfile`) were already available.
