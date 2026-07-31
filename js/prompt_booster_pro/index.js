@@ -573,6 +573,25 @@ class BoosterEditor {
     // Initial tab state
     qTab.classList.add("boss-btn-primary");
     qTab.classList.remove("boss-btn-ghost");
+
+    // Preview section below CRUD list
+    const previewLabel = document.createElement("span");
+    previewLabel.className = "boss-label";
+    previewLabel.textContent = "Preview";
+    previewLabel.style.marginTop = "8px";
+    container.appendChild(previewLabel);
+
+    const previewWrap = document.createElement("div");
+    previewWrap.className = "boss-preview";
+    previewWrap.style.flex = "1";
+    previewWrap.style.minHeight = "0";
+    previewWrap.style.overflowY = "auto";
+    const card = document.createElement("div");
+    card.className = "boss-card";
+    previewWrap.appendChild(card);
+    container.appendChild(previewWrap);
+    this.cardEl = card;
+    this.refreshPreview();
   }
 
   _buildControlsPanel(container) {
@@ -636,15 +655,6 @@ class BoosterEditor {
     negCustom.appendChild(negCustomTA);
     container.appendChild(negCustom);
 
-    // Preview
-    const previewWrap = document.createElement("div");
-    previewWrap.className = "boss-preview";
-    const card = document.createElement("div");
-    card.className = "boss-card";
-    previewWrap.appendChild(card);
-    container.appendChild(previewWrap);
-    this.cardEl = card;
-    this.refreshPreview();
   }
 
   // ── CRUD helpers (Task 5 — stubs wired to plan spec) ─────────────────────
