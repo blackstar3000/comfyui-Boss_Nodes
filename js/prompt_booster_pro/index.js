@@ -10,7 +10,9 @@
 //   - All interactive UI is a DOM widget via addDOMWidget.
 
 import { app } from "/scripts/app.js";
-import { BossDropdown } from "../boss_theme/index.js";
+import { BossDropdown, CollectionController, CollectionEditorDialog, CollectionCRUDWidget } from "../boss_theme/index.js";
+
+const CRUD_CONTROLLER = new CollectionController("/booster_boss");
 
 // ── Constants ──────────────────────────────────────────────────────────────
 const STATE_PROP = "boosterState";
