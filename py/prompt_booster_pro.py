@@ -420,12 +420,15 @@ def register_api_routes():
     async def save_booster_entry(request):
         try:
             body = await request.json()
+            _log(f"/booster_boss/save body keys: {list(body.keys())}")
+            _log(f"/booster_boss/save body: {body}")
             lib_type = body.get("type", "")
             name = (body.get("name") or "").strip()
             text = (body.get("prompt") or "").strip()
             # CollectionController sends categories (plural, array); extract first
             categories = body.get("categories", [])
             category = (body.get("category") or (categories[0] if categories else "") or "").strip()
+            _log(f"/booster_boss/save parsed: type={lib_type}, name={name}, text={text[:50]}..., category={category}")
 
             if lib_type not in ("quality", "negatives"):
                 return web.json_response({"error": "Invalid type"}, status=400)
