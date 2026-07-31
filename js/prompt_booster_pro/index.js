@@ -735,7 +735,7 @@ class BoosterEditor {
     const existingSlugs = new Map(Object.entries(data));
     const dialog = new CollectionEditorDialog({
       title: this._crudType === "quality" ? "Quality Booster" : "Negative Level",
-      item: { ...item },
+      item: { ...item, _slug: slug },
       isEdit: true,
       existingSlugs,
       onSave: async ({ slug: newSlug, item }) => {
