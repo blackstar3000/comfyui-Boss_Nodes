@@ -28,5 +28,15 @@
     "theme_strength": 0.9,
     "style_strength": 1.1,
     "saved_at": "2026-06-29T02:52:41.080982"
+  },
+  {
+    "name": "Sticker Illustration",
+    "light_choice": "Danbooru → Danbooru Lighting",
+    "theme_choice": "Danbooru → Danbooru",
+    "style_choice": "(SDXL) Illustrations → Sticker Illustration",
+    "light_strength": 0.5,
+    "theme_strength": 0.6,
+    "style_strength": 0.7,
+    "saved_at": "2026-07-29T17:44:05.574760"
   }
 ]
