@@ -423,7 +423,9 @@ def register_api_routes():
             lib_type = body.get("type", "")
             name = (body.get("name") or "").strip()
             text = (body.get("prompt") or "").strip()
-            category = (body.get("category") or "").strip()
+            # CollectionController sends categories (plural, array); extract first
+            categories = body.get("categories", [])
+            category = (body.get("category") or (categories[0] if categories else "") or "").strip()
 
             if lib_type not in ("quality", "negatives"):
                 return web.json_response({"error": "Invalid type"}, status=400)
@@ -450,8 +452,10 @@ def register_api_routes():
         try:
             body = await request.json()
             lib_type = body.get("type", "")
-            name = (body.get("name") or "").strip()
-            category = (body.get("category") or "").strip()
+            # CollectionController sends slug; fall back to name
+            name = (body.get("slug") or body.get("name") or "").strip()
+            categories = body.get("categories", [])
+            category = (body.get("category") or (categories[0] if categories else "") or "").strip()
 
             if lib_type not in ("quality", "negatives"):
                 return web.json_response({"error": "Invalid type"}, status=400)
