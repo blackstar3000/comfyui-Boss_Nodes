@@ -75,5 +75,8 @@
     "Harsh Midday Sun": "harsh overhead sunlight, deep shadows, high contrast, dramatic",
     "Moonlight Silver": "cool silver moonlight, nocturnal mystery, soft gentle glow",
     "Firelight Warm": "warm firelight, flickering orange glow, cozy intimate shadows"
+  },
+  "Danbooru": {
+    "Danbooru Lighting": "{sidelighting|backlighting|underlighting|lens flare|sunlight|sunbeam|spotlight|stage lights|bloom|moonlight|caustics|dispersion|crack of light|chiaroscuro|glowstick|desk lamp|wall lamp|fireworks|lamppost|torch|fire|embers|lantern|ceiling light|chandelier|candlelight|ring light|muzzle flash|headlight beam|floodlights|flare|ultraviolet light|screen light}"
   }
 }
