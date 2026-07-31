@@ -1015,5 +1015,11 @@
     "William Zorach": "style of William Zorach",
     "Anders Zorn": "style of Anders Zorn",
     "Ignacio Zuloaga": "style of Ignacio Zuloaga"
+  },
+  "Danbooru Era Styles": {
+    "Danbooru Era Styles": "{1920s style|1930s style|1940s style|1950s style|1960s style|1970s style|1980s style|1990s style|2000s style}"
+  },
+  "Danbooru Style": {
+    "Danbooru Style": "{abstract|art deco|art nouveau|ligne claire|minimalism|painterly|anime coloring|toriyama akira (style)|komatsuzaki rui (style)}"
   }
 }
