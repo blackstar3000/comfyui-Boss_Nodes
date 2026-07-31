@@ -33,7 +33,7 @@ from utils.constants import (
     WEIGHT_FORMAT_DEFAULT,
     RANDOM_STYLE,
 )
-from utils.prompt_utils import apply_weight, clamp_strength, to_bool
+from utils.prompt_utils import apply_weight, clamp_strength, resolve_wildcards, to_bool
 from utils.logging_utils import make_logger
 
 # ── File paths ──────────────────────────────────────────────────────────────
@@ -815,9 +815,13 @@ class PromptMasterLibraryPro:
         theme_strength = clamp_strength(theme_strength)
         style_strength = clamp_strength(style_strength)
 
-        l_prompt = apply_weight(l_sel.text, light_strength, weight_format)
-        t_prompt = apply_weight(t_sel.text, theme_strength, weight_format)
-        s_prompt = apply_weight(s_sel.text, style_strength, weight_format)
+        l_text = resolve_wildcards(l_sel.text, rng)
+        t_text = resolve_wildcards(t_sel.text, rng)
+        s_text = resolve_wildcards(s_sel.text, rng)
+
+        l_prompt = apply_weight(l_text, light_strength, weight_format)
+        t_prompt = apply_weight(t_text, theme_strength, weight_format)
+        s_prompt = apply_weight(s_text, style_strength, weight_format)
 
         parts = [p for p in [l_prompt, t_prompt, s_prompt] if p]
         join_str = "\n" if newlines else separator
