@@ -20,6 +20,7 @@ shared by the other seven Boss Nodes rebuilds:
 import json
 import os
 import random
+import tempfile
 from datetime import datetime
 from pathlib import Path
 
@@ -148,7 +149,6 @@ class _BoosterLibrary:
 
     def _write_json(self, key: str, data: dict) -> None:
         """Atomic write: temp file → replace original."""
-        import tempfile
         path = _FILES[key]
         tmp = None
         try:

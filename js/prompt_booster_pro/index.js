@@ -724,7 +724,8 @@ class BoosterEditor {
 
   async _onCRUDDelete(slug) {
     if (!confirm(`Delete "${slug}"?\n\nThis action cannot be undone.`)) return;
-    const category = this._crudType === "negatives" ? (this.state.negativePreset || "default") : "";
+    const data = this._formatDataForCRUD(this._crudType);
+    const category = this._crudType === "negatives" ? (data[slug]?.description || "default") : "";
     const result = await CRUD_CONTROLLER.delete(this._crudType, slug);
     if (result.ok) {
       this.library = await this._fetchLibraryData();
