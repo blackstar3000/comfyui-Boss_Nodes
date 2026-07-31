@@ -83,6 +83,12 @@
       "scheduler": "karras",
       "steps": 25,
       "cfg": 5
+    },
+    "waiNSFWIllustrious_For anime and illustration": {
+      "sampler_name": "euler_ancestral",
+      "scheduler": "karras",
+      "steps": 35,
+      "cfg": 7
     }
   }
 }
