@@ -345,7 +345,26 @@ function buildPreviewHTML(state, lib) {
   const posFmtObj = allFormats.find((f) => f.key === posFmt) || { label: posFmt };
   const negFmtObj = lib.weightFormats.find((f) => f.key === negFmt) || { label: negFmt };
 
+  // Selected booster info
+  const selectedBooster = state._selectedBooster || null;
+  const selectedType = state._selectedType || null;
+  const selectedPrompt = state._selectedPrompt || null;
+
+  let selectedHTML = "";
+  if (selectedBooster && selectedPrompt) {
+    const typeLabel = selectedType === "quality" ? "Quality" : "Negative";
+    selectedHTML = `
+      <div class="boss-boost-output-label">Selected ${escapeHtml(typeLabel)} Booster</div>
+      <div class="boss-boost-output" style="border-color: var(--boss-brand);">
+        <div style="font-weight: 600; margin-bottom: 6px; color: var(--boss-brand);">${escapeHtml(selectedBooster)}</div>
+        <div style="font-size: 0.9em; opacity: 0.9;">${escapeHtml(selectedPrompt)}</div>
+      </div>
+      <div style="margin-bottom:12px;"></div>
+    `;
+  }
+
   return `
+    ${selectedHTML}
     <div class="boss-boost-output-label">Positive Output</div>
     <div class="boss-boost-output ${posWeighted ? '' : 'empty'}">${posBlock}</div>
     <div style="margin-bottom:12px; font-size:0.75em; color:var(--boss-text-muted); text-align:center;">
@@ -679,6 +698,11 @@ class BoosterEditor {
     const item = data[slug];
     if (!item) return;
 
+    // Set selected booster info for preview
+    this.state._selectedBooster = slug;
+    this.state._selectedType = this._crudType;
+    this.state._selectedPrompt = item.prompt;
+
     if (this._crudType === "quality") {
       this.state.positiveLevel = slug;
       this.state.positiveCustom = item.prompt;
@@ -798,6 +822,10 @@ class BoosterEditor {
       placeholder: "Select quality level...",
       onChange: (val) => {
         this.state.positiveLevel = val;
+        // Clear selected booster info when user changes dropdown manually
+        this.state._selectedBooster = null;
+        this.state._selectedType = null;
+        this.state._selectedPrompt = null;
         this.refreshPreview();
       },
     });
@@ -821,6 +849,10 @@ class BoosterEditor {
       placeholder: "Select preset...",
       onChange: (val) => {
         this.state.negativePreset = val;
+        // Clear selected booster info when user changes dropdown manually
+        this.state._selectedBooster = null;
+        this.state._selectedType = null;
+        this.state._selectedPrompt = null;
         this._refreshNegativeLevelOptions();
         this.refreshPreview();
       },
@@ -846,6 +878,10 @@ class BoosterEditor {
       placeholder: "Select level...",
       onChange: (val) => {
         this.state.negativeLevel = val;
+        // Clear selected booster info when user changes dropdown manually
+        this.state._selectedBooster = null;
+        this.state._selectedType = null;
+        this.state._selectedPrompt = null;
         this.refreshPreview();
       },
     });
