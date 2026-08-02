@@ -119,23 +119,36 @@ class _BoosterLibrary:
             if cat not in data:
                 data[cat] = {}
             data[cat][name] = text
-        self._write_json(key, data)
-        _log(f"Saved {key}/{name} — total {self._count(key, data)} entries")
+        if self._write_json(key, data):
+            self.load(key, force=True)  # reload from disk to sync in-memory state
+            _log(f"Saved {key}/{name} — total {self._count(key, data)} entries")
+        else:
+            self.load(key, force=True)  # reload to discard unsaved in-memory mutation
+            _log(f"Save FAILED for {key}/{name} — disk unchanged")
         return data
 
     def delete_entry(self, key: str, name: str, category: str = "") -> dict:
         """Delete an entry. Returns updated collection data."""
         data = self.load(key)
         if key == "quality":
-            data.pop(name, None)
+            if name not in data:
+                _log(f"Delete failed: '{name}' not found in {key}")
+                return data
+            data.pop(name)
         else:
             cat = category or "default"
-            if cat in data:
-                data[cat].pop(name, None)
-                if not data[cat]:
-                    del data[cat]
-        self._write_json(key, data)
-        _log(f"Deleted {key}/{name} — total {self._count(key, data)} entries")
+            if cat not in data or name not in data[cat]:
+                _log(f"Delete failed: '{name}' not found in {key}/{cat}")
+                return data
+            data[cat].pop(name)
+            if not data[cat]:
+                del data[cat]
+        if self._write_json(key, data):
+            self.load(key, force=True)  # reload from disk to sync in-memory state
+            _log(f"Deleted {key}/{name} — total {self._count(key, data)} entries")
+        else:
+            self.load(key, force=True)  # reload to discard unsaved in-memory mutation
+            _log(f"Delete FAILED for {key}/{name} — disk unchanged")
         return data
 
     def list_entries(self, key: str) -> dict:
@@ -147,8 +160,8 @@ class _BoosterLibrary:
             return len(data)
         return sum(len(v) for v in data.values())
 
-    def _write_json(self, key: str, data: dict) -> None:
-        """Atomic write: temp file → replace original."""
+    def _write_json(self, key: str, data: dict) -> bool:
+        """Atomic write: temp file → replace original. Returns True on success."""
         path = _FILES[key]
         tmp = None
         try:
@@ -156,10 +169,12 @@ class _BoosterLibrary:
             with os.fdopen(fd, "w", encoding="utf-8") as f:
                 json.dump(data, f, indent=2, ensure_ascii=False)
             os.replace(tmp, path)
+            return True
         except OSError as e:
             _log(f"Error writing {path.name}: {e}")
             if tmp and os.path.exists(tmp):
                 os.remove(tmp)
+            return False
 
 
 _library = _BoosterLibrary()
@@ -169,14 +184,10 @@ _log = make_logger("PromptBoosterPro")
 
 
 def _sanitize_quality(raw: dict, filename: str) -> dict[str, str]:
-    """Keep only entries with non-empty string values."""
-    clean: dict[str, str] = {}
-    for k, v in raw.items():
-        if isinstance(v, str) and v.strip():
-            clean[k] = v.strip()
-        else:
-            _log(f"  Skipped quality entry '{k}': expected non-empty string, got {type(v).__name__}")
-    return clean
+    """Keep only entries with non-empty string values.
+    Delegates to sanitize_entries which also handles dict entries
+    with a 'prompt' key (consistent with other Boss Nodes)."""
+    return sanitize_entries(raw)
 
 
 def _sanitize_negatives(raw, filename: str) -> dict[str, dict[str, str]]:
@@ -402,7 +413,8 @@ def register_api_routes():
     try:
         from server import PromptServer
         from aiohttp import web
-    except ImportError:
+    except ImportError as e:
+        _log(f"Could not register Prompt Booster API routes: {e}")
         return
 
     routes = PromptServer.instance.routes
