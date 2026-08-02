@@ -56,6 +56,11 @@ def apply_weight(text: str, strength: float, fmt: str = "comfyui") -> str:
     if fmt == "deemphasis":
         return f"[{text}]"
 
+    if fmt == "break":
+        if abs(s - 1.0) < 1e-4:
+            return f"{text} BREAK"
+        return f"({text}:{s:.2f}) BREAK"
+
     return text  # Unknown format — pass through unchanged
 
 
