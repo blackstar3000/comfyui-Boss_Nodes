@@ -19,8 +19,8 @@ class TextConcatenatePro:
                     "placeholder": "e.g. , | • | \\n | and"
                 }),
                 "smart_oxford_comma": (["disable", "enable"], {
-                    "default": "enable",
-                    "tooltip": "Automatically uses 'and' before last item when using commas"
+                    "default": "disable",
+                    "tooltip": "When delimiter is comma-based: uses 'and' for 2 items, serial comma for 3+"
                 }),
                 "trim_each": (["disable", "enable"], {
                     "default": "enable"
